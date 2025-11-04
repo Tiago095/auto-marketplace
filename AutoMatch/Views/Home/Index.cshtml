@@ -1,8 +1,120 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "AutoMatch";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Floating Header -->
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <button class="nav-btn">Home</button>
+        <button class="nav-btn">About</button>
+        <button class="nav-btn">Contact</button>
+        <button class="nav-btn signin">Sign In</button>
+    </div>
 </div>
+
+
+<!-- Hero Section -->
+<section class="hero">
+    <img src="~/images/capa.png" alt="Car Image" class="hero-img">
+</section>
+
+
+<!-- Search Section -->
+<section class="search-section text-center">
+    <h2>Looking for a new car?</h2>
+    <p>Browse through the best cars in the market</p>
+
+    <div class="search-bar">
+        <select id="brandSelect">
+            <option value="">Brand</option>
+            <option value="tesla">Tesla</option>
+            <option value="bmw">BMW</option>
+            <option value="audi">Audi</option>
+        </select>
+
+        <select id="modelSelect" disabled>
+            <option value="">Model</option>
+        </select>
+
+        <input type="number" id="yearSelect" placeholder="Year" min="1990" max="2025" oninput="this.value=this.value.slice(0,4)">
+
+        <div class="price-wrapper">
+            <input type="text" id="priceInput" placeholder="Max price (€)">
+            <i class="fa fa-search search-icon"></i>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const brandSelect = document.getElementById("brandSelect");
+            const modelSelect = document.getElementById("modelSelect");
+
+            const models = {
+                tesla: ["Model S", "Model 3", "Model X", "Model Y"],
+                bmw: ["Series 3", "Series 5", "X5", "X7"],
+                audi: ["A3", "A4", "Q5", "Q7"]
+            };
+
+            brandSelect.addEventListener("change", function () {
+                const selectedBrand = this.value;
+                modelSelect.innerHTML = '<option value="">Model</option>';
+                if (selectedBrand && models[selectedBrand]) {
+                    models[selectedBrand].forEach(model => {
+                        const opt = document.createElement("option");
+                        opt.value = model;
+                        opt.textContent = model;
+                        modelSelect.appendChild(opt);
+                    });
+                    modelSelect.disabled = false;
+                } else {
+                    modelSelect.disabled = true;
+                }
+            });
+        });
+    </script>
+}
+
+
+<!-- Featured Cars -->
+<section class="featured text-center">
+    <h3>Featured Cars</h3>
+    <div class="featured-cars">
+        <div class="car-card">
+            <img src="~/images/eletric.png" alt="Electric Car">
+            <div class="car-info">
+                <p>Electric</p>
+                <span>30,000 €</span>
+            </div>
+        </div>
+        <div class="car-card">
+            <img src="~/images/SUV_e.png" alt="SUV">
+            <div class="car-info">
+                <p>SUV</p>
+                <span>50,000 €</span>
+            </div>
+        </div>
+        <div class="car-card">
+            <img src="~/images/sports.png" alt="Sports">
+            <div class="car-info">
+                <p>Sports</p>
+                <span>80,000 €</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Browse by Category -->
+<section class="categories text-center">
+    <h3>Browse by Category</h3>
+    <div class="category-grid">
+        <div class="category-card"><img src="~/images/sedan.png"><p>SUV</p></div>
+        <div class="category-card"><img src="~/images/coupe.png"><p>Sedan</p></div>
+        <div class="category-card"><img src="~/images/SUV.png"><p>Coupe</p></div>
+        <div class="category-card"><img src="~/images/hatchback.png"><p>Hatchback</p></div>
+        <div class="category-arrow">➤</div>
+    </div>
+</section>
+

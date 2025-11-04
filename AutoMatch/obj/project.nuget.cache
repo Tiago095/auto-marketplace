@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Gqf8J22wiAE=",
+  "dgSpecHash": "xFPcNIOnoGc=",
   "success": true,
-  "projectFilePath": "C:\\Users\\silva\\Documents\\3 Ano\\1 Semestre\\LabWBD\\AutoMatch\\AutoMatch.csproj",
+  "projectFilePath": "C:\\Users\\silva\\Source\\Repos\\LabWBD\\AutoMatch\\AutoMatch.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\silva\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\silva\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
