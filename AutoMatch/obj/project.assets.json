@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\silva\\Documents\\3 Ano\\1 Semestre\\LabWBD\\AutoMatch\\AutoMatch.csproj",
+      "projectUniqueName": "C:\\Users\\silva\\Source\\Repos\\LabWBD\\AutoMatch\\AutoMatch.csproj",
       "projectName": "AutoMatch",
-      "projectPath": "C:\\Users\\silva\\Documents\\3 Ano\\1 Semestre\\LabWBD\\AutoMatch\\AutoMatch.csproj",
+      "projectPath": "C:\\Users\\silva\\Source\\Repos\\LabWBD\\AutoMatch\\AutoMatch.csproj",
       "packagesPath": "C:\\Users\\silva\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\silva\\Documents\\3 Ano\\1 Semestre\\LabWBD\\AutoMatch\\obj\\",
+      "outputPath": "C:\\Users\\silva\\Source\\Repos\\LabWBD\\AutoMatch\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
