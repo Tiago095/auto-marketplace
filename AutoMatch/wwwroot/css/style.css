@@ -361,6 +361,290 @@ body {
 }
 
     .category-arrow:hover {
-        color:   #007bff;
-            
+        color:   #007bff;
+            
     }
+
+/* --- About Page Styles --- */
+.about-section {
+    min-height: 100vh;
+    background-color: #F5F5F5;
+    padding: 100px 60px 40px 60px;
+}
+
+.about-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.about-title {
+    font-size: 52px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 30px;
+}
+
+.about-intro {
+    margin-bottom: 40px;
+}
+
+.about-intro p {
+    font-size: 17px;
+    line-height: 1.5;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.about-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    margin-bottom: 35px;
+}
+
+.about-column h2 {
+    font-size: 30px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 16px;
+}
+
+.about-column p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 10px;
+}
+
+.about-team {
+    margin-top: 0;
+}
+
+.about-team h2 {
+    font-size: 30px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 16px;
+}
+
+.about-team ul {
+    list-style: none;
+    padding: 0;
+}
+
+.about-team li {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Remove default anchor styling for nav buttons */
+.floating-buttons a {
+    text-decoration: none;
+}
+
+/* About page header color overrides */
+.floating-header-dark .logo-text {
+    color: #000 !important;
+    text-shadow: none !important;
+}
+
+.floating-header-dark .nav-btn {
+    color: #000 !important;
+}
+
+.floating-header-dark .nav-btn.signin {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+.floating-header-dark .nav-btn.signin:hover {
+    background-color: #333 !important;
+}
+
+/* --- Contact Page Styles --- */
+.contact-section {
+    min-height: 100vh;
+    background-color: #F5F5F5;
+    padding: 100px 60px 40px 60px;
+    position: relative;
+}
+
+.contact-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 100px;
+}
+
+.contact-form-column h1,
+.contact-info-column h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 15px;
+}
+
+.contact-subtitle {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 30px;
+}
+
+/* Contact Form */
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #111;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    padding: 14px 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: #D9D9D9;
+    font-size: 15px;
+    color: #333;
+    outline: none;
+}
+
+.form-textarea {
+    padding: 14px 18px;
+    border: none;
+    border-radius: 10px;
+    background-color: #D9D9D9;
+    font-size: 15px;
+    color: #333;
+    outline: none;
+    min-height: 140px;
+    resize: vertical;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.send-btn {
+    padding: 14px 36px;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    align-self: center;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.send-btn:hover {
+    background-color: #333;
+}
+
+/* Contact Info */
+.contact-info-items {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 40px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #111;
+}
+
+.info-text {
+    flex: 1;
+    padding: 14px 20px;
+    background-color: #D9D9D9;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #111;
+}
+
+/* Footer */
+.contact-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icon {
+    width: 45px;
+    height: 45px;
+    border: 2px solid #111;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111;
+    text-decoration: none;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: #111;
+    color: #fff;
+}
+
+.footer-text {
+    font-size: 14px;
+    color: #111;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-text a {
+    color: #111;
+    text-decoration: none;
+}
+
+.footer-text a:hover {
+    text-decoration: underline;
+}
+
+.footer-divider {
+    color: #111;
+}

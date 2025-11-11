@@ -1,0 +1,96 @@
+@{
+    ViewData["Title"] = "Contact - AutoMatch";
+}
+
+<!-- Contact Page -->
+<section class="contact-section">
+    <!-- Floating Header -->
+    <div class="floating-header floating-header-dark">
+        <div class="logo-text">AutoMatch</div>
+        <div class="floating-buttons">
+            <a href="@Url.Action("Index", "Home")"><button class="nav-btn">Home</button></a>
+            <a href="@Url.Action("About", "Home")"><button class="nav-btn">About</button></a>
+            <a href="@Url.Action("Contact", "Home")"><button class="nav-btn">Contact</button></a>
+            <button class="nav-btn signin">Sign In</button>
+        </div>
+    </div>
+
+    <div class="contact-container">
+        <!-- Left Column: Contact Form -->
+        <div class="contact-form-column">
+            <h1>Need Help ?</h1>
+            <p class="contact-subtitle">Our team is available to answer your questions. Fill up the form or send us an email.</p>
+
+            <form class="contact-form">
+                <div class="form-group">
+                    <label>Full name</label>
+                    <input type="text" class="form-input" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label>Topic</label>
+                        <input type="text" class="form-input" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Message</label>
+                    <textarea class="form-textarea"></textarea>
+                </div>
+
+                <button type="button" class="send-btn">Send Message</button>
+            </form>
+        </div>
+
+        <!-- Right Column: Additional Information -->
+        <div class="contact-info-column">
+            <h1>Additional Information</h1>
+            <p class="contact-subtitle">Our customer support team is here to help you with any questions about listings, accounts, or partnerships. We usually reply within 24 business hours.</p>
+
+            <div class="contact-info-items">
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fa fa-envelope"></i>
+                    </div>
+                    <div class="info-text">suporte@automatch.com</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fa fa-phone"></i>
+                    </div>
+                    <div class="info-text">+351 912 345 678</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fa fa-map-marker-alt"></i>
+                    </div>
+                    <div class="info-text">Quinta de Prados, 5000-801</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="contact-footer">
+        <div class="social-icons">
+            <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+        </div>
+        <div class="footer-text">
+            <span>© 2025 AutoMatch - All Rights Reserved</span>
+            <span class="footer-divider">|</span>
+            <a href="#">Privacy Policy</a>
+            <span class="footer-divider">|</span>
+            <a href="#">Terms of Use</a>
+        </div>
+    </footer>
+</section>
