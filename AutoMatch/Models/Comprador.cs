@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AutoMatch.Models
 {
+    [Table("Compradores")]
     public class Comprador
     {
         [Key]

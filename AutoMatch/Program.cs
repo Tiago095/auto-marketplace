@@ -7,9 +7,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AutoMatchContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ? Adicionar suporte a sessão
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AutoMatchContext>();
+    db.Database.EnsureCreated(); // força inicialização no arranque
+}
 
 // Middleware padrão
 if (!app.Environment.IsDevelopment())
@@ -20,7 +28,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+
+// ? Usar sessão
+app.UseSession();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(

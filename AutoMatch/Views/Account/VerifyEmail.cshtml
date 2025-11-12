@@ -1,0 +1,26 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificar Email</title>
+    <style>
+        body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; background:#f2f2f2; }
+        .box { padding:40px; background:white; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center; }
+        input { padding:12px; width:220px; font-size:20px; border-radius:8px; border:1px solid #ccc; text-align:center; }
+        button { margin-top:20px; padding:12px 24px; background:black; color:white; border:none; border-radius:8px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Confirme o código enviado para o email</h2>
+        <form method="post">
+            <input type="text" name="code" maxlength="6" placeholder="000000" required />
+            <br />
+            <button type="submit">Confirmar</button>
+        </form>
+    </div>
+</body>
+</html>
