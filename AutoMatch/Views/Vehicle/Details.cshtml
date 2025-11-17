@@ -1,0 +1,212 @@
+@model AutoMatch.Models.Vehicle
+@{
+    ViewData["Title"] = $"{Model.Brand} {Model.Model}";
+}
+
+<!-- Simple Header -->
+<header class="simple-header">
+    <div class="header-content">
+        <div class="logo-text">AutoMatch</div>
+        <nav class="header-nav">
+            <a href="/">Home</a>
+            <a href="#">About Us</a>
+            <a href="#">Contact</a>
+            <a href="/Account/Login" class="signin-link">Sign In</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Vehicle Details Section -->
+<section class="details-section">
+    <div class="details-container">
+        <!-- Left Column - Info & Description -->
+        <div class="details-left">
+            <h1 class="details-title">@Model.Brand @Model.Model</h1>
+            <p class="details-year">@Model.Year</p>
+
+            <!-- Specs Grid -->
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-label">Year</div>
+                    <div class="spec-value">@Model.Year</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Brand</div>
+                    <div class="spec-value">@Model.Brand</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Model</div>
+                    <div class="spec-value">@Model.Model</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Type</div>
+                    <div class="spec-value">@Model.FuelType</div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="description-section">
+                <h3>Description</h3>
+                <p>@Model.Description</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn-contact">Contact Seller</button>
+                <button class="btn-test-drive" id="openBookingModal">Book Test Drive</button>
+                <button class="btn-buy-now">@Model.Price.ToString("N0")€ Buy Now</button>
+            </div>
+        </div>
+
+        <!-- Right Column - Image Gallery -->
+        <div class="details-right">
+            <div class="main-image-container">
+                <button class="image-nav prev">‹</button>
+                <div class="main-image-placeholder">
+                    <!-- Placeholder cinza para imagem principal -->
+                </div>
+                <button class="image-nav next">›</button>
+            </div>
+
+            <!-- Thumbnail Gallery -->
+            <div class="thumbnail-gallery">
+                <div class="thumbnail-item active">
+                    <div class="thumbnail-placeholder"></div>
+                </div>
+                <div class="thumbnail-item">
+                    <div class="thumbnail-placeholder"></div>
+                </div>
+                <div class="thumbnail-item">
+                    <div class="thumbnail-placeholder"></div>
+                </div>
+                <div class="thumbnail-item add-more">
+                    <div class="thumbnail-placeholder">
+                        <span class="plus-icon">+</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Modal -->
+<div id="bookingOverlay" class="booking-overlay">
+    <div class="booking-modal">
+        <div class="booking-header">
+            <h2>Booking Reservation</h2>
+            <button type="button" class="booking-close" id="closeBookingModal">&times;</button>
+        </div>
+
+        <div class="booking-main-card">
+            <div class="booking-row">
+                <div class="booking-icon">
+                    <i class="fa-regular fa-calendar"></i>
+                </div>
+                <div class="booking-field-group">
+                    <label for="bookingDate">Date</label>
+                    <input type="date" id="bookingDate" class="booking-input" />
+                </div>
+            </div>
+
+            <div class="booking-row">
+                <div class="booking-icon">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div class="booking-field-group">
+                    <label for="bookingTime">Time</label>
+                    <select id="bookingTime" class="booking-input">
+                        <option>15:00 - 16:00</option>
+                        <option>10:00 - 11:00</option>
+                        <option>11:00 - 12:00</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="booking-row">
+                <div class="booking-icon">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <div class="booking-field-group">
+                    <label for="bookingLocation">Location</label>
+                    <select id="bookingLocation" class="booking-input">
+                        <option>Automatch Porto</option>
+                        <option>Automatch Lisboa</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="booking-comment-wrapper">
+            <textarea class="booking-comment" placeholder="Comment or Request (optional)"></textarea>
+        </div>
+
+        <div class="booking-summary-card">
+            <h3>Booking Summary</h3>
+            <p class="booking-summary-line">@Model.Brand @Model.Model</p>
+            <p class="booking-summary-line">Date: <span id="summaryDate">—</span> - <span id="summaryTime">—</span></p>
+            <p class="booking-summary-line">Location: <span id="summaryLocation">Automatch Porto</span></p>
+        </div>
+
+        <button type="button" class="booking-confirm-btn">Confirm Booking</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Image navigation (para quando adicionares imagens reais)
+        document.querySelector('.image-nav.prev')?.addEventListener('click', function () {
+            console.log('Previous image');
+        });
+
+        document.querySelector('.image-nav.next')?.addEventListener('click', function () {
+            console.log('Next image');
+        });
+
+        // Booking modal logic
+        document.addEventListener('DOMContentLoaded', function () {
+            const openBtn = document.getElementById('openBookingModal');
+            const overlay = document.getElementById('bookingOverlay');
+            const closeBtn = document.getElementById('closeBookingModal');
+            const body = document.body;
+
+            const dateInput = document.getElementById('bookingDate');
+            const timeInput = document.getElementById('bookingTime');
+            const locationInput = document.getElementById('bookingLocation');
+
+            const summaryDate = document.getElementById('summaryDate');
+            const summaryTime = document.getElementById('summaryTime');
+            const summaryLocation = document.getElementById('summaryLocation');
+
+            if (!openBtn || !overlay) return;
+
+            function openModal() {
+                overlay.classList.add('visible');
+                body.classList.add('modal-open');
+            }
+
+            function closeModal() {
+                overlay.classList.remove('visible');
+                body.classList.remove('modal-open');
+            }
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn?.addEventListener('click', closeModal);
+
+            overlay.addEventListener('click', function (e) {
+                if (e.target === overlay) {
+                    closeModal();
+                }
+            });
+
+            function updateSummary() {
+                summaryDate.textContent = dateInput.value || '—';
+                summaryTime.textContent = timeInput.value || '—';
+                summaryLocation.textContent = locationInput.value || '—';
+            }
+
+            dateInput?.addEventListener('change', updateSummary);
+            timeInput?.addEventListener('change', updateSummary);
+            locationInput?.addEventListener('change', updateSummary);
+        });
+    </script>
+}
