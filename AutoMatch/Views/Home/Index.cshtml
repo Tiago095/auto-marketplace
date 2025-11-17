@@ -9,16 +9,14 @@
         <button class="nav-btn">Home</button>
         <button class="nav-btn">About</button>
         <button class="nav-btn">Contact</button>
-        <button class="nav-btn signin">Sign In</button>
+        <a href="/Account/Login" class="nav-btn signin">Sign In</a> <!-- Alterado para link -->
     </div>
 </div>
-
 
 <!-- Hero Section -->
 <section class="hero">
     <img src="~/images/capa.png" alt="Car Image" class="hero-img">
 </section>
-
 
 <!-- Search Section -->
 <section class="search-section text-center">
@@ -28,9 +26,9 @@
     <div class="search-bar">
         <select id="brandSelect">
             <option value="">Brand</option>
-            <option value="tesla">Tesla</option>
-            <option value="bmw">BMW</option>
-            <option value="audi">Audi</option>
+            <option value="Tesla">Tesla</option>
+            <option value="BMW">BMW</option>
+            <option value="Audi">Audi</option>
         </select>
 
         <select id="modelSelect" disabled>
@@ -41,7 +39,7 @@
 
         <div class="price-wrapper">
             <input type="text" id="priceInput" placeholder="Max price (€)">
-            <i class="fa fa-search search-icon"></i>
+            <i class="fa fa-search search-icon" onclick="performSearch()"></i>
         </div>
     </div>
 </section>
@@ -53,9 +51,9 @@
             const modelSelect = document.getElementById("modelSelect");
 
             const models = {
-                tesla: ["Model S", "Model 3", "Model X", "Model Y"],
-                bmw: ["Series 3", "Series 5", "X5", "X7"],
-                audi: ["A3", "A4", "Q5", "Q7"]
+                "Tesla": ["Model S", "Model 3", "Model X", "Model Y"],
+                "BMW": ["Series 3", "Series 5", "X5", "X7"],
+                "Audi": ["A3", "A4", "Q5", "Q7"]
             };
 
             brandSelect.addEventListener("change", function () {
@@ -73,30 +71,53 @@
                     modelSelect.disabled = true;
                 }
             });
+
+            // Enter key on inputs
+            document.querySelectorAll('#brandSelect, #modelSelect, #yearSelect, #priceInput').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            });
         });
+
+        function performSearch() {
+            const brand = document.getElementById('brandSelect').value;
+            const model = document.getElementById('modelSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const price = document.getElementById('priceInput').value;
+
+            const params = new URLSearchParams();
+            if (brand) params.append('brand', brand);
+            if (model) params.append('model', model);
+            if (year) params.append('year', year);
+            if (price) params.append('maxPrice', price);
+
+            window.location.href = '/Vehicle/Results?' + params.toString();
+        }
     </script>
 }
-
 
 <!-- Featured Cars -->
 <section class="featured text-center">
     <h3>Featured Cars</h3>
     <div class="featured-cars">
-        <div class="car-card">
+        <div class="car-card" onclick="window.location.href='/Vehicle/Results?fuelType=Electric'">
             <img src="~/images/eletric.png" alt="Electric Car">
             <div class="car-info">
                 <p>Electric</p>
                 <span>30,000 €</span>
             </div>
         </div>
-        <div class="car-card">
+        <div class="car-card" onclick="window.location.href='/Vehicle/Results?bodyType=SUV'">
             <img src="~/images/SUV_e.png" alt="SUV">
             <div class="car-info">
                 <p>SUV</p>
                 <span>50,000 €</span>
             </div>
         </div>
-        <div class="car-card">
+        <div class="car-card" onclick="window.location.href='/Vehicle/Results?maxPrice=80000'">
             <img src="~/images/sports.png" alt="Sports">
             <div class="car-info">
                 <p>Sports</p>
@@ -110,10 +131,10 @@
 <section class="categories text-center">
     <h3>Browse by Category</h3>
     <div class="category-grid">
-        <div class="category-card"><img src="~/images/sedan.png"><p>SUV</p></div>
-        <div class="category-card"><img src="~/images/coupe.png"><p>Sedan</p></div>
-        <div class="category-card"><img src="~/images/SUV.png"><p>Coupe</p></div>
-        <div class="category-card"><img src="~/images/hatchback.png"><p>Hatchback</p></div>
-        <div class="category-arrow">➤</div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=SUV'"><img src="~/images/sedan.png"><p>SUV</p></div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=Sedan'"><img src="~/images/coupe.png"><p>Sedan</p></div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=Coupe'"><img src="~/images/SUV.png"><p>Coupe</p></div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=Hatchback'"><img src="~/images/hatchback.png"><p>Hatchback</p></div>
+        <div class="category-arrow" onclick="window.location.href='/Vehicle/Results'">➤</div>
     </div>
 </section>

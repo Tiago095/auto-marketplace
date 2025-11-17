@@ -1,0 +1,176 @@
+@model List<AutoMatch.Models.Vehicle>
+@{
+    ViewData["Title"] = "Vehicle Results";
+}
+
+<!-- Simple Header -->
+<header class="simple-header">
+    <div class="header-content">
+        <div class="logo-text">AutoMatch</div>
+        <nav class="header-nav">
+            <a href="/">Home</a>
+            <a href="#">About Us</a>
+            <a href="#">Contact</a>
+            <a href="/Account/Login" class="signin-link">Sign In</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Results Section -->
+<section class="results-section">
+    <div class="results-container">
+        <h1 class="results-title">Vehicle Results</h1>
+        <p class="results-subtitle">Browse through the best cars in the market</p>
+
+        <!-- Filter Bar -->
+        <div class="filters-wrapper">
+            <form method="get" action="/Vehicle/Results" id="filterForm">
+                <div class="filter-row">
+                    <select name="brand" id="brandFilter" class="filter-select">
+                        <option value="">Brand</option>
+                        <option value="Tesla">Tesla</option>
+                        <option value="BMW">BMW</option>
+                        <option value="Audi">Audi</option>
+                        <option value="Hyundai">Hyundai</option>
+                    </select>
+
+                    <select name="model" id="modelFilter" class="filter-select">
+                        <option value="">Model</option>
+                    </select>
+
+                    <select name="year" class="filter-select">
+                        <option value="">Year</option>
+                        @for (int y = 2025; y >= 2015; y--)
+                        {
+                            <option value="@y">@y</option>
+                        }
+                    </select>
+
+                    <select name="maxPrice" class="filter-select">
+                        <option value="">Price</option>
+                        <option value="20000">Up to 20,000€</option>
+                        <option value="30000">Up to 30,000€</option>
+                        <option value="40000">Up to 40,000€</option>
+                        <option value="50000">Up to 50,000€</option>
+                    </select>
+
+                    <select name="sort" class="filter-select sort-select">
+                        <option value="price-low-high">Sort by: Price (Low-High)</option>
+                        <option value="price-high-low">Price (High-Low)</option>
+                        <option value="year-new-old">Year (New-Old)</option>
+                        <option value="year-old-new">Year (Old-New)</option>
+                        <option value="mileage-low-high">Mileage (Low-High)</option>
+                    </select>
+                </div>
+
+                <div class="filter-row">
+                    <select name="maxMileage" class="filter-select">
+                        <option value="">Mileage</option>
+                        <option value="50000">Up to 50,000 km</option>
+                        <option value="100000">Up to 100,000 km</option>
+                        <option value="150000">Up to 150,000 km</option>
+                    </select>
+
+                    <select name="fuelType" class="filter-select">
+                        <option value="">Fuel Type</option>
+                        <option value="Electric">Electric</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
+
+                    <select name="transmission" class="filter-select">
+                        <option value="">Transmission</option>
+                        <option value="Automatic">Automatic</option>
+                        <option value="Manual">Manual</option>
+                    </select>
+
+                    <select name="bodyType" class="filter-select">
+                        <option value="">Body Type</option>
+                        <option value="Sedan">Sedan</option>
+                        <option value="SUV">SUV</option>
+                        <option value="Coupe">Coupe</option>
+                        <option value="Hatchback">Hatchback</option>
+                    </select>
+
+                    <div class="search-wrapper">
+                        <input type="text" placeholder="Search..." class="search-input">
+                        <button type="submit" class="search-btn">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Vehicle Grid -->
+        <div class="vehicle-grid">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var vehicle in Model)
+                {
+                    <a href="@Url.Action("Details", "Vehicle", new { id = vehicle.Id })" class="vehicle-card-link">
+                        <div class="vehicle-card">
+                            <div class="vehicle-image-placeholder">
+                                <!-- Placeholder cinza para imagem -->
+                            </div>
+                            <div class="vehicle-info">
+                                <h3 class="vehicle-title">@vehicle.Brand @vehicle.Model</h3>
+                                <p class="vehicle-year">@vehicle.Year</p>
+                                <p class="vehicle-price">@vehicle.Price.ToString("N0")€</p>
+                                <div class="vehicle-badges">
+                                    <span class="badge">@vehicle.FuelType</span>
+                                    <span class="badge">@vehicle.Transmission</span>
+                                </div>
+                                <p class="vehicle-mileage">@vehicle.Mileage.ToString("N0")km</p>
+                            </div>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="no-results">
+                    <p>No vehicles found matching your criteria.</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Brand-Model dependency
+        const models = {
+            "Tesla": ["Model S", "Model 3", "Model X", "Model Y"],
+            "BMW": ["Series 3", "Series 5", "X5", "X7"],
+            "Audi": ["A3", "A4", "Q5", "Q7"],
+            "Hyundai": ["Creta", "i20", "Tucson", "Santa Fe"]
+        };
+
+        const brandFilter = document.getElementById("brandFilter");
+        const modelFilter = document.getElementById("modelFilter");
+
+        brandFilter.addEventListener("change", function () {
+            const selectedBrand = this.value;
+            modelFilter.innerHTML = '<option value="">Model</option>';
+            
+            if (selectedBrand && models[selectedBrand]) {
+                modelFilter.disabled = false;
+                models[selectedBrand].forEach(model => {
+                    const option = document.createElement("option");
+                    option.value = model;
+                    option.textContent = model;
+                    modelFilter.appendChild(option);
+                });
+            } else {
+                modelFilter.disabled = true;
+            }
+        });
+
+        // Auto-submit apenas no sort
+        document.querySelector('.sort-select')?.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    </script>
+}
