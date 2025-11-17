@@ -1,18 +1,31 @@
+using AutoMatch.Data;
+using Microsoft.EntityFrameworkCore;
+
 using AutoMatch.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configurar ligação à BD
+builder.Services.AddDbContext<AutoMatchContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ? Adicionar suporte a sessão
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AutoMatchContext>();
+    db.Database.EnsureCreated(); // força inicialização no arranque
+}
+
+// Middleware padrão
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -20,6 +33,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// ? Usar sessão
+app.UseSession();
 
 app.UseAuthorization();
 

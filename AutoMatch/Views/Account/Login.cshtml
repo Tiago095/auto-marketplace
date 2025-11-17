@@ -1,0 +1,114 @@
+﻿@using AutoMatch.Models.ViewModels
+@model LoginViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Login - AutoMatch";
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+</head>
+
+<body>
+    <a asp-controller="Home" asp-action="Index" class="brand">AutoMatch</a>
+
+    <div class="login-container @(TempData["ShowRegister"] as string == "true" ? "active" : "")" id="loginContainer">
+        <!-- LOGIN FORM -->
+        <section class="form-box login">
+            <h1 class="welcome">Welcome Back!</h1>
+            <p class="subtitle">Sign in to your account</p>
+
+            <form asp-action="Login" asp-controller="Account" method="post">
+                @Html.AntiForgeryToken()
+
+                <input asp-for="Email" placeholder="Email" value="" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+
+                <input asp-for="Password" placeholder="Password" type="password" value="" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+
+                <div class="row-flex">
+                    <label class="remember">
+                        <input asp-for="RememberMe" type="checkbox" />
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-link">Forgot your password?</a>
+                </div>
+
+                <button type="submit" class="btn-signin" id="btnLogin">Sign In</button>
+
+                <!-- Só mostra erros de login -->
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </form>
+        </section>
+
+        <!-- REGISTER FORM -->
+        <section class="form-box register">
+            <h1 class="welcome">Create Account</h1>
+            <p class="subtitle">Join AutoMatch today</p>
+
+            <form asp-action="Register" asp-controller="Account" method="post">
+                @Html.AntiForgeryToken()
+
+                <input name="FullName" placeholder="Full Name" required />
+                <input name="UserName" placeholder="User Name" required />
+                <input name="Email" type="email" placeholder="Email" required />
+                <input name="Password" type="password" placeholder="Password (6-12 chars)" minlength="6" maxlength="12" required />
+                <input name="ConfirmPassword" type="password" placeholder="Confirm Password" minlength="6" maxlength="12" required />
+
+                <button type="submit" class="btn-signin" id="btnRegister">Sign Up</button>
+
+                @if (TempData["RegisterError"] != null)
+                {
+                    <div class="text-danger">@TempData["RegisterError"]</div>
+                    <script>
+                        // Limpa o formulário após erro
+                        document.addEventListener("DOMContentLoaded", () => {
+                            const registerForm = document.querySelector('.form-box.register form');
+                            registerForm.reset();
+                        });
+                    </script>
+                }
+            </form>
+        </section>
+
+        <!-- OVERLAY -->
+        <section class="overlay-box">
+            <h1 id="overlayTitle">New Here?</h1>
+            <p id="overlaySubtitle">Create your account and start now</p>
+            <button id="toggleBtn">Sign Up</button>
+        </section>
+    </div>
+
+    <script>
+        const container = document.getElementById("loginContainer");
+        const toggleBtn = document.getElementById("toggleBtn");
+        const overlayTitle = document.getElementById("overlayTitle");
+        const overlaySubtitle = document.getElementById("overlaySubtitle");
+
+        let isRegistering = container.classList.contains("active");
+
+        toggleBtn.addEventListener("click", () => {
+            isRegistering = !isRegistering;
+            container.classList.toggle("active");
+
+            if (isRegistering) {
+                overlayTitle.textContent = "Welcome Back!";
+                overlaySubtitle.textContent = "Already have an account? Sign in here";
+                toggleBtn.textContent = "Sign In";
+            } else {
+                overlayTitle.textContent = "New Here?";
+                overlaySubtitle.textContent = "Create your account and start now";
+                toggleBtn.textContent = "Sign Up";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -9,13 +9,13 @@ public class EmailService : IEmailService
     private readonly ILogger<EmailService> _logger;
 
     public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
-    {
+        {
         _configuration = configuration;
         _logger = logger;
-    }
+        }
 
     public async Task<bool> SendContactEmailAsync(string fullName, string userEmail, string topic, string message)
-    {
+        {
         try
         {
             var smtpSettings = _configuration.GetSection("SmtpSettings");

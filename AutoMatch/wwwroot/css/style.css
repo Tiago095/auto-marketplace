@@ -25,6 +25,10 @@
     gap: 20px;
 }
 
+    .floating-buttons a {
+        text-decoration: none;
+    }
+
 /* Botões simples sem contorno */
 .nav-btn {
     padding: 8px 16px;
@@ -74,8 +78,6 @@ body.light-bg .nav-btn {
         }
 
 /* Reset básico */
-
-
 * {
     box-sizing: border-box;
     margin: 0;
@@ -148,7 +150,7 @@ body {
 .hero {
     position: relative;
     width: 100%;
-    height: 100vh; /* ajusta a altura conforme o tamanho da tua imagem */
+    height: 100vh;
     overflow: hidden;
 }
 
@@ -159,7 +161,7 @@ body {
     display: block;
 }
 
-/* Degradê suave para o fundo #F9F9F9 */
+/* Degradê suave */
 .hero::after {
     content: "";
     position: absolute;
@@ -200,7 +202,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1px; /* espaço reduzido */
+    gap: 1px;
     margin: 0 auto;
     max-width: 950px;
 }
@@ -363,6 +365,83 @@ body {
 }
 
     .category-arrow:hover {
+        color: #007bff;
+    }
+
+/* --- User Badge Compact + Dropdown --- */
+.user-menu-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Badge pequeno */
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+    .user-badge:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+.user-name {
+    font-size: 0.85rem;
+    color: #000;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Avatar reduzido */
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ff4c4c;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Dropdown */
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+    z-index: 1000;
+    min-width: 150px;
+}
+
+    .user-dropdown.show {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-dropdown a {
+        padding: 10px 14px;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background 0.2s;
+    }
+
+        .user-dropdown a:hover {
+            background: #f4f4f4;
+        }
         color:   #007bff;
             
     }
