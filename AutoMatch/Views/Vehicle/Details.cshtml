@@ -1,20 +1,41 @@
 @model AutoMatch.Models.Vehicle
 @{
     ViewData["Title"] = $"{Model.Brand} {Model.Model}";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
 }
 
-<!-- Simple Header -->
-<header class="simple-header">
-    <div class="header-content">
-        <div class="logo-text">AutoMatch</div>
-        <nav class="header-nav">
-            <a href="/">Home</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact</a>
-            <a href="/Account/Login" class="signin-link">Sign In</a>
-        </nav>
+<!-- Floating Header (same as other pages) -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    <div class="user-avatar">@initial</div>
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Anuncios/Create">Create Ad</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
     </div>
-</header>
+</div>
 
 <!-- Vehicle Details Section -->
 <section class="details-section">
@@ -153,6 +174,21 @@
 
 @section Scripts {
     <script>
+        // USER DROPDOWN TOGGLE
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
         // Image navigation (para quando adicionares imagens reais)
         document.querySelector('.image-nav.prev')?.addEventListener('click', function () {
             console.log('Previous image');

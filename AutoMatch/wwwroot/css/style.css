@@ -493,46 +493,25 @@ body {
     min-width: 220px;
 }
 
-.search-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.search-input {
-    background-color: #E8E8E8;
-    border: none;
+.search-button {
+    background-color: #fff;
+    border: 1px solid #D0D0D0;
     border-radius: 5px;
-    padding: 11px 40px 11px 14px;
+    padding: 11px 18px;
     font-size: 13px;
     color: #333;
-    min-width: 180px;
-    transition: background-color 0.2s;
-}
-
-.search-input:focus {
-    outline: none;
-    background-color: #ddd;
-}
-
-.search-input::placeholder {
-    color: #666;
-}
-
-.search-btn {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    color: #333;
-    font-size: 14px;
+    min-width: 110px;
     cursor: pointer;
-    padding: 5px;
-    transition: color 0.2s;
+    transition: border-color 0.2s, background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
-.search-btn:hover {
-    color: #000;
+.search-button:hover {
+    border-color: #999;
+    background-color: #F5F5F5;
 }
 
 /* --- Vehicle Grid --- */
@@ -1222,6 +1201,16 @@ body.modal-open {
 
 .floating-header-dark .nav-btn.signin:hover {
     background-color: #333 !important;
+}
+
+/* User badge styling on light-background pages (About, Contact, Vehicle, etc.) */
+.floating-header-dark .user-badge {
+    background: #D9D9D9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.floating-header-dark .user-badge:hover {
+    background: #C4C4C4;
 }
 
 /* --- Contact Page Styles --- */
