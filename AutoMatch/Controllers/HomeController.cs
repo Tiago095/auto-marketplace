@@ -4,29 +4,20 @@ using AutoMatch.Data;
 using AutoMatch.Models;
 using AutoMatch.Services;
 
-namespace AutoMatch.Controllers
-{
-    public class HomeController : Controller
-    {
-        private readonly ILogger<HomeController> _logger;
-        private readonly AutoMatchContext _db;
-namespace AutoMatch.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly IEmailService _emailService;
+     private readonly AutoMatchContext _db;
 
-        public HomeController(ILogger<HomeController> logger, AutoMatchContext db)
+        public HomeController(ILogger<HomeController> logger, AutoMatchContext db, IEmailService emailService)
         {
             _logger = logger;
             _db = db;
-        }
-    public HomeController(ILogger<HomeController> logger, IEmailService emailService)
-    {
-        _logger = logger;
-        _emailService = emailService;
+            _emailService = emailService;
     }
+   
 
         public IActionResult Index()
         {
@@ -59,6 +50,23 @@ public class HomeController : Controller
 
     public IActionResult Contact()
     {
+        string? fullName = null;
+        string? email = null;
+
+        int? userId = HttpContext.Session.GetInt32("UserId");
+        if (userId.HasValue)
+        {
+            var user = _db.Utilizadores.FirstOrDefault(u => u.Id_User == userId.Value);
+            if (user != null)
+            {
+                fullName = user.Nome;
+                email = user.Email;
+            }
+        }
+
+        ViewBag.ContactFullName = fullName;
+        ViewBag.ContactEmail = email;
+
         return View();
     }
 
@@ -91,12 +99,5 @@ public class HomeController : Controller
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
-}
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
     }
 }

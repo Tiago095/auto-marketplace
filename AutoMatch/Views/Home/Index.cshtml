@@ -9,15 +9,13 @@
 <div class="floating-header">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
-        <button class="nav-btn">Home</button>
-        <button class="nav-btn">About</button>
-        <button class="nav-btn">Contact</button>
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
 
         @if (username == null)
         {
-            <a href="/Account/Login" class="nav-btn signin">
-                Sign In
-            </a>
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
         }
         else
         {
@@ -36,10 +34,6 @@
                 </div>
             </div>
         }
-        <a href="@Url.Action("Index", "Home")"><button class="nav-btn">Home</button></a>
-        <a href="@Url.Action("About", "Home")"><button class="nav-btn">About</button></a>
-        <a href="@Url.Action("Contact", "Home")"><button class="nav-btn">Contact</button></a>
-        <button class="nav-btn signin">Sign In</button>
     </div>
 </div>
 

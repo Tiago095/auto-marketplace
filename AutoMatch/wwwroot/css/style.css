@@ -1,6 +1,6 @@
 /* --- Floating Header (Logo + Buttons) --- */
 .floating-header {
-    position: fixed;
+    position: absolute;
     top: 25px;
     left: 0;
     right: 0;
@@ -410,6 +410,7 @@ body {
     justify-content: center;
     font-weight: 600;
     font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.18);
 }
 
 /* Dropdown */
@@ -450,7 +451,7 @@ body {
 .about-section {
     min-height: 100vh;
     background-color: #F5F5F5;
-    padding: 100px 60px 40px 60px;
+    padding: 200px 60px 0 60px;
 }
 
 .about-container {
@@ -619,6 +620,7 @@ body {
     font-size: 15px;
     color: #333;
     outline: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .form-textarea {
@@ -632,6 +634,7 @@ body {
     min-height: 100px;
     resize: none;
     font-family: 'Segoe UI', Arial, sans-serif;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .send-btn {
@@ -683,6 +686,7 @@ body {
     border-radius: 10px;
     font-size: 15px;
     color: #111;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 /* Footer */
@@ -741,4 +745,10 @@ body {
 
 .footer-divider {
     color: #111;
+}
+
+/* Readonly fields styling for contact form */
+.form-input.readonly-field[readonly] {
+    background-color: #C4C4C4;
+    cursor: not-allowed;
 }
