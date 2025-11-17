@@ -451,12 +451,12 @@ body {
 .about-section {
     min-height: 100vh;
     background-color: #F5F5F5;
-    padding: 200px 60px 0 60px;
+    padding: 80px 60px 0 60px;
 }
 
 .about-container {
     max-width: 1100px;
-    margin: 0 auto;
+    margin: 100px auto 0 auto;
 }
 
 .about-title {
@@ -546,11 +546,9 @@ body {
 
 /* --- Contact Page Styles --- */
 .contact-section {
-    min-height: 100vh;
-    background-color: #F5F5F5;
-    padding: 90px 60px 20px 60px;
-    position: relative;
+    padding: 180px 60px 20px 60px;
 }
+
 
 .contact-container {
     max-width: 1200px;
