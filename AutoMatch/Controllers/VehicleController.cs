@@ -1,76 +1,147 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using AutoMatch.Data;
 using AutoMatch.Models;
+using AutoMatch.Models.ViewModels;
+using System.Linq;
 
 namespace AutoMatch.Controllers
 {
     public class VehicleController : Controller
     {
-        // Dados de exemplo - mais tarde podes substituir por base de dados
-        private static List<Vehicle> GetSampleVehicles()
+        private readonly AutoMatchContext _db;
+
+        public VehicleController(AutoMatchContext db)
         {
-            return new List<Vehicle>
-            {
-                new Vehicle { Id = 1, Brand = "Tesla", Model = "Model 3", Year = 2020, Price = 30000, Mileage = 20000, FuelType = "Electric", Transmission = "Automatic", BodyType = "Sedan", ImageUrl = "~/images/eletric.png", Description = "Beautiful Tesla Model 3, in perfect condition and ready to turn heads. Sleek design, metallic finish, and a powerful sound that makes every drive unforgettable. Always well maintained and kept in a garage. If you're looking for a mix of style, comfort, and performance — this is the one. Serious buyers only." },
-                new Vehicle { Id = 2, Brand = "Hyundai", Model = "Creta", Year = 2019, Price = 20000, Mileage = 70000, FuelType = "Petrol", Transmission = "Automatic", BodyType = "SUV", ImageUrl = "~/images/SUV_e.png", Description = "Reliable Hyundai Creta in excellent condition. Perfect for families with spacious interior and modern features. Well maintained with full service history." },
-                new Vehicle { Id = 3, Brand = "Audi", Model = "A4", Year = 2018, Price = 25000, Mileage = 110000, FuelType = "Diesel", Transmission = "Manual", BodyType = "Sedan", ImageUrl = "~/images/sedan.png", Description = "Elegant Audi A4 with premium interior. Powerful diesel engine and smooth manual transmission. Great fuel efficiency for long distance driving." },
-                new Vehicle { Id = 4, Brand = "BMW", Model = "Series 3", Year = 2021, Price = 35000, Mileage = 15000, FuelType = "Petrol", Transmission = "Automatic", BodyType = "Sedan", ImageUrl = "~/images/sports.png", Description = "Sporty BMW Series 3 with low mileage. Dynamic driving experience with luxury comfort. All advanced safety features included." },
-                new Vehicle { Id = 5, Brand = "Tesla", Model = "Model Y", Year = 2022, Price = 45000, Mileage = 5000, FuelType = "Electric", Transmission = "Automatic", BodyType = "SUV", ImageUrl = "~/images/SUV.png", Description = "Nearly new Tesla Model Y with cutting-edge technology. Autopilot, premium sound system, and exceptional range. Like new condition." },
-                new Vehicle { Id = 6, Brand = "Audi", Model = "Q5", Year = 2020, Price = 40000, Mileage = 30000, FuelType = "Diesel", Transmission = "Automatic", BodyType = "SUV", ImageUrl = "~/images/SUV_e.png", Description = "Luxurious Audi Q5 with quattro all-wheel drive. Perfect combination of performance and comfort. Meticulously maintained with premium package." }
-            };
+            _db = db;
         }
 
         public IActionResult Results(string? brand, string? model, int? year, decimal? maxPrice, int? maxMileage, string? fuelType, string? transmission, string? bodyType, string? sort)
         {
-            var vehicles = GetSampleVehicles();
+            // Base query with active ads and their models
+            IQueryable<Anuncio> baseQuery = _db.Anuncios
+                .Include(a => a.Modelo)
+                .Where(a => a.Estado);
 
-            // Aplicar filtros
+            // Data for filters (all available brands/models on the site)
+            var availableBrands = baseQuery
+                .Select(a => a.Modelo.Marca)
+                .Distinct()
+                .OrderBy(m => m)
+                .ToList();
+
+            var brandModels = baseQuery
+                .GroupBy(a => a.Modelo.Marca)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(a => a.Modelo.NomeModelo)
+                          .Distinct()
+                          .OrderBy(n => n)
+                          .ToList()
+                );
+
+            // Apply filters to a copy of the query
+            IQueryable<Anuncio> query = baseQuery;
+
             if (!string.IsNullOrEmpty(brand))
-                vehicles = vehicles.Where(v => v.Brand.Equals(brand, StringComparison.OrdinalIgnoreCase)).ToList();
+                query = query.Where(a => a.Modelo.Marca == brand);
 
             if (!string.IsNullOrEmpty(model))
-                vehicles = vehicles.Where(v => v.Model.Equals(model, StringComparison.OrdinalIgnoreCase)).ToList();
+                query = query.Where(a => a.Modelo.NomeModelo == model);
 
             if (year.HasValue)
-                vehicles = vehicles.Where(v => v.Year == year.Value).ToList();
+                query = query.Where(a => a.Ano.Year == year.Value);
 
             if (maxPrice.HasValue)
-                vehicles = vehicles.Where(v => v.Price <= maxPrice.Value).ToList();
+                query = query.Where(a => a.Preco <= maxPrice.Value);
 
             if (maxMileage.HasValue)
-                vehicles = vehicles.Where(v => v.Mileage <= maxMileage.Value).ToList();
+                query = query.Where(a => a.Kilometros <= maxMileage.Value);
 
             if (!string.IsNullOrEmpty(fuelType))
-                vehicles = vehicles.Where(v => v.FuelType.Equals(fuelType, StringComparison.OrdinalIgnoreCase)).ToList();
+                query = query.Where(a => a.Modelo.Combustivel == fuelType);
 
             if (!string.IsNullOrEmpty(transmission))
-                vehicles = vehicles.Where(v => v.Transmission.Equals(transmission, StringComparison.OrdinalIgnoreCase)).ToList();
+            {
+                bool isAutomatic = transmission.Equals("Automatic", StringComparison.OrdinalIgnoreCase);
+                query = query.Where(a => a.Modelo.Transmissao == isAutomatic);
+            }
 
             if (!string.IsNullOrEmpty(bodyType))
-                vehicles = vehicles.Where(v => v.BodyType.Equals(bodyType, StringComparison.OrdinalIgnoreCase)).ToList();
+                query = query.Where(a => a.Modelo.Categoria == bodyType);
 
-            // Aplicar ordenação
-            vehicles = sort switch
+            // Sorting
+            query = sort switch
             {
-                "price-low-high" => vehicles.OrderBy(v => v.Price).ToList(),
-                "price-high-low" => vehicles.OrderByDescending(v => v.Price).ToList(),
-                "year-new-old" => vehicles.OrderByDescending(v => v.Year).ToList(),
-                "year-old-new" => vehicles.OrderBy(v => v.Year).ToList(),
-                "mileage-low-high" => vehicles.OrderBy(v => v.Mileage).ToList(),
-                _ => vehicles.OrderBy(v => v.Price).ToList()
+                "price-low-high" => query.OrderBy(a => a.Preco),
+                "price-high-low" => query.OrderByDescending(a => a.Preco),
+                "year-new-old" => query.OrderByDescending(a => a.Ano),
+                "year-old-new" => query.OrderBy(a => a.Ano),
+                "mileage-low-high" => query.OrderBy(a => a.Kilometros),
+                _ => query.OrderBy(a => a.Preco)
             };
 
-            return View(vehicles);
+            var vehicles = query
+                .Select(a => new Vehicle
+                {
+                    Id = a.Id_Anuncio,
+                    Brand = a.Modelo.Marca,
+                    Model = a.Modelo.NomeModelo,
+                    Year = a.Ano.Year,
+                    Price = a.Preco,
+                    Mileage = a.Kilometros,
+                    FuelType = a.Modelo.Combustivel,
+                    Transmission = a.Modelo.Transmissao ? "Automatic" : "Manual",
+                    BodyType = a.Modelo.Categoria,
+                    ImageUrl = string.Empty,
+                    Description = a.Descricao
+                })
+                .ToList();
+
+            var viewModel = new VehicleResultsViewModel
+            {
+                Vehicles = vehicles,
+                AvailableBrands = availableBrands,
+                BrandModels = brandModels,
+                SelectedBrand = brand,
+                SelectedModel = model,
+                SelectedYear = year,
+                SelectedMaxPrice = maxPrice,
+                SelectedMaxMileage = maxMileage,
+                SelectedFuelType = fuelType,
+                SelectedTransmission = transmission,
+                SelectedBodyType = bodyType,
+                SelectedSort = sort
+            };
+
+            return View(viewModel);
         }
 
         public IActionResult Details(int id)
         {
-            var vehicles = GetSampleVehicles();
-            var vehicle = vehicles.FirstOrDefault(v => v.Id == id);
+            var anuncio = _db.Anuncios
+                .Include(a => a.Modelo)
+                .FirstOrDefault(a => a.Id_Anuncio == id && a.Estado);
 
-            if (vehicle == null)
+            if (anuncio == null)
             {
                 return NotFound();
             }
+
+            var vehicle = new Vehicle
+            {
+                Id = anuncio.Id_Anuncio,
+                Brand = anuncio.Modelo.Marca,
+                Model = anuncio.Modelo.NomeModelo,
+                Year = anuncio.Ano.Year,
+                Price = anuncio.Preco,
+                Mileage = anuncio.Kilometros,
+                FuelType = anuncio.Modelo.Combustivel,
+                Transmission = anuncio.Modelo.Transmissao ? "Automatic" : "Manual",
+                BodyType = anuncio.Modelo.Categoria,
+                ImageUrl = string.Empty,
+                Description = anuncio.Descricao
+            };
 
             return View(vehicle);
         }

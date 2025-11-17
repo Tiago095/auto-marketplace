@@ -1,4 +1,5 @@
-@model List<AutoMatch.Models.Vehicle>
+@using System.Text.Json
+@model AutoMatch.Models.ViewModels.VehicleResultsViewModel
 @{
     ViewData["Title"] = "Vehicle Results";
 
@@ -49,69 +50,77 @@
                 <div class="filter-row">
                     <select name="brand" id="brandFilter" class="filter-select">
                         <option value="">Brand</option>
-                        <option value="Tesla">Tesla</option>
-                        <option value="BMW">BMW</option>
-                        <option value="Audi">Audi</option>
-                        <option value="Hyundai">Hyundai</option>
+                        @foreach (var b in Model.AvailableBrands)
+                        {
+                            <option value="@b" selected="@(b == Model.SelectedBrand ? "selected" : null)">@b</option>
+                        }
                     </select>
 
                     <select name="model" id="modelFilter" class="filter-select">
                         <option value="">Model</option>
+                        @if (!string.IsNullOrEmpty(Model.SelectedBrand) &&
+                             Model.BrandModels.TryGetValue(Model.SelectedBrand, out var modelsForBrand))
+                        {
+                            foreach (var m in modelsForBrand)
+                            {
+                                <option value="@m" selected="@(m == Model.SelectedModel ? "selected" : null)">@m</option>
+                            }
+                        }
                     </select>
 
                     <select name="year" class="filter-select">
                         <option value="">Year</option>
                         @for (int y = 2025; y >= 2015; y--)
                         {
-                            <option value="@y">@y</option>
+                            <option value="@y" selected="@(Model.SelectedYear == y ? "selected" : null)">@y</option>
                         }
                     </select>
 
                     <select name="maxPrice" class="filter-select">
                         <option value="">Price</option>
-                        <option value="20000">Up to 20,000€</option>
-                        <option value="30000">Up to 30,000€</option>
-                        <option value="40000">Up to 40,000€</option>
-                        <option value="50000">Up to 50,000€</option>
+                        <option value="20000" selected="@(Model.SelectedMaxPrice == 20000 ? "selected" : null)">Up to 20,000€</option>
+                        <option value="30000" selected="@(Model.SelectedMaxPrice == 30000 ? "selected" : null)">Up to 30,000€</option>
+                        <option value="40000" selected="@(Model.SelectedMaxPrice == 40000 ? "selected" : null)">Up to 40,000€</option>
+                        <option value="50000" selected="@(Model.SelectedMaxPrice == 50000 ? "selected" : null)">Up to 50,000€</option>
                     </select>
 
                     <select name="sort" class="filter-select sort-select">
-                        <option value="price-low-high">Sort by: Price (Low-High)</option>
-                        <option value="price-high-low">Price (High-Low)</option>
-                        <option value="year-new-old">Year (New-Old)</option>
-                        <option value="year-old-new">Year (Old-New)</option>
-                        <option value="mileage-low-high">Mileage (Low-High)</option>
+                        <option value="price-low-high" selected="@(Model.SelectedSort == "price-low-high" || string.IsNullOrEmpty(Model.SelectedSort) ? "selected" : null)">Sort by: Price (Low-High)</option>
+                        <option value="price-high-low" selected="@(Model.SelectedSort == "price-high-low" ? "selected" : null)">Price (High-Low)</option>
+                        <option value="year-new-old" selected="@(Model.SelectedSort == "year-new-old" ? "selected" : null)">Year (New-Old)</option>
+                        <option value="year-old-new" selected="@(Model.SelectedSort == "year-old-new" ? "selected" : null)">Year (Old-New)</option>
+                        <option value="mileage-low-high" selected="@(Model.SelectedSort == "mileage-low-high" ? "selected" : null)">Mileage (Low-High)</option>
                     </select>
                 </div>
 
                 <div class="filter-row">
                     <select name="maxMileage" class="filter-select">
                         <option value="">Mileage</option>
-                        <option value="50000">Up to 50,000 km</option>
-                        <option value="100000">Up to 100,000 km</option>
-                        <option value="150000">Up to 150,000 km</option>
+                        <option value="50000" selected="@(Model.SelectedMaxMileage == 50000 ? "selected" : null)">Up to 50,000 km</option>
+                        <option value="100000" selected="@(Model.SelectedMaxMileage == 100000 ? "selected" : null)">Up to 100,000 km</option>
+                        <option value="150000" selected="@(Model.SelectedMaxMileage == 150000 ? "selected" : null)">Up to 150,000 km</option>
                     </select>
 
                     <select name="fuelType" class="filter-select">
                         <option value="">Fuel Type</option>
-                        <option value="Electric">Electric</option>
-                        <option value="Petrol">Petrol</option>
-                        <option value="Diesel">Diesel</option>
-                        <option value="Hybrid">Hybrid</option>
+                        <option value="Electric" selected="@(Model.SelectedFuelType == "Electric" ? "selected" : null)">Electric</option>
+                        <option value="Petrol" selected="@(Model.SelectedFuelType == "Petrol" ? "selected" : null)">Petrol</option>
+                        <option value="Diesel" selected="@(Model.SelectedFuelType == "Diesel" ? "selected" : null)">Diesel</option>
+                        <option value="Hybrid" selected="@(Model.SelectedFuelType == "Hybrid" ? "selected" : null)">Hybrid</option>
                     </select>
 
                     <select name="transmission" class="filter-select">
                         <option value="">Transmission</option>
-                        <option value="Automatic">Automatic</option>
-                        <option value="Manual">Manual</option>
+                        <option value="Automatic" selected="@(Model.SelectedTransmission == "Automatic" ? "selected" : null)">Automatic</option>
+                        <option value="Manual" selected="@(Model.SelectedTransmission == "Manual" ? "selected" : null)">Manual</option>
                     </select>
 
                     <select name="bodyType" class="filter-select">
                         <option value="">Body Type</option>
-                        <option value="Sedan">Sedan</option>
-                        <option value="SUV">SUV</option>
-                        <option value="Coupe">Coupe</option>
-                        <option value="Hatchback">Hatchback</option>
+                        <option value="Sedan" selected="@(Model.SelectedBodyType == "Sedan" ? "selected" : null)">Sedan</option>
+                        <option value="SUV" selected="@(Model.SelectedBodyType == "SUV" ? "selected" : null)">SUV</option>
+                        <option value="Coupe" selected="@(Model.SelectedBodyType == "Coupe" ? "selected" : null)">Coupe</option>
+                        <option value="Hatchback" selected="@(Model.SelectedBodyType == "Hatchback" ? "selected" : null)">Hatchback</option>
                     </select>
 
                     <button type="submit" class="search-button">
@@ -124,9 +133,9 @@
 
         <!-- Vehicle Grid -->
         <div class="vehicle-grid">
-            @if (Model != null && Model.Any())
+            @if (Model.Vehicles != null && Model.Vehicles.Any())
             {
-                @foreach (var vehicle in Model)
+                @foreach (var vehicle in Model.Vehicles)
                 {
                     <a href="@Url.Action("Details", "Vehicle", new { id = vehicle.Id })" class="vehicle-card-link">
                         <div class="vehicle-card">
@@ -174,13 +183,8 @@
             }
         });
 
-        // Brand-Model dependency
-        const models = {
-            "Tesla": ["Model S", "Model 3", "Model X", "Model Y"],
-            "BMW": ["Series 3", "Series 5", "X5", "X7"],
-            "Audi": ["A3", "A4", "Q5", "Q7"],
-            "Hyundai": ["Creta", "i20", "Tucson", "Santa Fe"]
-        };
+        // Brand-Model dependency (loaded from database)
+        const models = @Html.Raw(JsonSerializer.Serialize(Model.BrandModels));
 
         const brandFilter = document.getElementById("brandFilter");
         const modelFilter = document.getElementById("modelFilter");
