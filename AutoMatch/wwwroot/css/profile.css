@@ -236,3 +236,153 @@
         width: 100%;
     }
 }
+
+.profile-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+/* Overlay bloqueia a página */
+#editOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Hidden state */
+.overlay-hidden {
+    display: none;
+}
+
+/* Modal central */
+.edit-modal {
+    background: #fff;
+    padding: 35px;
+    border-radius: 20px;
+    width: 380px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+}
+
+    .edit-modal input,
+    .edit-modal select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.save-btn {
+    background: #111;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+}
+
+.cancel-btn {
+    background: #c62828;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+}
+
+.overlay-hidden {
+    display: none !important;
+}
+
+#editOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.error-box {
+    background: #ffb3b3;
+    padding: 10px;
+    border-radius: 6px;
+    color: #700;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.success-box {
+    background: #b3ffcc;
+    padding: 10px;
+    border-radius: 6px;
+    color: #075;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.modal-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-label {
+    margin-top: 10px;
+    font-weight: 600;
+    color: #444;
+    display: block;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.cancel-btn {
+    background-color: #d9534f;
+    color: white;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+}

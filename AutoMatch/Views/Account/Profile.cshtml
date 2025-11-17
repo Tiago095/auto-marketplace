@@ -1,6 +1,16 @@
 ﻿@model AutoMatch.Models.ViewModels.ProfileViewModel
+
 @{
     ViewData["Title"] = "Profile";
+}
+
+@if (TempData["EditError"] != null)
+{
+    <script>
+        window.onload = function () {
+            openEditModal();
+        };
+    </script>
 }
 
 <!-- PROFILE PAGE HTML -->
@@ -48,16 +58,115 @@
 
 
 
-        <button class="btn edit-btn">
+        <!-- BOTÃO EDIT EXISTENTE -->
+        <button class="btn edit-btn" onclick="openEditModal()">
             <i class="fa fa-pencil"></i> Edit Profile
-        </button>
-        <button class="btn delete-btn">
-            <i class="fa fa-trash"></i> Delete Account
-        </button>
+            </button>
+
+        <!-- MODAL -->
+        <div id="editOverlay" class="overlay-hidden">
+    <div class="edit-modal">
+
+        <h2 class="modal-title">Editar Perfil</h2>
+
+        @if (TempData["EditError"] != null)
+        {
+            <div class="error-box">@TempData["EditError"]</div>
+        }
+
+        @if (TempData["EditSuccess"] != null)
+        {
+            <div class="success-box">@TempData["EditSuccess"]</div>
+        }
+
+        <form asp-action="EditProfile" asp-controller="Account" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <!-- FOTO -->
+            <label class="form-label">Foto de Perfil</label>
+            <input type="file" name="Photo" accept="image/*" class="profile-input" />
+
+            <!-- USERNAME -->
+            <label class="form-label">Username</label>
+            <input name="UserName" class="profile-input" value="@Model.UserName" required />
+
+            <!-- TELEFONE -->
+            <label class="form-label">Telefone</label>
+            <input name="Phone" class="profile-input" maxlength="9" value="@Model.Phone" placeholder="9 dígitos" />
+
+            <!-- PASSWORD -->
+            <label class="form-label">Nova Password (opcional)</label>
+            <input name="Password" type="password" class="profile-input" placeholder="6 a 12 caracteres" />
+
+            <!-- LOCALIDADE -->
+            <label class="form-label">Localidade</label>
+            <select id="postalSelect" name="SelectedCodigoPostal" class="profile-input" onchange="onPostalChange()" required>
+                <option value="">-- Escolhe localidade --</option>
+                        @foreach (var a in ViewBag.PostalList)
+                        {
+                            var isSelected = Model.Address != null && Model.Address == a.Localidade;
+
+                            if (isSelected)
+                            {
+                                <option value="@a.Codigo_Postal" data-localidade="@a.Codigo_Postal" selected>@a.Localidade</option>
+                            }
+                            else
+                            {
+                                <option value="@a.Codigo_Postal" data-localidade="@a.Codigo_Postal">@a.Localidade</option>
+                            }
+                        }
+
+            </select>
+
+            <!-- CÓDIGO POSTAL -->
+            <label class="form-label">Código Postal</label>
+            <input id="postalCode" name="SelectedLocalidade" class="profile-input" 
+                   value="@Model.Address" readonly />
+
+            <!-- BOTÕES -->
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button type="submit" class="btn save-btn">Guardar</button>
+                <button type="button" class="btn cancel-btn" onclick="closeEditModal()">Cancelar</button>
+            </div>
+
+        </form>
+    </div>
 </div>
 
 
+<script>
+function openEditModal() {
+    var sel = document.getElementById("postalSelect");
+    if(sel && sel.selectedIndex>0){
+        var code = sel.options[sel.selectedIndex].value;
+        document.getElementById("postalCode").value = code;
+    }
+    document.getElementById("editOverlay").classList.remove("overlay-hidden");
+    document.body.style.overflow = "hidden";
+}
 
+function closeEditModal() {
+    document.getElementById("editOverlay").classList.add("overlay-hidden");
+    document.body.style.overflow = "";
+}
+
+function onPostalChange() {
+    var sel = document.getElementById("postalSelect");
+    var code = sel.options[sel.selectedIndex].value;
+    var local = sel.options[sel.selectedIndex].dataset.localidade;
+    document.getElementById("postalCode").value = local;
+}
+</script>
+
+
+        <form asp-controller="Account" asp-action="DeleteAccount" method="post"
+              onsubmit="return confirm('Tens a certeza que queres apagar a tua conta? Esta ação é irreversível.');">
+            <button type="submit" class="btn delete-btn">
+                <i class="fa fa-trash"></i> Delete Account
+            </button>
+        </form>
+
+</div>
 
 <!-- RIGHT PANEL -->
 <div class="info-panel">
@@ -122,3 +231,4 @@
 
 
 </div>
+

@@ -24,7 +24,6 @@ namespace AutoMatch.Controllers
         }
 
         // ===== POST LOGIN =====
-        // ===== POST LOGIN =====
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
@@ -180,6 +179,8 @@ namespace AutoMatch.Controllers
             var comprador = _db.Compradores.FirstOrDefault(c => c.Id_User == user.Id_User);
             bool isSeller = _db.Vendedores.Any(v => v.Id_User == userId);
 
+            ViewBag.PostalList = _db.CodigoPostais.OrderBy(c => c.Localidade).ToList();
+
             var vm = new ProfileViewModel
             {
                 Id_User = user.Id_User,
@@ -222,6 +223,107 @@ namespace AutoMatch.Controllers
             return View(vm);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return RedirectToAction("Login");
+
+            var user = await _db.Utilizadores.FirstOrDefaultAsync(u => u.Id_User == userId);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            // Apagar comprador associado
+            var comprador = await _db.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
+            if (comprador != null)
+                _db.Compradores.Remove(comprador);
+
+            // Apagar vendedor se existir
+            var vendedor = await _db.Vendedores.FirstOrDefaultAsync(v => v.Id_User == userId);
+            if (vendedor != null)
+                _db.Vendedores.Remove(vendedor);
+
+            // Apagar conta do utilizador
+            _db.Utilizadores.Remove(user);
+            await _db.SaveChangesAsync();
+
+            // Limpa sessão e cookies
+            HttpContext.Session.Clear();
+            Response.Cookies.Delete("AutoMatch_UserId");
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(EditProfileViewModel model)
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var user = await _db.Utilizadores.FirstOrDefaultAsync(u => u.Id_User == userId);
+            var comprador = await _db.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
+
+            if (user == null) return RedirectToAction("Login");
+
+
+            // -------- VALIDAR USERNAME --------
+            if (!string.IsNullOrWhiteSpace(model.UserName) && model.UserName != user.UserName)
+            {
+                bool usernameExists = await _db.Utilizadores
+                    .AnyAsync(u => u.UserName == model.UserName);
+
+                if (usernameExists)
+                {
+                    TempData["EditError"] = "Este nome de utilizador já está em uso.";
+                    return RedirectToAction("Profile");
+                }
+
+                user.UserName = model.UserName;
+            }
+
+
+            // -------- VALIDAR PASSWORD --------
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                if (model.Password.Length < 6 || model.Password.Length > 12)
+                {
+                    TempData["EditError"] = "A password deve ter entre 6 e 12 caracteres.";
+                    return RedirectToAction("Profile");
+                }
+
+                user.Senha = HashPassword(model.Password);
+            }
+
+
+            // -------- ATUALIZAR COMPRADOR --------
+            if (comprador != null)
+            {
+                comprador.Contactos = model.Phone ?? comprador.Contactos;
+                comprador.Rua = model.SelectedLocalidade;
+                comprador.Codigo_Postal = model.SelectedCodigoPostal;
+            }
+
+            // -------- VALIDAR TELEFONE --------
+            if (!string.IsNullOrWhiteSpace(model.Phone))
+            {
+                if (model.Phone.Length != 9 || !model.Phone.All(char.IsDigit))
+                {
+                    TempData["EditError"] = "O número de telefone deve conter exatamente 9 dígitos.";
+                    return RedirectToAction("Profile");
+                }
+
+                comprador.Contactos = model.Phone;
+            }
+
+
+            await _db.SaveChangesAsync();
+
+            TempData["EditSuccess"] = "Perfil atualizado com sucesso.";
+            return RedirectToAction("Profile");
+        }
 
     }
 }
