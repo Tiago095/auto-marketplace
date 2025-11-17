@@ -104,7 +104,8 @@
                 <option value="">-- Escolhe localidade --</option>
                         @foreach (var a in ViewBag.PostalList)
                         {
-                            var isSelected = Model.Address != null && Model.Address == a.Localidade;
+                            // Usa o código postal já guardado para marcar a opção selecionada
+                            var isSelected = !string.IsNullOrEmpty(Model.PostalCode) && Model.PostalCode == a.Codigo_Postal;
 
                             if (isSelected)
                             {
