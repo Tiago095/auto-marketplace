@@ -1,0 +1,124 @@
+﻿@model AutoMatch.Models.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<!-- PROFILE PAGE HTML -->
+<link rel="stylesheet" href="~/css/profile.css" />
+
+<header class="top-nav">
+    <div class="nav-left">
+        <span class="logo">AutoMatch</span>
+    </div>
+
+    <div class="nav-right">
+        <a asp-controller="Home" asp-action="Index" class="nav-btn">Home</a>
+        <a asp-controller="Home" asp-action="About" class="nav-btn">About</a>
+        <a asp-controller="Home" asp-action="Contact" class="nav-btn">Contact</a>
+
+        <!-- Sign Out usando o teu Logout -->
+        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+            <button type="submit" class="nav-btn signout">Sign Out</button>
+        </form>
+    </div>
+</header>
+
+
+<div class="profile-container">
+
+
+    <!-- LEFT PROFILE CARD -->
+    <div class="profile-card">
+        <div class="avatar-wrapper">
+            @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+            {
+                <img src="@Model.ProfileImageUrl" class="avatar" />
+            }
+            else
+            {
+                <div class="avatar placeholder">@Model.UserName.Substring(0, 1).ToUpper()</div>
+            }
+        </div>
+
+
+       <h2>@Model.UserName</h2>
+       <p>@Model.FullName</p>
+       <p>@Model.Email</p>
+        <p>@(Model.IsSeller ? "Comprador/Vendedor" : "Comprador")</p>
+
+
+
+        <button class="btn edit-btn">
+            <i class="fa fa-pencil"></i> Edit Profile
+        </button>
+        <button class="btn delete-btn">
+            <i class="fa fa-trash"></i> Delete Account
+        </button>
+</div>
+
+
+
+
+<!-- RIGHT PANEL -->
+<div class="info-panel">
+
+
+    <h2>Personal Information</h2>
+
+
+    <div class="info-row">
+        <strong>Address</strong>
+        <span>@Model.Address</span>
+    </div>
+
+
+    <div class="info-row">
+        <strong>Phone</strong>
+        <span>@Model.Phone</span>
+    </div>
+
+
+    <div class="info-row password-row">
+        <strong>Password</strong>
+        <span>************</span>
+    </div>
+
+
+    <h2 class="section-title">Notifications & Preferences</h2>
+
+
+    <label class="check-item"><input type="checkbox" /> Receive Notifications</label><br>
+    <label class="check-item"><input type="checkbox" /> Allow promotional emails</label><br><br>
+
+
+    <select class="select-box">
+        <option>Choose notification preference...</option>
+    </select>
+
+
+    <h2 class="section-title">Purchase & Listing Summary</h2>
+
+
+    <div class="tabs">
+        <button class="tab-btn active">My Orders</button>
+        <button class="tab-btn">My Listings</button>
+    </div>
+
+
+    <div class="car-list">
+        @foreach (var order in Model.Orders)
+        {
+            @*@<div class="car-box">
+                <img src="@order.Image" />
+                <strong>@order.Name</strong><br>
+                <small>@order.Date.ToString("dd MMM yyyy")</small><br>
+                <span class="status">@order.Status</span>
+            </div>*@
+        }
+    </div>
+
+
+</div>
+
+
+</div>

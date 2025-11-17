@@ -167,5 +167,61 @@ namespace AutoMatch.Controllers
             var hashed = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(hashed);
         }
+
+        // PROFILE PAGE
+        public IActionResult Profile()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login");
+
+            var user = _db.Utilizadores.FirstOrDefault(u => u.Id_User == userId);
+            if (user == null) return RedirectToAction("Login");
+
+            var comprador = _db.Compradores.FirstOrDefault(c => c.Id_User == user.Id_User);
+            bool isSeller = _db.Vendedores.Any(v => v.Id_User == userId);
+
+            var vm = new ProfileViewModel
+            {
+                Id_User = user.Id_User,
+                UserName = user.UserName,
+                FullName = user.Nome,
+                Email = user.Email,
+                ProfileImageUrl = !string.IsNullOrEmpty(user.ProfileImageUrl)
+                    ? user.ProfileImageUrl
+                    : $"https://ui-avatars.com/api/?name={user.UserName}&background=111&color=fff",
+                IsSeller = isSeller,
+
+                // From comprador table
+                Address = comprador?.Rua ?? "Not defined",
+                PostalCode = comprador?.Codigo_Postal ?? "0000-000",
+                Phone = comprador?.Contactos ?? "Not defined",
+
+                //Orders = _db.Encomendas
+                //    .Where(e => e.Id_User == user.Id_User)
+                //    .Select(e => new CarOrderViewModel
+                //    {
+                //        Name = e.Titulo,
+                //        ImageUrl = e.Imagem,
+                //        Date = e.Data.ToString("dd/MM/yyyy"),
+                //        Status = e.Estado
+                //    })
+                //    .ToList(),
+
+                //Listings = _db.Listings
+                //    .Where(a => a.Id_User == user.Id_User)
+                //    .Select(a => new CarListingViewModel
+                //    {
+                //        Name = a.Titulo,
+                //        ImageUrl = a.Imagem,
+                //        CreatedAt = a.DataCriacao.ToString("dd/MM/yyyy"),
+                //        State = a.Estado
+                //    })
+                //    .ToList()
+            };
+
+            return View(vm);
+        }
+
+
     }
 }

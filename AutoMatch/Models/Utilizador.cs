@@ -1,4 +1,4 @@
-﻿    using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace AutoMatch.Models
 {
@@ -22,5 +22,9 @@ namespace AutoMatch.Models
 
         [Required, StringLength(50)]
         public string Senha { get; set; }
+
+        // NOVA PROPRIEDADE (opcional / nullable)
+        [StringLength(200)]
+        public string? ProfileImageUrl { get; set; }    // aceita null
     }
 }
