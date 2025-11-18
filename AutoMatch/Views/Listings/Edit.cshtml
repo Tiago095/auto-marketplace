@@ -1,0 +1,192 @@
+@model AutoMatch.Models.ViewModel.CreateListingViewModel
+@{
+    ViewData["Title"] = "Edit Listing";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+
+<!-- Top navbar (igual à MyListings) -->
+<div class="custom-navbar">
+    <div class="navbar-content">
+        <div class="logo">AutoMatch</div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+
+            @if (username == null)
+            {
+                <a href="/Account/Login" class="signin-btn">Sign In</a>
+            }
+            else
+            {
+                <div class="user-menu-container">
+                    <div class="user-badge" id="userMenuBtn">
+                        <span class="user-name">@username</span>
+                        <div class="user-avatar">@initial</div>
+                    </div>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/Listings/MyListings">My Listings</a>
+                        <a href="/Dashboard/Index">Dashboard</a>
+                        <a href="/Account/Logout" style="color: red;">Logout</a>
+                    </div>
+                </div>
+            }
+        </nav>
+    </div>
+</div>
+
+<!-- Painel escuro para o formulário -->
+<div class="mylistings-wrapper">
+    <div class="mylistings-panel">
+        <div class="mylistings-header">
+            <h2 class="mylistings-title">Edit Listing</h2>
+            <a href="/Listings/MyListings" class="mylistings-add-btn">Back to My Listings</a>
+        </div>
+
+        <div class="createlisting-container">
+            <div class="createlisting-preview">
+                <div class="mylistings-card">
+                    <div class="mylistings-image">
+                        <img src="~/images/eletric.png" alt="Preview" />
+                    </div>
+                    <div class="mylistings-main">
+                        <div class="mylistings-info">
+                            <div class="mylistings-car-title">@Model.Title</div>
+                            <div class="mylistings-car-price">@Model.Price.ToString("N0") €</div>
+                        </div>
+                        <div class="mylistings-actions">
+                            <button class="mylistings-btn edit" disabled>Edit</button>
+                            <button class="mylistings-btn delete" disabled>Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="createlisting-form-wrapper">
+                <form asp-action="Edit" asp-controller="Listings" asp-route-id="@Model.Id" method="post" class="createlisting-form">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="createlisting-row">
+                        <label asp-for="Title"></label>
+                        <input asp-for="Title" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="createlisting-row two-cols">
+                        <div>
+                            <label asp-for="Price"></label>
+                            <input asp-for="Price" />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Year"></label>
+                            <input asp-for="Year" />
+                            <span asp-validation-for="Year" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="createlisting-row two-cols">
+                        <div>
+                            <label asp-for="Kilometros"></label>
+                            <input asp-for="Kilometros" />
+                            <span asp-validation-for="Kilometros" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Matricula"></label>
+                            <input asp-for="Matricula" />
+                            <span asp-validation-for="Matricula" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="createlisting-row">
+                        <label asp-for="Localizacao"></label>
+                        <input asp-for="Localizacao" />
+                        <span asp-validation-for="Localizacao" class="text-danger"></span>
+                    </div>
+
+                    <div class="createlisting-row">
+                        <label asp-for="Descricao"></label>
+                        <textarea asp-for="Descricao" rows="4"></textarea>
+                        <span asp-validation-for="Descricao" class="text-danger"></span>
+                    </div>
+
+                    <hr />
+
+                    <div class="vehicle-docs-section">
+                        <div class="createlisting-row">
+                            <h4 style="color:white; font-size:1rem;">Vehicle & Documents details</h4>
+                        </div>
+
+                        <div class="createlisting-row two-cols">
+                            <div>
+                                <label asp-for="Vin"></label>
+                                <input asp-for="Vin" />
+                                <span asp-validation-for="Vin" class="text-danger"></span>
+                            </div>
+                            <div>
+                                <label asp-for="NumeroProprietarios"></label>
+                                <input asp-for="NumeroProprietarios" />
+                                <span asp-validation-for="NumeroProprietarios" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="createlisting-row">
+                            <label asp-for="InspecaoValidaAte"></label>
+                            <input asp-for="InspecaoValidaAte" />
+                            <span asp-validation-for="InspecaoValidaAte" class="text-danger"></span>
+                        </div>
+
+                        <div class="createlisting-row">
+                            <label asp-for="TemHistoricoManutencao"></label>
+                            <input asp-for="TemHistoricoManutencao" type="checkbox" />
+                        </div>
+
+                        <div class="createlisting-row">
+                            <label asp-for="DocRegistoPropriedade"></label>
+                            <input asp-for="DocRegistoPropriedade" type="checkbox" />
+                        </div>
+
+                        <div class="createlisting-row">
+                            <label asp-for="DocInspecao"></label>
+                            <input asp-for="DocInspecao" type="checkbox" />
+                        </div>
+
+                        <div class="createlisting-row">
+                            <label asp-for="DocSeguro"></label>
+                            <input asp-for="DocSeguro" type="checkbox" />
+                        </div>
+                    </div>
+
+                    <div class="createlisting-actions-bottom">
+                        <button type="submit" class="createlisting-submit">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Dropdown do utilizador
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+    </script>
+}
