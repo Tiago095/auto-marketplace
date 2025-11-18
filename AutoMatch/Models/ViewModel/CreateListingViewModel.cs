@@ -8,7 +8,13 @@ namespace AutoMatch.Models.ViewModel
 
         [Required]
         [StringLength(50)]
-        public string Title { get; set; }
+        [Display(Name = "Brand")]
+        public string Marca { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Display(Name = "Model")]
+        public string Modelo { get; set; }
 
         [Required]
         [Range(0, int.MaxValue)]
@@ -19,12 +25,12 @@ namespace AutoMatch.Models.ViewModel
         public int Year { get; set; }
 
         [Required]
-        [Range(0, int.MaxValue)]
-        public int Kilometros { get; set; }
+        [StringLength(50)]
+        [Display(Name = "Type")]
+        public string Tipo { get; set; }
 
-        [Required]
-        [StringLength(8)]
-        public string Matricula { get; set; }
+        [Range(0, int.MaxValue)]
+        public int? Kilometros { get; set; }
 
         [Required]
         [StringLength(50)]

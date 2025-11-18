@@ -57,7 +57,13 @@
                 {
                     <div class="mylistings-card">
                         <div class="mylistings-image">
-                            <img src="~/images/eletric.png" alt="@anuncio.Titulo" />
+                            @{
+                                var firstImage = anuncio.Imagens?.FirstOrDefault();
+                                var imagePath = firstImage != null
+                                    ? Url.Content("~/images/listings/" + firstImage.CaminhoImagem)
+                                    : Url.Content("~/images/eletric.png");
+                            }
+                            <img src="@imagePath" alt="@anuncio.Titulo" />
                         </div>
                         <div class="mylistings-main">
                             <div class="mylistings-info">

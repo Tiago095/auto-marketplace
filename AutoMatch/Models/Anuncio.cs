@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -41,5 +42,7 @@ namespace AutoMatch.Models
         public Vendedor Vendedor { get; set; }
         public Administrador Administrador { get; set; }
         public Modelo Modelo { get; set; }
+
+        public ICollection<Imagens> Imagens { get; set; } = new List<Imagens>();
     }
 }

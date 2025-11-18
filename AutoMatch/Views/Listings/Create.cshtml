@@ -38,136 +38,151 @@
     </div>
 </div>
 
-<!-- Painel escuro para o formulário -->
-<div class="mylistings-wrapper">
-    <div class="mylistings-panel">
-        <div class="mylistings-header">
-            <h2 class="mylistings-title">Add New Listing</h2>
-            <a href="/Listings/MyListings" class="mylistings-add-btn">Back to My Listings</a>
+<!-- Create Car Listing layout -->
+<div class="create-page-wrapper">
+    <div class="create-card">
+        <div class="create-card-header">
+            <h1 class="create-card-title">Create Car Listing</h1>
         </div>
 
-        <div class="createlisting-container">
-            <div class="createlisting-preview">
-                <div class="mylistings-card">
-                    <div class="mylistings-image">
-                        <img src="~/images/eletric.png" alt="Preview" />
-                    </div>
-                    <div class="mylistings-main">
-                        <div class="mylistings-info">
-                            <div class="mylistings-car-title">Sample Car</div>
-                            <div class="mylistings-car-price">30.000 €</div>
+        <form asp-action="Create" asp-controller="Listings" method="post" class="create-form" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="create-card-body">
+                <div class="create-card-left">
+                    <h3 class="create-section-title">Car</h3>
+
+                    <div class="create-row-two">
+                        <div class="create-field">
+                            <label asp-for="Marca"></label>
+                            <select asp-for="Marca" id="brandSelect" class="create-input create-select">
+                                <option value="">Brand</option>
+                                @foreach (var marca in (IEnumerable<string>)ViewBag.Marcas)
+                                {
+                                    <option value="@marca">@marca</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Marca" class="text-danger"></span>
                         </div>
-                        <div class="mylistings-actions">
-                            <button class="mylistings-btn edit" disabled>Edit</button>
-                            <button class="mylistings-btn delete" disabled>Delete</button>
+                        <div class="create-field">
+                            <label asp-for="Modelo"></label>
+                            <select asp-for="Modelo" id="modelSelect" class="create-input create-select" disabled>
+                                <option value="">Model</option>
+                                @foreach (var m in (IEnumerable<AutoMatch.Models.Modelo>)ViewBag.TodosModelos)
+                                {
+                                    <option value="@m.NomeModelo" data-marca="@m.Marca">@m.NomeModelo</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Modelo" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="create-row-two">
+                        <div class="create-field">
+                            <label asp-for="Tipo"></label>
+                            <select asp-for="Tipo" class="create-input create-select">
+                                <option value="">Type</option>
+                                @foreach (var tipo in (IEnumerable<string>)ViewBag.Tipos)
+                                {
+                                    <option value="@tipo">@tipo</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Tipo" class="text-danger"></span>
+                        </div>
+                        <div class="create-field">
+                            <label>Transmission</label>
+                            <select name="Transmission" class="create-input create-select">
+                                <option value="">Transmission</option>
+                                <option value="automatic">Automatic</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="create-row-two">
+                        <div class="create-field">
+                            <label asp-for="Price"></label>
+                            <input asp-for="Price" class="create-input" placeholder="30000" />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+                        <div class="create-field">
+                            <label asp-for="Year"></label>
+                            <input asp-for="Year" class="create-input" placeholder="2023" />
+                            <span asp-validation-for="Year" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="create-field">
+                        <label asp-for="Localizacao"></label>
+                        <input asp-for="Localizacao" class="create-input" placeholder="Lisbon" />
+                        <span asp-validation-for="Localizacao" class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <div class="create-card-right">
+                    <div class="photos-panel">
+                        <input type="file" id="photoInput" name="Photos" multiple accept="image/*" hidden />
+                        <div class="photos-stack">
+                            <div class="photo-frame frame-back">
+                                <img id="photoPreview1" class="photo-preview" />
+                            </div>
+                            <div class="photo-frame frame-middle">
+                                <img id="photoPreview2" class="photo-preview" />
+                            </div>
+                            <div class="photo-frame frame-front">
+                                <img id="photoPreview3" class="photo-preview" />
+                            </div>
+                        </div>
+                        <div class="photos-label">Photos</div>
+                        <div class="photos-controls">
+                            <button type="button" class="photos-btn" id="addPhotoBtn">+</button>
+                            <button type="button" class="photos-btn">-</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="createlisting-form-wrapper">
-                <form asp-action="Create" asp-controller="Listings" method="post" class="createlisting-form">
-                    @Html.AntiForgeryToken()
+            <div class="create-desc-docs-row">
+                <div class="create-field">
+                    <label asp-for="Descricao"></label>
+                    <textarea asp-for="Descricao" rows="5" class="create-input create-textarea" placeholder="Short description of the car..."></textarea>
+                    <span asp-validation-for="Descricao" class="text-danger"></span>
+                </div>
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                    <div class="createlisting-row">
-                        <label asp-for="Title"></label>
-                        <input asp-for="Title" placeholder="Aston Martin DB12" />
-                        <span asp-validation-for="Title" class="text-danger"></span>
-                    </div>
-
-                    <div class="createlisting-row two-cols">
-                        <div>
-                            <label asp-for="Price"></label>
-                            <input asp-for="Price" placeholder="30000" />
-                            <span asp-validation-for="Price" class="text-danger"></span>
+                <div class="create-documents-section">
+                    <h3 class="create-section-title">Documents</h3>
+                    <div class="create-documents-row">
+                        <div class="create-field">
+                            <label>Type</label>
+                            <select name="DocumentType" class="create-input create-select">
+                                <option value="">Type</option>
+                                <option value="registration">Registration</option>
+                                <option value="inspection">Inspection</option>
+                                <option value="insurance">Insurance</option>
+                            </select>
                         </div>
-                        <div>
-                            <label asp-for="Year"></label>
-                            <input asp-for="Year" placeholder="2023" />
-                            <span asp-validation-for="Year" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="createlisting-row two-cols">
-                        <div>
-                            <label asp-for="Kilometros"></label>
-                            <input asp-for="Kilometros" placeholder="15000" />
-                            <span asp-validation-for="Kilometros" class="text-danger"></span>
-                        </div>
-                        <div>
-                            <label asp-for="Matricula"></label>
-                            <input asp-for="Matricula" placeholder="00-AA-00" />
-                            <span asp-validation-for="Matricula" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="createlisting-row">
-                        <label asp-for="Localizacao"></label>
-                        <input asp-for="Localizacao" placeholder="Lisboa" />
-                        <span asp-validation-for="Localizacao" class="text-danger"></span>
-                    </div>
-
-                    <div class="createlisting-row">
-                        <label asp-for="Descricao"></label>
-                        <textarea asp-for="Descricao" rows="4" placeholder="Short description of the car..."></textarea>
-                        <span asp-validation-for="Descricao" class="text-danger"></span>
-                    </div>
-
-                    <hr />
-
-                    <div class="vehicle-docs-section">
-                        <div class="createlisting-row">
-                            <h4 style="color:white; font-size:1rem;">Vehicle & Documents details</h4>
-                        </div>
-
-                        <div class="createlisting-row two-cols">
-                            <div>
-                                <label asp-for="Vin"></label>
-                                <input asp-for="Vin" placeholder="WVWZZZ..." />
-                                <span asp-validation-for="Vin" class="text-danger"></span>
-                            </div>
-                            <div>
-                                <label asp-for="NumeroProprietarios"></label>
-                                <input asp-for="NumeroProprietarios" />
-                                <span asp-validation-for="NumeroProprietarios" class="text-danger"></span>
+                        <div class="create-field create-file-field">
+                            <label class="sr-only">Upload</label>
+                            <div class="create-file-actions">
+                                <label class="create-file-button">
+                                    <span>Select</span>
+                                    <input type="file" name="DocumentFile" hidden />
+                                </label>
+                                <button type="button" class="create-file-upload">Upload</button>
                             </div>
                         </div>
-
-                        <div class="createlisting-row">
-                            <label asp-for="InspecaoValidaAte"></label>
-                            <input asp-for="InspecaoValidaAte" />
-                            <span asp-validation-for="InspecaoValidaAte" class="text-danger"></span>
-                        </div>
-
-                        <div class="createlisting-row">
-                            <label asp-for="TemHistoricoManutencao"></label>
-                            <input asp-for="TemHistoricoManutencao" type="checkbox" />
-                        </div>
-
-                        <div class="createlisting-row">
-                            <label asp-for="DocRegistoPropriedade"></label>
-                            <input asp-for="DocRegistoPropriedade" type="checkbox" />
-                        </div>
-
-                        <div class="createlisting-row">
-                            <label asp-for="DocInspecao"></label>
-                            <input asp-for="DocInspecao" type="checkbox" />
-                        </div>
-
-                        <div class="createlisting-row">
-                            <label asp-for="DocSeguro"></label>
-                            <input asp-for="DocSeguro" type="checkbox" />
-                        </div>
                     </div>
-
-                    <div class="createlisting-actions-bottom">
-                        <button type="submit" class="createlisting-submit">Save Listing</button>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
+
+            <div class="create-actions">
+                <button type="submit" name="action" value="save" class="create-btn create-btn-secondary">Save</button>
+                <button type="submit" name="action" value="submit" class="create-btn create-btn-primary">Submit</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -185,6 +200,71 @@
             }
             else if (!dropdown.contains(e.target)) {
                 dropdown.classList.remove("show");
+            }
+        });
+
+        // Marca/Modelo dinâmicos com base nos Modelos existentes
+        document.addEventListener("DOMContentLoaded", function () {
+            const brandSelect = document.getElementById("brandSelect");
+            const modelSelect = document.getElementById("modelSelect");
+            const addPhotoBtn = document.getElementById("addPhotoBtn");
+            const photoInput = document.getElementById("photoInput");
+            if (!brandSelect || !modelSelect) return;
+
+            const allModelOptions = Array.from(modelSelect.querySelectorAll("option[data-marca]"));
+
+            if (addPhotoBtn && photoInput) {
+                addPhotoBtn.addEventListener("click", function () {
+                    photoInput.click();
+                });
+            }
+
+            if (photoInput) {
+                photoInput.addEventListener("change", function () {
+                    const files = Array.from(photoInput.files || []);
+                    if (files.length === 0) return;
+
+                    const previews = [
+                        document.getElementById("photoPreview1"),
+                        document.getElementById("photoPreview2"),
+                        document.getElementById("photoPreview3")
+                    ];
+
+                    previews.forEach((preview, index) => {
+                        if (!preview) return;
+                        const file = files[index];
+                        if (file) {
+                            const url = URL.createObjectURL(file);
+                            preview.src = url;
+                        }
+                    });
+                });
+            }
+
+            const selectedBrand = brandSelect.value;
+            if (selectedBrand) {
+                modelSelect.disabled = false;
+                filterModels(selectedBrand);
+            }
+
+            brandSelect.addEventListener("change", function () {
+                const brand = this.value;
+                filterModels(brand);
+            });
+
+            function filterModels(brand) {
+                modelSelect.innerHTML = '<option value="">Model</option>';
+                if (!brand) {
+                    modelSelect.disabled = true;
+                    return;
+                }
+
+                allModelOptions.forEach(opt => {
+                    if (opt.getAttribute("data-marca") === brand) {
+                        modelSelect.appendChild(opt.cloneNode(true));
+                    }
+                });
+                modelSelect.disabled = false;
             }
         });
     </script>
