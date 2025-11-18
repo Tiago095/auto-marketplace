@@ -1,4 +1,3 @@
-/* Seller Certification Page */
 .seller-cert-page {
     max-width: 1200px;
     margin: 40px auto 60px;
@@ -110,7 +109,6 @@
     flex: 1;
 }
 
-/* Summary card */
 .seller-summary-card {
     border-radius: 14px;
     border: 1px solid #e1e1e1;
@@ -166,7 +164,6 @@
     font-weight: 500;
 }
 
-/* Terms + footer */
 .seller-terms {
     margin-top: 18px;
 }
@@ -212,7 +209,6 @@
     background: #3a2ab4;
 }
 
-/* Responsivo */
 @media (max-width: 900px) {
     .seller-cert-layout {
         grid-template-columns: 1fr;

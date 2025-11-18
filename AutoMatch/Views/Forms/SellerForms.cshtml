@@ -8,7 +8,6 @@
     var initial = Context.Session.GetString("UserInitial");
 }
 
-<!-- Top navbar (igual ao Create Listing) -->
 <div class="custom-navbar">
     <div class="navbar-content">
         <div class="logo">AutoMatch</div>
@@ -72,7 +71,7 @@
                 </div>
 
                 <div class="seller-field-group">
-                    <label>ID/Verification Document</label>
+                    <label>NIF</label>
                     <input asp-for="DocumentNumber" type="text" placeholder="Document number" pattern="\d{9}" maxlength="9" />
                     <span asp-validation-for="DocumentNumber" class="text-danger"></span>
                 </div>
@@ -128,7 +127,7 @@
                         </div>
                         <div class="seller-summary-user">
                             <div class="seller-summary-avatar"></div>
-                            <span class="seller-summary-username">@(Model.UserName ?? username ?? "Pedro55")</span>
+                            <span class="seller-summary-username">@(Model.UserName ?? username)</span>
                         </div>
                     </div>
 
@@ -183,7 +182,6 @@
             }
         });
 
-        // Atualizar o campo de código postal conforme a cidade escolhida
         document.addEventListener("DOMContentLoaded", function () {
             const citySelect = document.getElementById("PostalCodeSelect");
             const postalDisplay = document.getElementById("PostalCodeDisplay");
