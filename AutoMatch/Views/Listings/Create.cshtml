@@ -126,20 +126,20 @@
                     <div class="photos-panel">
                         <input type="file" id="photoInput" name="Photos" multiple accept="image/*" hidden />
                         <div class="photos-stack">
-                            <div class="photo-frame frame-back">
+                            <div class="photo-frame frame-back" data-slot="0">
                                 <img id="photoPreview1" class="photo-preview" />
                             </div>
-                            <div class="photo-frame frame-middle">
+                            <div class="photo-frame frame-middle" data-slot="1">
                                 <img id="photoPreview2" class="photo-preview" />
                             </div>
-                            <div class="photo-frame frame-front">
+                            <div class="photo-frame frame-front" data-slot="2">
                                 <img id="photoPreview3" class="photo-preview" />
                             </div>
                         </div>
                         <div class="photos-label">Photos</div>
                         <div class="photos-controls">
                             <button type="button" class="photos-btn" id="addPhotoBtn">+</button>
-                            <button type="button" class="photos-btn">-</button>
+                            <button type="button" class="photos-btn" id="removePhotoBtn">-</button>
                         </div>
                     </div>
                 </div>
@@ -208,14 +208,39 @@
             const brandSelect = document.getElementById("brandSelect");
             const modelSelect = document.getElementById("modelSelect");
             const addPhotoBtn = document.getElementById("addPhotoBtn");
+            const removePhotoBtn = document.getElementById("removePhotoBtn");
             const photoInput = document.getElementById("photoInput");
             if (!brandSelect || !modelSelect) return;
 
             const allModelOptions = Array.from(modelSelect.querySelectorAll("option[data-marca]"));
 
+            let selectedSlot = 2; // por omissão, a moldura da frente
+            const frames = document.querySelectorAll(".photos-stack .photo-frame");
+
+            frames.forEach(frame => {
+                frame.addEventListener("click", function () {
+                    frames.forEach(f => f.classList.remove("photo-frame-selected"));
+                    frame.classList.add("photo-frame-selected");
+                    const slot = frame.getAttribute("data-slot");
+                    if (slot !== null) {
+                        selectedSlot = parseInt(slot);
+                    }
+                });
+            });
+
             if (addPhotoBtn && photoInput) {
                 addPhotoBtn.addEventListener("click", function () {
                     photoInput.click();
+                });
+            }
+
+            if (removePhotoBtn) {
+                removePhotoBtn.addEventListener("click", function () {
+                    const previewIds = ["photoPreview1", "photoPreview2", "photoPreview3"]; 
+                    const preview = document.getElementById(previewIds[selectedSlot] || "");
+                    if (preview) {
+                        preview.src = "";
+                    }
                 });
             }
 

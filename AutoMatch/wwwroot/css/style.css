@@ -756,6 +756,10 @@ body {
     border-radius: inherit;
 }
 
+.photo-frame-selected {
+    outline: 2px solid #ffffff;
+}
+
 .frame-back {
     transform: rotate(-8deg);
     top: 6px;

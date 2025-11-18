@@ -231,8 +231,11 @@ namespace AutoMatch.Controllers
             PopulateBrandModelTypeDropdowns();
 
             // Foto atual (se existir) para pré-visualização na página de edição
-            var firstImage = anuncio.Imagens?.FirstOrDefault();
+            var firstImage = anuncio.Imagens?
+                .OrderByDescending(i => i.Id_Imagem)
+                .FirstOrDefault();
             ViewBag.CurrentImageFile = firstImage?.CaminhoImagem;
+            ViewBag.CurrentImageId = firstImage?.Id_Imagem;
 
             var model = new CreateListingViewModel
             {
@@ -253,7 +256,7 @@ namespace AutoMatch.Controllers
         // POST: /Listings/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, CreateListingViewModel model, List<IFormFile> Photos)
+        public IActionResult Edit(int id, CreateListingViewModel model, List<IFormFile> Photos, string ImagesToDelete)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
@@ -307,6 +310,35 @@ namespace AutoMatch.Controllers
             anuncio.Kilometros = model.Kilometros ?? anuncio.Kilometros;
             anuncio.Localizacao = model.Localizacao;
             anuncio.Descricao = model.Descricao;
+
+            // Remoção de imagens existentes, se o utilizador tiver escolhido alguma para apagar
+            if (!string.IsNullOrWhiteSpace(ImagesToDelete))
+            {
+                var ids = ImagesToDelete
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(idStr => int.TryParse(idStr, out var val) ? val : (int?)null)
+                    .Where(v => v.HasValue)
+                    .Select(v => v!.Value)
+                    .ToList();
+
+                if (ids.Count > 0)
+                {
+                    var imgsToRemove = _db.Imagens
+                        .Where(i => i.Id_Anuncio == anuncio.Id_Anuncio && ids.Contains(i.Id_Imagem))
+                        .ToList();
+
+                    foreach (var img in imgsToRemove)
+                    {
+                        var filePath = Path.Combine(_env.WebRootPath, "images", "listings", img.CaminhoImagem);
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+                    }
+
+                    _db.Imagens.RemoveRange(imgsToRemove);
+                }
+            }
 
             _db.SaveChanges();
 

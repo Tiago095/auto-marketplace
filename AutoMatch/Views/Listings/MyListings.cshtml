@@ -58,7 +58,9 @@
                     <div class="mylistings-card">
                         <div class="mylistings-image">
                             @{
-                                var firstImage = anuncio.Imagens?.FirstOrDefault();
+                                var firstImage = anuncio.Imagens?
+                                    .OrderByDescending(i => i.Id_Imagem)
+                                    .FirstOrDefault();
                                 var imagePath = firstImage != null
                                     ? Url.Content("~/images/listings/" + firstImage.CaminhoImagem)
                                     : Url.Content("~/images/eletric.png");
