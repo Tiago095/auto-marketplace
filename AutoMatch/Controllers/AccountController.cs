@@ -1,20 +1,25 @@
 ﻿using AutoMatch.Data;
 using AutoMatch.Models;
 using AutoMatch.Models.ViewModels;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 
 namespace AutoMatch.Controllers
 {
     public class AccountController : Controller
     {
         private readonly AutoMatchContext _db;
+        private readonly IWebHostEnvironment _env;
 
-        public AccountController(AutoMatchContext db)
+        public AccountController(AutoMatchContext db, IWebHostEnvironment env)
         {
             _db = db;
+            _env = env;
         }
 
         [HttpGet]
@@ -57,6 +62,7 @@ namespace AutoMatch.Controllers
             HttpContext.Session.SetInt32("UserId", user.Id_User);
             HttpContext.Session.SetString("UserName", user.UserName);
             HttpContext.Session.SetString("UserInitial", user.UserName.Substring(0, 1).ToUpper());
+            HttpContext.Session.SetString("UserProfileImageUrl", user.ProfileImageUrl ?? string.Empty);
 
             // Cookie Remember Me
             if (model.RememberMe)
@@ -148,6 +154,7 @@ namespace AutoMatch.Controllers
             HttpContext.Session.SetInt32("UserId", user.Id_User);
             HttpContext.Session.SetString("UserName", user.UserName);
             HttpContext.Session.SetString("UserInitial", user.UserName.Substring(0, 1).ToUpper());
+            HttpContext.Session.SetString("UserProfileImageUrl", user.ProfileImageUrl ?? string.Empty);
 
             return RedirectToAction("Index", "Home");
         }
@@ -318,8 +325,43 @@ namespace AutoMatch.Controllers
                 comprador.Contactos = model.Phone;
             }
 
+            // -------- ATUALIZAR FOTO DE PERFIL --------
+            if (model.Photo != null && model.Photo.Length > 0)
+            {
+                // Apagar imagem antiga se existir e estiver na pasta UserProfiles
+                if (!string.IsNullOrEmpty(user.ProfileImageUrl) &&
+                    user.ProfileImageUrl.StartsWith("/images/UserProfiles/", StringComparison.OrdinalIgnoreCase))
+                {
+                    var oldPath = Path.Combine(
+                        _env.WebRootPath,
+                        user.ProfileImageUrl.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
+                    );
+
+                    if (System.IO.File.Exists(oldPath))
+                    {
+                        System.IO.File.Delete(oldPath);
+                    }
+                }
+
+                var uploadsRootFolder = Path.Combine(_env.WebRootPath, "images", "UserProfiles");
+                Directory.CreateDirectory(uploadsRootFolder);
+
+                var uniqueFileName = $"{user.Id_User}_{Guid.NewGuid()}{Path.GetExtension(model.Photo.FileName)}";
+                var filePath = Path.Combine(uploadsRootFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.Photo.CopyToAsync(stream);
+                }
+
+                // Guardar o caminho relativo para uso nas views
+                user.ProfileImageUrl = $"/images/UserProfiles/{uniqueFileName}";
+            }
 
             await _db.SaveChangesAsync();
+
+            // Atualizar sessão com nova foto (ou vazio se um dia permitirmos remover)
+            HttpContext.Session.SetString("UserProfileImageUrl", user.ProfileImageUrl ?? string.Empty);
 
             TempData["EditSuccess"] = "Perfil atualizado com sucesso.";
             return RedirectToAction("Profile");

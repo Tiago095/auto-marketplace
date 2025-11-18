@@ -270,10 +270,32 @@
 /* Modal central */
 .edit-modal {
     background: #fff;
-    padding: 35px;
+    padding: 20px;
     border-radius: 20px;
-    width: 380px;
+    width: 640px;
+    max-width: 90vw;
+    box-sizing: border-box;
     box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+}
+
+.photo-upload-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 5px 0 10px 0;
+}
+
+.photo-input {
+    width: auto;
+}
+
+.edit-modal-grid {
+    display: flex;
+    gap: 16px;
+    margin-top: 5px;
+}
+
+.edit-modal-col {
+    flex: 1;
 }
 
     .edit-modal input,
@@ -352,7 +374,7 @@
 }
 
 .form-label {
-    margin-top: 10px;
+    margin-top: 6px;
     font-weight: 600;
     color: #444;
     display: block;

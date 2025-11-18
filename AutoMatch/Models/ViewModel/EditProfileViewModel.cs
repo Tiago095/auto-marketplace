@@ -1,4 +1,6 @@
-﻿namespace AutoMatch.Models.ViewModels
+﻿using Microsoft.AspNetCore.Http;
+
+namespace AutoMatch.Models.ViewModels
 {
     public class EditProfileViewModel
     {
@@ -7,5 +9,8 @@
         public string Password { get; set; }
         public string SelectedLocalidade { get; set; } // Address
         public string SelectedCodigoPostal { get; set; }
+
+        // Profile photo upload
+        public IFormFile? Photo { get; set; }
     }
 }
