@@ -1072,14 +1072,10 @@ body.modal-open {
     box-shadow: 0 2px 4px rgba(0,0,0,0.18);
 }
 
-/* Dropdown */
 .user-dropdown {
     display: none;
     position: absolute;
-    top: 42px;
-    right: 0;               /* align with right edge of the badge */
-    left: auto;
-    transform: none;
+    top: 40px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -1087,6 +1083,7 @@ body.modal-open {
     z-index: 1000;
     min-width: 150px;
 }
+
 
     .user-dropdown.show {
         display: flex;
@@ -1104,7 +1101,6 @@ body.modal-open {
         .user-dropdown a:hover {
             background: #f4f4f4;
         }
-        color:   #007bff;
             
     }
 

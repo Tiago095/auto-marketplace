@@ -1,7 +1,11 @@
 ﻿@model AutoMatch.Models.ViewModels.ProfileViewModel
 
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "Profile - AutoMatch";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
 }
 
 @if (TempData["EditError"] != null)
@@ -16,23 +20,44 @@
 <!-- PROFILE PAGE HTML -->
 <link rel="stylesheet" href="~/css/profile.css" />
 
-<header class="top-nav">
-    <div class="nav-left">
-        <span class="logo">AutoMatch</span>
+<!-- Floating Header (same position as Index) -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <!-- USER BADGE + DROPDOWN -->
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Anuncios/Create">Create Ad</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
     </div>
-
-    <div class="nav-right">
-        <a asp-controller="Home" asp-action="Index" class="nav-btn">Home</a>
-        <a asp-controller="Home" asp-action="About" class="nav-btn">About</a>
-        <a asp-controller="Home" asp-action="Contact" class="nav-btn">Contact</a>
-
-        <!-- Sign Out usando o teu Logout -->
-        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
-            <button type="submit" class="nav-btn signout">Sign Out</button>
-        </form>
-    </div>
-</header>
-
+</div>
 
 <div class="profile-container">
 
@@ -82,8 +107,8 @@
         <form asp-action="EditProfile" asp-controller="Account" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
-            <!-- CURRENT PROFILE PHOTO PREVIEW -->
-            <div class="avatar-wrapper" id="modalAvatarWrapper" style="margin-bottom:10px;">
+            <!-- CURRENT PROFILE PHOTO PREVIEW with hover-to-edit -->
+            <div class="avatar-wrapper avatar-edit-wrapper" id="modalAvatarWrapper" style="margin-bottom:10px;">
                 @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
                 {
                     <img id="modalProfilePreviewImg" src="@Model.ProfileImageUrl" class="avatar" />
@@ -92,12 +117,14 @@
                 {
                     <div id="modalAvatarPlaceholder" class="avatar placeholder">@Model.UserName.Substring(0, 1).ToUpper()</div>
                 }
+
+                <div class="avatar-edit-overlay" onclick="document.getElementById('photoInput').click()">
+                            <i class="fa fa-pencil"></i>
+                </div>
             </div>
 
-            <!-- FOTO -->
-            <div class="photo-upload-wrapper">
-                <input id="photoInput" type="file" name="Photo" accept="image/*" class="photo-input" onchange="previewProfilePhoto(this)" />
-            </div>
+            <!-- Hidden file input triggered by clicking the avatar overlay -->
+            <input id="photoInput" type="file" name="Photo" accept="image/*" class="photo-input hidden-file-input" onchange="previewProfilePhoto(this)" />
 
             <div class="edit-modal-grid">
                 <div class="edit-modal-col">
@@ -281,4 +308,23 @@ function previewProfilePhoto(input) {
 
 
 </div>
+
+@section Scripts {
+    <script>
+        // USER DROPDOWN TOGGLE
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+    </script>
+}
 

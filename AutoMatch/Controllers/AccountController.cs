@@ -360,7 +360,9 @@ namespace AutoMatch.Controllers
 
             await _db.SaveChangesAsync();
 
-            // Atualizar sessão com nova foto (ou vazio se um dia permitirmos remover)
+            // Atualizar sessão com novos dados de utilizador
+            HttpContext.Session.SetString("UserName", user.UserName);
+            HttpContext.Session.SetString("UserInitial", (user.UserName ?? string.Empty).Substring(0, 1).ToUpper());
             HttpContext.Session.SetString("UserProfileImageUrl", user.ProfileImageUrl ?? string.Empty);
 
             TempData["EditSuccess"] = "Perfil atualizado com sucesso.";
