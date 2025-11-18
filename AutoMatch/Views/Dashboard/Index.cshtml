@@ -1,0 +1,214 @@
+@model AutoMatch.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<!-- Floating Header igual à Home -->
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="/" class="nav-btn">Home</a>
+        <a href="/Home/Index#about" class="nav-btn">About</a>
+        <a href="/Home/Index#contact" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">
+                Sign In
+            </a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    <div class="user-avatar">@initial</div>
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Anuncios/Create">Create Ad</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn active" type="button">
+                        <span class="icon">●</span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button">
+                        <span class="icon">▢</span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button">
+                        <span class="icon">▢</span>
+                        <span>Messages</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button">
+                        <span class="icon">▢</span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button">
+                        <span class="icon">▢</span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button">
+                        <span class="icon">▢</span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="welcome-section">
+                <h1>Welcome Back, Pedro55 !</h1>
+                <p class="subtitle">Pick up where you left off</p>
+
+                <div class="grid-row">
+                    <div class="card quick-stats">
+                        <h2>Quick Stats</h2>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon circle"></div>
+                                <div class="stat-text">
+                                    <span class="stat-number">@Model.PendingBookings</span>
+                                    <span class="stat-label">Pending Bookings</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon"></div>
+                                <div class="stat-text">
+                                    <span class="stat-number">@Model.UnreadMessages</span>
+                                    <span class="stat-label">Unread Messages</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon"></div>
+                                <div class="stat-text">
+                                    <span class="stat-number">@Model.NewNotifications</span>
+                                    <span class="stat-label">New Notifications</span>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon"></div>
+                                <div class="stat-text">
+                                    <span class="stat-number">@Model.FiltersSaved</span>
+                                    <span class="stat-label">Filters Saved</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card messages">
+                        <h2>Recent Messages</h2>
+                        @if (Model.RecentMessages.Any())
+                        {
+                            foreach (var msg in Model.RecentMessages)
+                            {
+                                <div class="message-item">
+                                    <div class="avatar"></div>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="name">@msg.NomeRemetente</span>
+                                            <span class="time">@msg.Data.ToString("g")</span>
+                                        </div>
+                                        <p class="message-preview">@msg.Texto</p>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>No recent messages.</p>
+                        }
+                    </div>
+</div>
+
+                <div class="grid-row">
+                    <div class="card latest-booking">
+                        <h2>Latest Bookings</h2>
+                        @if (Model.LatestBooking != null)
+                        {
+                            <div class="booking-content">
+                                <div class="booking-image"></div>
+                                <div class="booking-info">
+                                    <h3>@Model.LatestBooking.CarTitle</h3>
+                                    <p>Date: @Model.LatestBooking.DataInicio.ToString("dd MMMM yyyy")</p>
+                                    <p>Time: @Model.LatestBooking.DataInicio.ToString("HH:mm")</p>
+                                    <button class="btn-view">View More</button>
+</div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+    </script>
+}
+                        }
+                        else
+                        {
+                            <p>No bookings yet.</p>
+                        }
+                    </div>
+
+                    <div class="card notifications">
+                        <h2>Notifications</h2>
+                        <ul class="notification-list">
+                            @if (Model.Notifications.Any())
+                            {
+                                foreach (var n in Model.Notifications)
+                                {
+                                    <li>
+                                        <p>@n.Texto</p>
+                                        <span class="time">@n.Data.ToString("g")</span>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                <li><p>No notifications.</p></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
