@@ -32,6 +32,7 @@ public class HomeController : Controller
                     HttpContext.Session.SetInt32("UserId", user.Id_User);
                     HttpContext.Session.SetString("UserName", user.UserName);
                     HttpContext.Session.SetString("UserInitial", user.UserName.Substring(0, 1).ToUpper());
+                    HttpContext.Session.SetString("UserProfileImageUrl", user.ProfileImageUrl ?? string.Empty);
                 }
             }
 

@@ -1,0 +1,284 @@
+﻿@model AutoMatch.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+@if (TempData["EditError"] != null)
+{
+    <script>
+        window.onload = function () {
+            openEditModal();
+        };
+    </script>
+}
+
+<!-- PROFILE PAGE HTML -->
+<link rel="stylesheet" href="~/css/profile.css" />
+
+<header class="top-nav">
+    <div class="nav-left">
+        <span class="logo">AutoMatch</span>
+    </div>
+
+    <div class="nav-right">
+        <a asp-controller="Home" asp-action="Index" class="nav-btn">Home</a>
+        <a asp-controller="Home" asp-action="About" class="nav-btn">About</a>
+        <a asp-controller="Home" asp-action="Contact" class="nav-btn">Contact</a>
+
+        <!-- Sign Out usando o teu Logout -->
+        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+            <button type="submit" class="nav-btn signout">Sign Out</button>
+        </form>
+    </div>
+</header>
+
+
+<div class="profile-container">
+
+
+    <!-- LEFT PROFILE CARD -->
+    <div class="profile-card">
+        <div class="avatar-wrapper">
+            @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+            {
+                <img src="@Model.ProfileImageUrl" class="avatar" />
+            }
+            else
+            {
+                <div class="avatar placeholder">@Model.UserName.Substring(0, 1).ToUpper()</div>
+            }
+        </div>
+
+
+       <h2>@Model.UserName</h2>
+       <p>@Model.FullName</p>
+       <p>@Model.Email</p>
+        <p>@(Model.IsSeller ? "Comprador/Vendedor" : "Comprador")</p>
+
+
+
+        <!-- BOTÃO EDIT EXISTENTE -->
+        <button class="btn edit-btn" onclick="openEditModal()">
+            <i class="fa fa-pencil"></i> Edit Profile
+            </button>
+
+        <!-- MODAL -->
+        <div id="editOverlay" class="overlay-hidden">
+    <div class="edit-modal">
+
+        <h2 class="modal-title">Editar Perfil</h2>
+
+        @if (TempData["EditError"] != null)
+        {
+            <div class="error-box">@TempData["EditError"]</div>
+        }
+
+        @if (TempData["EditSuccess"] != null)
+        {
+            <div class="success-box">@TempData["EditSuccess"]</div>
+        }
+
+        <form asp-action="EditProfile" asp-controller="Account" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <!-- CURRENT PROFILE PHOTO PREVIEW -->
+            <div class="avatar-wrapper" id="modalAvatarWrapper" style="margin-bottom:10px;">
+                @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                {
+                    <img id="modalProfilePreviewImg" src="@Model.ProfileImageUrl" class="avatar" />
+                }
+                else
+                {
+                    <div id="modalAvatarPlaceholder" class="avatar placeholder">@Model.UserName.Substring(0, 1).ToUpper()</div>
+                }
+            </div>
+
+            <!-- FOTO -->
+            <div class="photo-upload-wrapper">
+                <input id="photoInput" type="file" name="Photo" accept="image/*" class="photo-input" onchange="previewProfilePhoto(this)" />
+            </div>
+
+            <div class="edit-modal-grid">
+                <div class="edit-modal-col">
+                    <!-- USERNAME -->
+                    <label class="form-label">Username</label>
+                    <input name="UserName" class="profile-input" value="@Model.UserName" required />
+
+                    <!-- TELEFONE -->
+                    <label class="form-label">Telefone</label>
+                    <input name="Phone" class="profile-input" maxlength="9" value="@Model.Phone" placeholder="9 dígitos" />
+
+                    <!-- PASSWORD -->
+                    <label class="form-label">New Password (opticional)</label>
+                    <input name="Password" type="password" class="profile-input" placeholder="6 a 12 caracteres" />
+                </div>
+
+                <div class="edit-modal-col">
+                    <!-- LOCALIDADE -->
+                    <label class="form-label">Localidade</label>
+                    <select id="postalSelect" name="SelectedCodigoPostal" class="profile-input" onchange="onPostalChange()" required>
+                        <option value="">-- Escolhe localidade --</option>
+                                @foreach (var a in ViewBag.PostalList)
+                                {
+                                    // Usa o código postal já guardado para marcar a opção selecionada
+                                    var isSelected = !string.IsNullOrEmpty(Model.PostalCode) && Model.PostalCode == a.Codigo_Postal;
+
+                                    if (isSelected)
+                                    {
+                                        <option value="@a.Codigo_Postal" data-localidade="@a.Codigo_Postal" selected>@a.Localidade</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@a.Codigo_Postal" data-localidade="@a.Codigo_Postal">@a.Localidade</option>
+                                    }
+                                }
+
+                    </select>
+
+                    <!-- CÓDIGO POSTAL -->
+                    <label class="form-label">Código Postal</label>
+                    <input id="postalCode" name="SelectedLocalidade" class="profile-input" 
+                           value="@Model.Address" readonly />
+                </div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button type="submit" class="btn save-btn">Guardar</button>
+                <button type="button" class="btn cancel-btn" onclick="closeEditModal()">Cancelar</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<script>
+function openEditModal() {
+    var sel = document.getElementById("postalSelect");
+    if(sel && sel.selectedIndex>0){
+        var code = sel.options[sel.selectedIndex].value;
+        document.getElementById("postalCode").value = code;
+    }
+    document.getElementById("editOverlay").classList.remove("overlay-hidden");
+    document.body.style.overflow = "hidden";
+}
+
+function closeEditModal() {
+    document.getElementById("editOverlay").classList.add("overlay-hidden");
+    document.body.style.overflow = "";
+}
+
+function onPostalChange() {
+    var sel = document.getElementById("postalSelect");
+    var code = sel.options[sel.selectedIndex].value;
+    var local = sel.options[sel.selectedIndex].dataset.localidade;
+    document.getElementById("postalCode").value = local;
+}
+
+function previewProfilePhoto(input) {
+    if (!input.files || !input.files[0]) return;
+
+    var file = input.files[0];
+    var reader = new FileReader();
+
+    reader.onload = function (e) {
+        var img = document.getElementById("modalProfilePreviewImg");
+        var placeholder = document.getElementById("modalAvatarPlaceholder");
+        var wrapper = document.getElementById("modalAvatarWrapper");
+
+        if (!img) {
+            img = document.createElement("img");
+            img.id = "modalProfilePreviewImg";
+            img.className = "avatar";
+            if (wrapper) {
+                wrapper.appendChild(img);
+            }
+        }
+
+        if (placeholder) {
+            placeholder.style.display = "none";
+        }
+
+        img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+}
+</script>
+
+
+        <form asp-controller="Account" asp-action="DeleteAccount" method="post"
+              onsubmit="return confirm('Tens a certeza que queres apagar a tua conta? Esta ação é irreversível.');">
+            <button type="submit" class="btn delete-btn">
+                <i class="fa fa-trash"></i> Delete Account
+            </button>
+        </form>
+
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="info-panel">
+
+
+    <h2>Personal Information</h2>
+
+
+    <div class="info-row">
+        <strong>Address</strong>
+        <span>@Model.Address</span>
+    </div>
+
+
+    <div class="info-row">
+        <strong>Phone</strong>
+        <span>@Model.Phone</span>
+    </div>
+
+
+    <div class="info-row password-row">
+        <strong>Password</strong>
+        <span>************</span>
+    </div>
+
+
+    <h2 class="section-title">Notifications & Preferences</h2>
+
+
+    <label class="check-item"><input type="checkbox" /> Receive Notifications</label><br>
+    <label class="check-item"><input type="checkbox" /> Allow promotional emails</label><br><br>
+
+
+    <select class="select-box">
+        <option>Choose notification preference...</option>
+    </select>
+
+
+    <h2 class="section-title">Purchase & Listing Summary</h2>
+
+
+    <div class="tabs">
+        <button class="tab-btn active">My Orders</button>
+        <button class="tab-btn">My Listings</button>
+    </div>
+
+
+    <div class="car-list">
+        @foreach (var order in Model.Orders)
+        {
+            @*@<div class="car-box">
+                <img src="@order.Image" />
+                <strong>@order.Name</strong><br>
+                <small>@order.Date.ToString("dd MMM yyyy")</small><br>
+                <span class="status">@order.Status</span>
+            </div>*@
+        }
+    </div>
+
+
+</div>
+
+
+</div>
+
