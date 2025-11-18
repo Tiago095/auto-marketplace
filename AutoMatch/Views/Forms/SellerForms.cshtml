@@ -1,0 +1,208 @@
+@using AutoMatch.Models.ViewModel
+
+@model SellerFormViewModel
+@{
+    ViewData["Title"] = "Seller Certification";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+
+<!-- Top navbar (igual ao Create Listing) -->
+<div class="custom-navbar">
+    <div class="navbar-content">
+        <div class="logo">AutoMatch</div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+
+            @if (username == null)
+            {
+                <a href="/Account/Login" class="signin-btn">Sign In</a>
+            }
+            else
+            {
+                <div class="user-menu-container">
+                    <div class="user-badge" id="userMenuBtn">
+                        <span class="user-name">@username</span>
+                        <div class="user-avatar">@initial</div>
+                    </div>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/Listings/MyListings">My Listings</a>
+                        <a href="/Dashboard/Index">Dashboard</a>
+                        <a href="/Account/Logout" style="color: red;">Logout</a>
+                    </div>
+                </div>
+            }
+        </nav>
+    </div>
+</div>
+
+<form asp-action="SellerForms" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="seller-cert-page">
+        <div class="seller-cert-header">
+            <h1>Seller Certification</h1>
+        </div>
+
+        <div class="seller-cert-layout">
+            <!-- Coluna esquerda: Details -->
+            <section class="seller-card seller-card-left">
+            <div class="seller-card-header">
+                <div class="seller-card-title-group">
+                    <h2>Details</h2>
+                    <p class="seller-step-label">Step 1 of 2</p>
+                </div>
+                <div class="seller-progress">
+                    <div class="seller-progress-bar seller-progress-bar-left"></div>
+                </div>
+            </div>
+
+            <div class="seller-card-body">
+                <div class="seller-field-group">
+                    <label>Are you selling occasionally or regularly?</label>
+                    <select asp-for="SellingType" required>
+                        <option value="">Select an option</option>
+                        <option value="Individual">Individual</option>
+                        <option value="Professional">Professional</option>
+                    </select>
+                </div>
+
+                <div class="seller-field-group">
+                    <label>ID/Verification Document</label>
+                    <input asp-for="DocumentNumber" type="text" placeholder="Document number" pattern="\d{9}" maxlength="9" />
+                    <span asp-validation-for="DocumentNumber" class="text-danger"></span>
+                </div>
+
+                <div class="seller-field-group">
+                    <label>Phone Number</label>
+                    <input asp-for="PhoneNumber" type="text" placeholder="Phone number" required pattern="\d{9}" maxlength="9" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="seller-address-title">Address</div>
+
+                <div class="seller-field-row">
+                    <div class="seller-field-group">
+                        <label>City</label>
+                        <select asp-for="PostalCode" asp-items="(IEnumerable<SelectListItem>)ViewBag.PostalCodeOptions" required id="PostalCodeSelect"></select>
+                    </div>
+                    <div class="seller-field-group">
+                        <label>Postal Code</label>
+                        <input id="PostalCodeDisplay" type="text" placeholder="Postal Code" value="@Model.PostalCode" readonly />
+                    </div>
+                </div>
+
+                <div class="seller-field-group">
+                    <label>Preferred Contact Method</label>
+                    <select asp-for="PreferredContactMethod" required>
+                        <option value="">Select an option</option>
+                        <option value="Email">Email</option>
+                        <option value="Phone">Phone</option>
+                        <option value="SMS">SMS</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Coluna direita: Verification -->
+        <section class="seller-card seller-card-right">
+            <div class="seller-card-header">
+                <div class="seller-card-title-group">
+                    <h2>Verification</h2>
+                    <p class="seller-step-label">Step 2 of 2</p>
+                </div>
+                <div class="seller-progress">
+                    <div class="seller-progress-bar seller-progress-bar-right"></div>
+                </div>
+            </div>
+
+            <div class="seller-card-body">
+                <div class="seller-summary-card">
+                    <div class="seller-summary-header">
+                        <div>
+                            <h3>Summary</h3>
+                        </div>
+                        <div class="seller-summary-user">
+                            <div class="seller-summary-avatar"></div>
+                            <span class="seller-summary-username">@(Model.UserName ?? username ?? "Pedro55")</span>
+                        </div>
+                    </div>
+
+                    <div class="seller-summary-content">
+                        <div class="seller-summary-row">
+                            <span class="seller-summary-label">Full Name</span>
+                            <span class="seller-summary-value">@Model.FullName</span>
+                        </div>
+                        <div class="seller-summary-row">
+                            <span class="seller-summary-label">Email</span>
+                            <span class="seller-summary-value">@Model.Email</span>
+                        </div>
+                        <div class="seller-summary-row">
+                            <span class="seller-summary-label">Phone Number</span>
+                            <span class="seller-summary-value">@Model.PhoneNumber</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="seller-terms">
+                    <label class="seller-checkbox-label">
+                        <input asp-for="AcceptTerms" type="checkbox" required />
+                        <span>I agree to the Seller Terms &amp; Conditions</span>
+                    </label>
+                    <span asp-validation-for="AcceptTerms" class="text-danger"></span>
+                </div>
+
+                <div class="seller-verification-footer">
+                    <div class="seller-review-info">
+                        Your account will be reviewed within 24-48h
+                    </div>
+                    <button type="submit" class="seller-submit-btn">Submit Application</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+</form>
+
+@section Scripts {
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            } else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
+        // Atualizar o campo de código postal conforme a cidade escolhida
+        document.addEventListener("DOMContentLoaded", function () {
+            const citySelect = document.getElementById("PostalCodeSelect");
+            const postalDisplay = document.getElementById("PostalCodeDisplay");
+
+            if (!citySelect || !postalDisplay) return;
+
+            const syncPostal = () => {
+                const selected = citySelect.options[citySelect.selectedIndex];
+                if (!selected || !selected.value) {
+                    postalDisplay.value = "";
+                } else {
+                    postalDisplay.value = selected.value;
+                }
+            };
+
+            // Inicializa valor no load (para quando vem pré-preenchido do servidor)
+            syncPostal();
+
+            citySelect.addEventListener("change", syncPostal);
+        });
+    </script>
+}

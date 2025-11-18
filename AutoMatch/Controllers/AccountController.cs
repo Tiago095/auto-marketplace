@@ -24,7 +24,6 @@ namespace AutoMatch.Controllers
         }
 
         // ===== POST LOGIN =====
-        // ===== POST LOGIN =====
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
