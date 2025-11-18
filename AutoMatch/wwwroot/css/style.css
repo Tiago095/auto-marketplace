@@ -1030,7 +1030,7 @@ body.modal-open {
 /* --- User Badge Compact + Dropdown --- */
 .user-menu-container {
     position: relative;
-    display: flex;
+    display: inline-flex; /* shrink to badge width so dropdown centers under it */
     align-items: center;
 }
 
@@ -1076,8 +1076,10 @@ body.modal-open {
 .user-dropdown {
     display: none;
     position: absolute;
-    top: 40px;
-    right: 0;
+    top: 42px;
+    right: 0;               /* align with right edge of the badge */
+    left: auto;
+    transform: none;
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -1215,7 +1217,8 @@ body.modal-open {
 
 /* --- Contact Page Styles --- */
 .contact-section {
-    padding: 180px 60px 20px 60px;
+    /* bring content closer to the top and tighten bottom padding */
+    padding: 130px 60px 10px 60px;
 }
 
 
@@ -1224,7 +1227,8 @@ body.modal-open {
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 100px;
+    /* slightly reduce vertical space between the two columns */
+    gap: 70px;
 }
 
 .contact-form-column,
