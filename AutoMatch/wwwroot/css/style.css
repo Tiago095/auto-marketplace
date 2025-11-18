@@ -440,3 +440,213 @@ body {
         .user-dropdown a:hover {
             background: #f4f4f4;
         }
+
+/* --- My Listings Page --- */
+.mylistings-wrapper {
+    padding: 50px 40px;
+    background: #d9d9d9;
+    min-height: calc(100vh - 70px);
+}
+
+.mylistings-panel {
+    max-width: 1050px;
+    margin: 0 auto;
+    background: #1f1f1f;
+    border-radius: 18px;
+    padding: 26px 28px 32px;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+    color: #fff;
+}
+
+.mylistings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.mylistings-title {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.mylistings-add-btn {
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.mylistings-add-btn:hover {
+    background: #fff;
+    color: #111;
+}
+
+.mylistings-empty {
+    padding: 30px 10px;
+    text-align: center;
+    color: #dddddd;
+}
+
+.mylistings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mylistings-card {
+    background: #f3f3f3;
+    border-radius: 14px;
+    padding: 12px 18px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.mylistings-image img {
+    width: 190px;
+    height: 115px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.mylistings-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+}
+
+.mylistings-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #111;
+}
+
+.mylistings-car-title {
+    font-weight: 600;
+}
+
+.mylistings-car-price {
+    font-weight: 600;
+}
+
+.mylistings-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.mylistings-btn {
+    min-width: 90px;
+    padding: 6px 18px;
+    border-radius: 999px;
+    border: 1px solid #d0d0d0;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.mylistings-btn.edit:hover {
+    background: #e7f0ff;
+    border-color: #4a7bff;
+}
+
+.mylistings-btn.delete:hover {
+    background: #ffe7e7;
+    border-color: #ff4c4c;
+}
+
+/* --- Create Listing form layout --- */
+.createlisting-container {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 20px;
+}
+
+.createlisting-preview {
+    display: flex;
+    align-items: flex-start;
+}
+
+.createlisting-form-wrapper {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 16px 18px;
+}
+
+.createlisting-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.createlisting-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.createlisting-row.two-cols {
+    flex-direction: row;
+    gap: 12px;
+}
+
+.createlisting-row.two-cols > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.createlisting-row label {
+    color: #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.createlisting-row input,
+.createlisting-row textarea {
+    border-radius: 8px;
+    border: 1px solid #444;
+    padding: 8px 10px;
+    font-size: 0.95rem;
+}
+
+.createlisting-row textarea {
+    resize: vertical;
+}
+
+ .createlisting-actions-bottom {
+    margin-top: 6px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Secção de documentos mais afastada do topo, abaixo da área de imagem */
+.vehicle-docs-section {
+    margin-top: 30px;
+}
+
+.createlisting-submit {
+    padding: 8px 22px;
+    border-radius: 999px;
+    border: none;
+    background: #ffffff;
+    color: #111;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.createlisting-submit:hover {
+    background: #e4e4e4;
+}
