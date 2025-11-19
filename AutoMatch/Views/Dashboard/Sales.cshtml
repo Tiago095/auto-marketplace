@@ -10,18 +10,9 @@
 <div class="floating-header">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
-        <a href="/" class="nav-btn">Home</a>
-        <a href="/Home/Index#about" class="nav-btn">About</a>
-        <a href="/Home/Index#contact" class="nav-btn">Contact</a>
-
-        @if (username == null)
-        {
-            <a href="/Account/Login" class="nav-btn signin">
-                Sign In
-            </a>
-        }
-        else
-        {
+        <a href="/Home/Index" class="nav-btn">Home</a>
+        <a href="/Home/About" class="nav-btn">About</a>
+        <a href="/Home/Contact" class="nav-btn">Contact</a>
             <div class="user-menu-container">
                 <div class="user-badge" id="userMenuBtn">
                     <span class="user-name">@username</span>
@@ -35,8 +26,7 @@
                     <a href="/Account/Logout" style="color: red;">Logout</a>
                 </div>
             </div>
-        }
-    </div>
+     </div>
 </div>
 
 <div class="dashboard-page">

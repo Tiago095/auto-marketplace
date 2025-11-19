@@ -9,6 +9,49 @@ body {
     background-color: #f3f3f3;
 }
 
+.floating-header {
+    position: absolute;
+    top: 25px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 60px;
+    z-index: 100;
+}
+
+.logo-text {
+    font-size: 28px;
+    font-weight: bold;
+    color: #111;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.floating-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+    .floating-buttons a {
+        text-decoration: none;
+    }
+
+.nav-btn {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    color: #111;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+    .nav-btn:hover {
+        color: #dcdcdc;
+    }
+
 .dashboard-page {
     padding: 120px 40px 30px 40px; 
 }
@@ -38,14 +81,68 @@ body {
 }
 
 .user-badge {
-    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #E0E0E0;
     border-radius: 20px;
-    padding: 6px 14px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
 }
 
+    .user-badge:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
 .user-name {
-    font-size: 13px;
+    font-size: 0.85rem;
+    color: #000;
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ff4c4c;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    overflow: hidden;
+    z-index: 1000;
+    min-width: 150px;
+}
+
+    .user-dropdown.show {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-dropdown a {
+        padding: 10px 14px;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: background 0.2s;
+    }
+
+        .user-dropdown a:hover {
+            background: #f4f4f4;
+        }
 
 .dashboard-layout {
     display: grid;

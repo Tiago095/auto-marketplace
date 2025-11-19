@@ -11,32 +11,22 @@
 <div class="floating-header">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
-        <a href="/" class="nav-btn">Home</a>
-        <a href="/Home/Index#about" class="nav-btn">About</a>
-        <a href="/Home/Index#contact" class="nav-btn">Contact</a>
-
-        @if (username == null)
-        {
-            <a href="/Account/Login" class="nav-btn signin">
-                Sign In
-            </a>
-        }
-        else
-        {
-            <div class="user-menu-container">
-                <div class="user-badge" id="userMenuBtn">
-                    <span class="user-name">@username</span>
-                    <div class="user-avatar">@initial</div>
-                </div>
-
-                <div class="user-dropdown" id="userDropdown">
-                    <a href="/Account/Profile">Profile</a>
-                    <a href="/Anuncios/Create">Create Ad</a>
-                    <a href="/Dashboard/Index">Dashboard</a>
-                    <a href="/Account/Logout" style="color: red;">Logout</a>
-                </div>
+        <a href="/Home/Index" class="nav-btn">Home</a>
+        <a href="/Home/About" class="nav-btn">About</a>
+        <a href="/Home/Contact" class="nav-btn">Contact</a>
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                <div class="user-avatar">@initial</div>
             </div>
-        }
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Anuncios/Create">Create Ad</a>
+                <a href="/DashBoard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: red;">Logout</a>
+            </div>
+        </div>
     </div>
 </div>
 
