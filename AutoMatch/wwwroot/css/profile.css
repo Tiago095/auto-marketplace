@@ -1,12 +1,11 @@
 ﻿body {
     margin: 0;
     padding: 0;
-    /* Use same base font as the rest of the site for consistent boldness */
     font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
     background: #f2f2f2;
 }
 
-/* Make sure header text on this page matches other pages' boldness */
+
 .floating-header .logo-text {
     font-weight: 700;
 }
@@ -19,8 +18,8 @@
 .profile-container {
     display: flex;
     gap: 40px;
-    padding: 40px 50px; /* slightly less vertical padding to reduce page height */
-    margin-top: 80px; /* tiny bit closer to the header */
+    padding: 40px 50px;
+    margin-top: 80px;
 }
 
 /* LEFT CARD */
@@ -40,7 +39,7 @@
     margin-bottom: 20px;
 }
 
-/* Wrapper used in edit modal to allow hover overlay click */
+
 .avatar-edit-wrapper {
     position: relative;
     display: inline-flex;
@@ -66,7 +65,7 @@
         border: 6px solid white;
     }
 
-/* Gray hover overlay with pencil icon */
+/* Butao de editar a foto */
 .avatar-edit-overlay {
     position: absolute;
     top: 0;
@@ -89,7 +88,7 @@
     opacity: 1;
 }
 
-/* Hide the raw file input; it is triggered via avatar overlay */
+
 .hidden-file-input {
     display: none;
 }
@@ -97,7 +96,7 @@
 .profile-card h2 {
     font-size: 30px;
     margin-top: 15px;
-    font-weight: 700; /* match boldness of other headings */
+    font-weight: 700;
 }
 
 .profile-card p {

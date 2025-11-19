@@ -29,7 +29,7 @@
         text-decoration: none;
     }
 
-/* Botões simples sem contorno */
+/* Botões sem contorno */
 .nav-btn {
     padding: 8px 16px;
     border: none;
@@ -1030,7 +1030,7 @@ body.modal-open {
 /* --- User Badge Compact + Dropdown --- */
 .user-menu-container {
     position: relative;
-    display: inline-flex; /* shrink to badge width so dropdown centers under it */
+    display: inline-flex;
     align-items: center;
 }
 
@@ -1177,12 +1177,10 @@ body.modal-open {
     color: #333;
 }
 
-/* Remove default anchor styling for nav buttons */
 .floating-buttons a {
     text-decoration: none;
 }
 
-/* About page header color overrides */
 .floating-header-dark .logo-text {
     color: #000 !important;
     text-shadow: none !important;
@@ -1201,7 +1199,6 @@ body.modal-open {
     background-color: #333 !important;
 }
 
-/* User badge styling on light-background pages (About, Contact, Vehicle, etc.) */
 .floating-header-dark .user-badge {
     background: #D9D9D9;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
@@ -1213,7 +1210,6 @@ body.modal-open {
 
 /* --- Contact Page Styles --- */
 .contact-section {
-    /* bring content closer to the top and tighten bottom padding */
     padding: 130px 60px 10px 60px;
 }
 
@@ -1223,7 +1219,6 @@ body.modal-open {
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* slightly reduce vertical space between the two columns */
     gap: 70px;
 }
 
@@ -1414,7 +1409,6 @@ body.modal-open {
     color: #111;
 }
 
-/* Readonly fields styling for contact form */
 .form-input.readonly-field[readonly] {
     background-color: #C4C4C4;
     cursor: not-allowed;
