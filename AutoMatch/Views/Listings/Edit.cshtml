@@ -1,0 +1,338 @@
+@model AutoMatch.Models.ViewModel.CreateListingViewModel
+@{
+    ViewData["Title"] = "Edit Listing";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+
+<!-- Top navbar (igual à MyListings) -->
+<div class="custom-navbar">
+    <div class="navbar-content">
+        <div class="logo">AutoMatch</div>
+        <nav>
+            <a href="/">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+
+            @if (username == null)
+            {
+                <a href="/Account/Login" class="signin-btn">Sign In</a>
+            }
+            else
+            {
+                <div class="user-menu-container">
+                    <div class="user-badge" id="userMenuBtn">
+                        <span class="user-name">@username</span>
+                        <div class="user-avatar">@initial</div>
+                    </div>
+
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/Listings/MyListings">My Listings</a>
+                        <a href="/Dashboard/Index">Dashboard</a>
+                        <a href="/Account/Logout" style="color: red;">Logout</a>
+                    </div>
+                </div>
+            }
+        </nav>
+    </div>
+</div>
+
+<!-- Edit Car Listing layout (igual ao Create) -->
+<div class="create-page-wrapper">
+    <div class="create-card">
+        <div class="create-card-header">
+            <h1 class="create-card-title">Edit Car Listing</h1>
+        </div>
+
+        <form asp-action="Edit" asp-controller="Listings" asp-route-id="@Model.Id" method="post" class="create-form" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border: 1px solid #f5c6cb; border-radius: 4px;">
+                    <strong>Erros de validação:</strong>
+            <div asp-validation-summary="All" class="text-danger"></div>
+                </div>
+            }
+            <input type="hidden" asp-for="Id" />
+
+            <div class="create-card-body">
+                <div class="create-card-left">
+                    <h3 class="create-section-title">Car</h3>
+
+                    <div class="create-row-two">
+                        <div class="create-field">
+                            <label asp-for="Marca"></label>
+                            <select asp-for="Marca" id="brandSelect" class="create-input create-select">
+                                <option value="">Brand</option>
+                                @foreach (var marca in (IEnumerable<string>)ViewBag.Marcas)
+                                {
+                                    <option value="@marca">@marca</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Marca" class="text-danger"></span>
+                        </div>
+                        <div class="create-field">
+                            <label asp-for="Modelo"></label>
+                            <select asp-for="Modelo" id="modelSelect" class="create-input create-select">
+                                <option value="">Model</option>
+                                @foreach (var m in (IEnumerable<AutoMatch.Models.Modelo>)ViewBag.TodosModelos)
+                                {
+                                    <option value="@m.NomeModelo" data-marca="@m.Marca">@m.NomeModelo</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Modelo" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="create-row-two">
+                        <div class="create-field">
+                            <label asp-for="Tipo"></label>
+                            <select asp-for="Tipo" class="create-input create-select">
+                                <option value="">Type</option>
+                                @foreach (var tipo in (IEnumerable<string>)ViewBag.Tipos)
+                                {
+                                    <option value="@tipo">@tipo</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Tipo" class="text-danger"></span>
+                        </div>
+                        <div class="create-field">
+                            <label>Transmission</label>
+                            <select name="Transmission" class="create-input create-select">
+                                <option value="">Transmission</option>
+                                <option value="automatic">Automatic</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="create-row-two">
+                        <div class="create-field">
+                            <label asp-for="Price"></label>
+                            <input asp-for="Price" class="create-input" />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+                        <div class="create-field">
+                            <label asp-for="Year"></label>
+                            <input asp-for="Year" class="create-input" />
+                            <span asp-validation-for="Year" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="create-field">
+                        <label asp-for="Localizacao"></label>
+                        <input asp-for="Localizacao" class="create-input" />
+                        <span asp-validation-for="Localizacao" class="text-danger"></span>
+                    </div>
+
+                </div>
+
+                <div class="create-card-right">
+                    <div class="photos-panel">
+                        <input type="file" id="photoInput" name="Photos" multiple accept="image/*" hidden />
+                        <div class="photos-stack">
+                            @{
+                                var existingImages = ViewBag.ExistingImages as List<AutoMatch.Models.Imagens> ?? new List<AutoMatch.Models.Imagens>();
+                            }
+                            <div class="photo-frame frame-back" data-slot="0">
+                                <img id="photoPreview1" 
+                                     class="photo-preview"
+                                     @if (existingImages.Count > 0)
+                                     {
+                                         <text>data-image-id="@existingImages[0].Id_Imagem"</text>
+                                         <text>src="@Url.Content("~/images/listings/" + existingImages[0].CaminhoImagem)"</text>
+                                     } />
+                            </div>
+                            <div class="photo-frame frame-middle" data-slot="1">
+                                <img id="photoPreview2" 
+                                     class="photo-preview"
+                                     @if (existingImages.Count > 1)
+                                     {
+                                         <text>data-image-id="@existingImages[1].Id_Imagem"</text>
+                                         <text>src="@Url.Content("~/images/listings/" + existingImages[1].CaminhoImagem)"</text>
+                                     } />
+                            </div>
+                            <div class="photo-frame frame-front" data-slot="2">
+                                <img id="photoPreview3" 
+                                     class="photo-preview"
+                                     @if (existingImages.Count > 2)
+                                     {
+                                         <text>data-image-id="@existingImages[2].Id_Imagem"</text>
+                                         <text>src="@Url.Content("~/images/listings/" + existingImages[2].CaminhoImagem)"</text>
+                                     } />
+                            </div>
+                        </div>
+                        <div class="photos-label">Photos</div>
+                        <div class="photos-controls">
+                            <button type="button" class="photos-btn" id="addPhotoBtn">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-desc-docs-row">
+                <div class="create-field">
+                    <label asp-for="Descricao"></label>
+                    <textarea asp-for="Descricao" rows="5" class="create-input create-textarea"></textarea>
+                    <span asp-validation-for="Descricao" class="text-danger"></span>
+                </div>
+
+                <div class="create-documents-section">
+                    <h3 class="create-section-title">Documents</h3>
+                    <div class="create-documents-row">
+                        <div class="create-field">
+                            <label>Type</label>
+                            <select name="DocumentType" class="create-input create-select">
+                                <option value="">Type</option>
+                                <option value="registration">Registration</option>
+                                <option value="inspection">Inspection</option>
+                                <option value="insurance">Insurance</option>
+                            </select>
+                        </div>
+                        <div class="create-field create-file-field">
+                            <label class="sr-only">Upload</label>
+                            <div class="create-file-actions">
+                                <label class="create-file-button">
+                                    <span>Select</span>
+                                    <input type="file" name="DocumentFile" hidden />
+                                </label>
+                                <button type="button" class="create-file-upload">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-actions">
+                <a href="/Listings/MyListings" class="create-btn create-btn-secondary">Cancel</a>
+                <button type="submit" class="create-btn create-btn-primary">Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Dropdown do utilizador
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
+        // Marca/Modelo dinâmicos também no Edit
+        document.addEventListener("DOMContentLoaded", function () {
+            const brandSelect = document.getElementById("brandSelect");
+            const modelSelect = document.getElementById("modelSelect");
+            const addPhotoBtn = document.getElementById("addPhotoBtn");
+            const photoInput = document.getElementById("photoInput");
+            const form = document.querySelector("form");
+            
+            // Debug: verificar submissão do formulário
+            if (form) {
+                form.addEventListener("submit", function(e) {
+                    console.log("Form submitting...");
+                    console.log("Marca:", brandSelect.value);
+                    console.log("Modelo:", modelSelect.value);
+                    console.log("Tipo:", document.querySelector("select[name='Tipo']")?.value);
+                });
+            }
+            
+            if (!brandSelect || !modelSelect) return;
+
+            const allModelOptions = Array.from(modelSelect.querySelectorAll("option[data-marca]"));
+
+            let selectedSlot = 2; // por defeito, moldura da frente
+            const frames = document.querySelectorAll(".photos-stack .photo-frame");
+
+            frames.forEach(frame => {
+                frame.addEventListener("click", function () {
+                    frames.forEach(f => f.classList.remove("photo-frame-selected"));
+                    frame.classList.add("photo-frame-selected");
+                    const slot = frame.getAttribute("data-slot");
+                    if (slot !== null) {
+                        selectedSlot = parseInt(slot);
+                    }
+                });
+            });
+
+            if (addPhotoBtn && photoInput) {
+                addPhotoBtn.addEventListener("click", function () {
+                    photoInput.click();
+                });
+            }
+
+            if (photoInput) {
+                photoInput.addEventListener("change", function (e) {
+                    const files = Array.from(photoInput.files || []);
+                    if (files.length === 0) return;
+
+                    const previews = [
+                        document.getElementById("photoPreview1"),
+                        document.getElementById("photoPreview2"),
+                        document.getElementById("photoPreview3")
+                    ];
+
+                    // Se tiver múltiplas imagens, preencher os slots
+                    if (files.length > 1) {
+                        previews.forEach((preview, index) => {
+                            if (!preview) return;
+                            const file = files[index];
+                            if (file) {
+                                const url = URL.createObjectURL(file);
+                                preview.src = url;
+                            }
+                        });
+                    } else if (files.length === 1) {
+                        // Se tiver apenas 1 imagem, adicionar ao slot selecionado
+                        const preview = previews[selectedSlot];
+                        if (preview && files[0]) {
+                            const url = URL.createObjectURL(files[0]);
+                            preview.src = url;
+                        }
+                    }
+                    
+                    // Limpar o input para permitir selecionar a mesma imagem novamente
+                    photoInput.value = "";
+                });
+            }
+
+            const currentBrand = brandSelect.value;
+            const currentModel = modelSelect.value;
+
+            function filterModels(brand, modelToSelect) {
+                modelSelect.innerHTML = '<option value="">Model</option>';
+                if (!brand) return;
+
+                allModelOptions.forEach(opt => {
+                    if (opt.getAttribute("data-marca") === brand) {
+                        const cloned = opt.cloneNode(true);
+                        if (modelToSelect && cloned.value === modelToSelect) {
+                            cloned.selected = true;
+                        }
+                        modelSelect.appendChild(cloned);
+                    }
+                });
+            }
+
+            if (currentBrand) {
+                filterModels(currentBrand, currentModel);
+            }
+
+            brandSelect.addEventListener("change", function () {
+                filterModels(this.value, null);
+            });
+        });
+    </script>
+}

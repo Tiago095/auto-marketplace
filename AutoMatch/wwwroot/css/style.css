@@ -1101,6 +1101,420 @@ body.modal-open {
         .user-dropdown a:hover {
             background: #f4f4f4;
         }
+
+/* --- My Listings Page --- */
+.mylistings-wrapper {
+    padding: 50px 40px;
+    background: #d9d9d9;
+    min-height: calc(100vh - 70px);
+}
+
+.mylistings-panel {
+    max-width: 1050px;
+    margin: 0 auto;
+    background: #1f1f1f;
+    border-radius: 18px;
+    padding: 26px 28px 32px;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+    color: #fff;
+}
+
+.mylistings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.mylistings-title {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.mylistings-add-btn {
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.mylistings-add-btn:hover {
+    background: #fff;
+    color: #111;
+}
+
+.mylistings-empty {
+    padding: 30px 10px;
+    text-align: center;
+    color: #dddddd;
+}
+
+.mylistings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mylistings-card {
+    background: #f3f3f3;
+    border-radius: 14px;
+    padding: 12px 18px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+
+.mylistings-image img {
+    width: 190px;
+    height: 115px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.mylistings-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+}
+
+.mylistings-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #111;
+}
+
+.mylistings-car-title {
+    font-weight: 600;
+}
+
+.mylistings-car-price {
+    font-weight: 600;
+}
+
+.mylistings-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+}
+
+.mylistings-btn {
+    min-width: 86px;
+    padding: 6px 20px;
+    border-radius: 999px;
+    border: 1px solid #c8c8c8;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.mylistings-btn:hover {
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    transform: translateY(-1px);
+}
+
+.mylistings-btn.edit:hover {
+    background: #e7f0ff;
+    border-color: #4a7bff;
+}
+
+.mylistings-btn.delete:hover {
+    background: #ffe7e7;
+    border-color: #ff4c4c;
+}
+
+/* --- Create Listing page (Create.cshtml) --- */
+.create-page-wrapper {
+    padding: 40px 40px 60px;
+    background: #f3f3f3;
+    min-height: calc(100vh - 70px);
+}
+
+.create-card {
+    max-width: 1120px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px 30px 26px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.create-card-header {
+    margin-bottom: 22px;
+}
+
+.create-card-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111;
+}
+
+.create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.create-card-body {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 26px;
+    align-items: flex-start;
+}
+
+.create-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.create-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.create-row-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.create-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.create-field label {
+    font-size: 13px;
+    color: #555;
+}
+
+.create-input {
+    border-radius: 8px;
+    border: 1px solid #d5d5d5;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    background-color: #e5e5e5;
+    color: #111;
+}
+
+.create-input:focus {
+    outline: none;
+    border-color: #111;
+}
+
+.create-select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #666 50%),
+                      linear-gradient(135deg, #666 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+}
+
+.create-textarea {
+    min-height: 130px;
+    resize: vertical;
+}
+
+.create-desc-docs-row {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 16px;
+}
+
+.create-documents-section {
+    padding: 14px 18px;
+    background-color: #e5e5e5;
+    border-radius: 12px;
+}
+
+.create-documents-row {
+    display: grid;
+    grid-template-columns: minmax(0, 180px) minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+}
+
+.create-file-field {
+    align-self: flex-end;
+}
+
+.create-file-actions {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.create-file-button {
+    padding: 8px 14px;
+    background: #2c2c2c;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.create-file-upload {
+    padding: 8px 14px;
+    background: #111;
+    color: #fff;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.create-card-right {
+    display: flex;
+    justify-content: center;
+}
+
+.photos-panel {
+    position: relative;
+    width: 100%;
+    min-height: 260px;
+    background: radial-gradient(circle at 10% 0%, #666 0, #111 55%, #000 100%);
+    border-radius: 18px;
+    overflow: hidden;
+    padding: 26px 26px;
+}
+
+.photos-stack {
+    position: absolute;
+    left: 50px;
+    top: 40px;
+    width: 65%;
+    height: 70%;
+}
+
+.photo-frame {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #e5e5e5;
+    border-radius: 6px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.45);
+}
+
+.photo-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+}
+
+.photo-frame-selected {
+    outline: 2px solid #ffffff;
+}
+
+.frame-back {
+    transform: rotate(-8deg);
+    top: 6px;
+    left: -16px;
+}
+
+.frame-middle {
+    transform: rotate(4deg);
+    top: 10px;
+    left: 4px;
+}
+
+.frame-front {
+    transform: rotate(-3deg);
+    top: 22px;
+    left: 16px;
+}
+
+.photos-label {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: rotate(90deg) translateY(-50%);
+    transform-origin: right center;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.photos-controls {
+    position: absolute;
+    right: 28px;
+    bottom: 24px;
+    display: flex;
+    gap: 10px;
+}
+
+.photos-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid #ffffff;
+    background: transparent;
+    color: #ffffff;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.create-actions {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 10px;
+}
+
+.create-btn {
+    min-width: 190px;
+    padding: 12px 24px;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.create-btn-primary {
+    background: #111;
+    color: #fff;
+}
+
+.create-btn-secondary {
+    background: #222;
+    color: #fff;
+}
+
+.create-btn-primary:hover,
+.create-btn-secondary:hover {
+    filter: brightness(1.1);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
             
     }
 
