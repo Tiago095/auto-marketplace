@@ -6,35 +6,42 @@
     var initial = Context.Session.GetString("UserInitial");
 }
 
-<!-- Top navbar (igual à MyListings) -->
-<div class="custom-navbar">
-    <div class="navbar-content">
-        <div class="logo">AutoMatch</div>
-        <nav>
-            <a href="/">Home</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+<!-- Floating Header -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
 
-            @if (username == null)
-            {
-                <a href="/Account/Login" class="signin-btn">Sign In</a>
-            }
-            else
-            {
-                <div class="user-menu-container">
-                    <div class="user-badge" id="userMenuBtn">
-                        <span class="user-name">@username</span>
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+
+                    @if (!string.IsNullOrEmpty(Context.Session.GetString("UserProfileImageUrl")))
+                    {
+                        <img src="@Context.Session.GetString("UserProfileImageUrl")" class="user-avatar" />
+                    }
+                    else
+                    {
                         <div class="user-avatar">@initial</div>
-                    </div>
-
-                    <div class="user-dropdown" id="userDropdown">
-                        <a href="/Listings/MyListings">My Listings</a>
-                        <a href="/Dashboard/Index">Dashboard</a>
-                        <a href="/Account/Logout" style="color: red;">Logout</a>
-                    </div>
+                    }
                 </div>
-            }
-        </nav>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
