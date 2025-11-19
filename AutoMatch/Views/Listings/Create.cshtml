@@ -139,7 +139,6 @@
                         <div class="photos-label">Photos</div>
                         <div class="photos-controls">
                             <button type="button" class="photos-btn" id="addPhotoBtn">+</button>
-                            <button type="button" class="photos-btn" id="removePhotoBtn">-</button>
                         </div>
                     </div>
                 </div>
@@ -255,14 +254,27 @@
                         document.getElementById("photoPreview3")
                     ];
 
-                    previews.forEach((preview, index) => {
-                        if (!preview) return;
-                        const file = files[index];
-                        if (file) {
-                            const url = URL.createObjectURL(file);
+                    // Se tiver múltiplas imagens, preencher os slots
+                    if (files.length > 1) {
+                        previews.forEach((preview, index) => {
+                            if (!preview) return;
+                            const file = files[index];
+                            if (file) {
+                                const url = URL.createObjectURL(file);
+                                preview.src = url;
+                            }
+                        });
+                    } else if (files.length === 1) {
+                        // Se tiver apenas 1 imagem, adicionar ao slot selecionado
+                        const preview = previews[selectedSlot];
+                        if (preview && files[0]) {
+                            const url = URL.createObjectURL(files[0]);
                             preview.src = url;
                         }
-                    });
+                    }
+                    
+                    // Limpar o input para permitir selecionar a mesma imagem novamente
+                    photoInput.value = "";
                 });
             }
 

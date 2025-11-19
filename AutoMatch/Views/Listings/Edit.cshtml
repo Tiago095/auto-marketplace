@@ -48,9 +48,14 @@
         <form asp-action="Edit" asp-controller="Listings" asp-route-id="@Model.Id" method="post" class="create-form" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border: 1px solid #f5c6cb; border-radius: 4px;">
+                    <strong>Erros de validação:</strong>
+            <div asp-validation-summary="All" class="text-danger"></div>
+                </div>
+            }
             <input type="hidden" asp-for="Id" />
-            <input type="hidden" id="imagesToDelete" name="ImagesToDelete" />
 
             <div class="create-card-body">
                 <div class="create-card-left">
@@ -128,22 +133,40 @@
                     <div class="photos-panel">
                         <input type="file" id="photoInput" name="Photos" multiple accept="image/*" hidden />
                         <div class="photos-stack">
+                            @{
+                                var existingImages = ViewBag.ExistingImages as List<AutoMatch.Models.Imagens> ?? new List<AutoMatch.Models.Imagens>();
+                            }
                             <div class="photo-frame frame-back" data-slot="0">
-                                <img id="photoPreview1" class="photo-preview" />
+                                <img id="photoPreview1" 
+                                     class="photo-preview"
+                                     @if (existingImages.Count > 0)
+                                     {
+                                         <text>data-image-id="@existingImages[0].Id_Imagem"</text>
+                                         <text>src="@Url.Content("~/images/listings/" + existingImages[0].CaminhoImagem)"</text>
+                                     } />
                             </div>
                             <div class="photo-frame frame-middle" data-slot="1">
-                                <img id="photoPreview2" class="photo-preview" />
-                                   <div class="photo-frame frame-front" data-slot="2">
-                                <img id="photoPreview3"
+                                <img id="photoPreview2" 
                                      class="photo-preview"
-                                     data-image-id="@(ViewBag.CurrentImageId ?? 0)"
-                                     src="@(ViewBag.CurrentImageFile != null ? Url.Content("~/images/listings/" + (string)ViewBag.CurrentImageFile) : "")" />
+                                     @if (existingImages.Count > 1)
+                                     {
+                                         <text>data-image-id="@existingImages[1].Id_Imagem"</text>
+                                         <text>src="@Url.Content("~/images/listings/" + existingImages[1].CaminhoImagem)"</text>
+                                     } />
+                            </div>
+                            <div class="photo-frame frame-front" data-slot="2">
+                                <img id="photoPreview3" 
+                                     class="photo-preview"
+                                     @if (existingImages.Count > 2)
+                                     {
+                                         <text>data-image-id="@existingImages[2].Id_Imagem"</text>
+                                         <text>src="@Url.Content("~/images/listings/" + existingImages[2].CaminhoImagem)"</text>
+                                     } />
                             </div>
                         </div>
                         <div class="photos-label">Photos</div>
                         <div class="photos-controls">
                             <button type="button" class="photos-btn" id="addPhotoBtn">+</button>
-                            <button type="button" class="photos-btn" id="removePhotoBtn">-</button>
                         </div>
                     </div>
                 </div>
@@ -183,6 +206,7 @@
             </div>
 
             <div class="create-actions">
+                <a href="/Listings/MyListings" class="create-btn create-btn-secondary">Cancel</a>
                 <button type="submit" class="create-btn create-btn-primary">Save changes</button>
             </div>
         </form>
@@ -190,6 +214,7 @@
 </div>
 
 @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         // Dropdown do utilizador
         document.addEventListener("click", function (e) {
@@ -211,8 +236,19 @@
             const brandSelect = document.getElementById("brandSelect");
             const modelSelect = document.getElementById("modelSelect");
             const addPhotoBtn = document.getElementById("addPhotoBtn");
-            const removePhotoBtn = document.getElementById("removePhotoBtn");
             const photoInput = document.getElementById("photoInput");
+            const form = document.querySelector("form");
+            
+            // Debug: verificar submissão do formulário
+            if (form) {
+                form.addEventListener("submit", function(e) {
+                    console.log("Form submitting...");
+                    console.log("Marca:", brandSelect.value);
+                    console.log("Modelo:", modelSelect.value);
+                    console.log("Tipo:", document.querySelector("select[name='Tipo']")?.value);
+                });
+            }
+            
             if (!brandSelect || !modelSelect) return;
 
             const allModelOptions = Array.from(modelSelect.querySelectorAll("option[data-marca]"));
@@ -237,30 +273,8 @@
                 });
             }
 
-            if (removePhotoBtn) {
-                removePhotoBtn.addEventListener("click", function () {
-                    const previewIds = ["photoPreview1", "photoPreview2", "photoPreview3"]; 
-                    const preview = document.getElementById(previewIds[selectedSlot] || "");
-                    if (!preview) return;
-
-                    const imgId = preview.getAttribute("data-image-id");
-                    if (imgId && imgId !== "0") {
-                        const hidden = document.getElementById("imagesToDelete");
-                        if (hidden) {
-                            const existing = hidden.value ? hidden.value.split(",") : [];
-                            if (!existing.includes(imgId)) {
-                                existing.push(imgId);
-                                hidden.value = existing.join(",");
-                            }
-                        }
-                    }
-
-                    preview.src = "";
-                });
-            }
-
             if (photoInput) {
-                photoInput.addEventListener("change", function () {
+                photoInput.addEventListener("change", function (e) {
                     const files = Array.from(photoInput.files || []);
                     if (files.length === 0) return;
 
@@ -270,14 +284,27 @@
                         document.getElementById("photoPreview3")
                     ];
 
-                    previews.forEach((preview, index) => {
-                        if (!preview) return;
-                        const file = files[index];
-                        if (file) {
-                            const url = URL.createObjectURL(file);
+                    // Se tiver múltiplas imagens, preencher os slots
+                    if (files.length > 1) {
+                        previews.forEach((preview, index) => {
+                            if (!preview) return;
+                            const file = files[index];
+                            if (file) {
+                                const url = URL.createObjectURL(file);
+                                preview.src = url;
+                            }
+                        });
+                    } else if (files.length === 1) {
+                        // Se tiver apenas 1 imagem, adicionar ao slot selecionado
+                        const preview = previews[selectedSlot];
+                        if (preview && files[0]) {
+                            const url = URL.createObjectURL(files[0]);
                             preview.src = url;
                         }
-                    });
+                    }
+                    
+                    // Limpar o input para permitir selecionar a mesma imagem novamente
+                    photoInput.value = "";
                 });
             }
 
