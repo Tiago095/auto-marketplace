@@ -23,8 +23,7 @@ namespace AutoMatch.Controllers
             return View();
         }
 
-        // ===== POST LOGIN =====
-        // ===== POST LOGIN =====
+        //  POST LOGIN 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
@@ -75,7 +74,7 @@ namespace AutoMatch.Controllers
 
 
 
-        // ===== POST REGISTER =====
+        //  POST REGISTER 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -153,7 +152,7 @@ namespace AutoMatch.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ===== LOGOUT =====
+        //  LOGOUT 
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
