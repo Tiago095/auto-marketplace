@@ -1,0 +1,191 @@
+@model AutoMatch.Models.ViewModels.BookingsViewModel
+@{
+    ViewData["Title"] = "Bookings";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<!-- Floating Header -->
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="/" class="nav-btn">Home</a>
+        <a href="/Home/Index#about" class="nav-btn">About</a>
+        <a href="/Home/Index#contact" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">
+                Sign In
+            </a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    <div class="user-avatar">@initial</div>
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Anuncios/Create">Create Ad</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
+                        <span>Messages</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="bookings-section">
+                <h1>Bookings</h1>
+                <p class="subtitle">Review and manage your appointments</p>
+
+                <div class="booking-filters">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select class="filter-input">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Vehicle</label>
+                        <select class="filter-input">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range</label>
+                        <input class="filter-input" type="text" placeholder="Select" />
+                    </div>
+                    <div class="filter-group">
+                        <label>Buyer</label>
+                        <input class="filter-input" type="text" placeholder="Name" />
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn-apply">Apply</button>
+                    </div>
+                </div>
+
+                <div class="booking-table-card">
+                    <table class="booking-table">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Buyer</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Bookings != null && Model.Bookings.Any())
+                            {
+                                foreach (var b in Model.Bookings)
+                                {
+                                    <tr>
+                                        <td>@b.Vehicle</td>
+                                        <td>@b.Buyer</td>
+                                        <td>@b.Date.ToString("dd MMMM yyyy")</td>
+                                        <td>@b.Status</td>
+                                        <td><button class="btn-secondary">Edit</button></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5">No bookings found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // user dropdown
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
+        // sidebar + transicao
+        document.querySelectorAll('.sidebar-btn[data-target]').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const url = this.getAttribute('data-target');
+                const main = document.querySelector('.dashboard-main');
+                if (!url || !main) {
+                    window.location.href = url;
+                    return;
+                }
+                main.classList.add('page-transition-out');
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 220);
+            });
+        });
+    </script>
+}
