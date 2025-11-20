@@ -11,32 +11,22 @@
 <div class="floating-header">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
-        <a href="/" class="nav-btn">Home</a>
-        <a href="/Home/Index#about" class="nav-btn">About</a>
-        <a href="/Home/Index#contact" class="nav-btn">Contact</a>
-
-        @if (username == null)
-        {
-            <a href="/Account/Login" class="nav-btn signin">
-                Sign In
-            </a>
-        }
-        else
-        {
-            <div class="user-menu-container">
-                <div class="user-badge" id="userMenuBtn">
-                    <span class="user-name">@username</span>
-                    <div class="user-avatar">@initial</div>
-                </div>
-
-                <div class="user-dropdown" id="userDropdown">
-                    <a href="/Account/Profile">Profile</a>
-                    <a href="/Anuncios/Create">Create Ad</a>
-                    <a href="/Dashboard/Index">Dashboard</a>
-                    <a href="/Account/Logout" style="color: red;">Logout</a>
-                </div>
+        <a href="/Home/Index" class="nav-btn">Home</a>
+        <a href="/Home/About" class="nav-btn">About</a>
+        <a href="/Home/Contact" class="nav-btn">Contact</a>
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                <div class="user-avatar">@initial</div>
             </div>
-        }
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Anuncios/Create">Create Ad</a>
+                <a href="/DashBoard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: red;">Logout</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -46,38 +36,38 @@
             <div class="sidebar-logo-dot"></div>
             <ul class="sidebar-menu">
                 <li>
-                    <button class="sidebar-btn active" type="button">
-                        <span class="icon">●</span>
+                    <button class="sidebar-btn active" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
                         <span>Dashboard</span>
                     </button>
                 </li>
                 <li>
-                    <button class="sidebar-btn" type="button">
-                        <span class="icon">▢</span>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
                         <span>Bookings</span>
                     </button>
                 </li>
                 <li>
-                    <button class="sidebar-btn" type="button">
-                        <span class="icon">▢</span>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
                         <span>Messages</span>
                     </button>
                 </li>
                 <li>
-                    <button class="sidebar-btn" type="button">
-                        <span class="icon">▢</span>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
                         <span>Notifications</span>
                     </button>
                 </li>
                 <li>
-                    <button class="sidebar-btn" type="button">
-                        <span class="icon">▢</span>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
                         <span>Documents</span>
                     </button>
                 </li>
                 <li>
-                    <button class="sidebar-btn" type="button">
-                        <span class="icon">▢</span>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
                         <span>Sales</span>
                     </button>
                 </li>
@@ -86,7 +76,7 @@
 
         <main class="dashboard-main">
             <section class="welcome-section">
-                <h1>Welcome Back, Pedro55 !</h1>
+                <h1>Welcome Back!</h1>
                 <p class="subtitle">Pick up where you left off</p>
 
                 <div class="grid-row">
@@ -156,31 +146,13 @@
                         {
                             <div class="booking-content">
                                 <div class="booking-image"></div>
-                                <div class="booking-info">
+                        <div class="booking-info">
                                     <h3>@Model.LatestBooking.CarTitle</h3>
                                     <p>Date: @Model.LatestBooking.DataInicio.ToString("dd MMMM yyyy")</p>
                                     <p>Time: @Model.LatestBooking.DataInicio.ToString("HH:mm")</p>
                                     <button class="btn-view">View More</button>
-</div>
-</div>
-
-@section Scripts {
-    <script>
-        document.addEventListener("click", function (e) {
-            const btn = document.getElementById("userMenuBtn");
-            const dropdown = document.getElementById("userDropdown");
-
-            if (!btn || !dropdown) return;
-
-            if (btn.contains(e.target)) {
-                dropdown.classList.toggle("show");
-            }
-            else if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove("show");
-            }
-        });
-    </script>
-}
+                                </div>
+                            </div>
                         }
                         else
                         {
@@ -212,3 +184,41 @@
         </main>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // user dropdown
+            document.addEventListener("click", function (e) {
+                const btn = document.getElementById("userMenuBtn");
+                const dropdown = document.getElementById("userDropdown");
+
+                if (!btn || !dropdown) return;
+
+                if (btn.contains(e.target)) {
+                    dropdown.classList.toggle("show");
+                }
+                else if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove("show");
+                }
+            });
+
+            // sidebar + transicao
+            document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var url = this.getAttribute('data-target');
+                    var main = document.querySelector('.dashboard-main');
+                    if (!url) return;
+                    if (main) {
+                        main.classList.add('page-transition-out');
+                        setTimeout(function () {
+                            window.location.href = url;
+                        }, 220);
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
+}

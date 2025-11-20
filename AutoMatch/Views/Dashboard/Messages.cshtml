@@ -1,0 +1,185 @@
+@model AutoMatch.Models.ViewModels.MessagesViewModel
+@{
+    ViewData["Title"] = "Messages";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="/Home/Index" class="nav-btn">Home</a>
+        <a href="/Home/About" class="nav-btn">About</a>
+        <a href="/Home/Contact" class="nav-btn">Contact</a>
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                <div class="user-avatar">@initial</div>
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Anuncios/Create">Create Ad</a>
+                <a href="/DashBoard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: red;">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn active" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
+                        <span>Messages</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="dashboard-main messages-main">
+            <div class="messages-layout">
+                <section class="conversations-list">
+                    <h1>Messaging</h1>
+
+                    <div class="conv-search">
+                        <input type="text" placeholder="Search conversations..." />
+                    </div>
+
+                    <div class="conv-items">
+                        @if (Model.Conversas != null && Model.Conversas.Any())
+                        {
+                            var firstId = Model.Conversas.First().Id;
+                            foreach (var c in Model.Conversas)
+                            {
+                                var isActive = c.Id == firstId;
+                                <div class="conv-item @(isActive ? "active" : "")">
+                                    <div class="conv-avatar @(c.Online ? "" : "muted")"></div>
+                                    <div class="conv-info">
+                                        <div class="conv-name">@c.Nome</div>
+                                        <div class="conv-meta">@c.DataUltima.ToString("g")</div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>No conversations.</p>
+                        }
+                    </div>
+                </section>
+
+                @if (Model.Mensagens != null && Model.Mensagens.Any())
+                {
+                    <section class="chat-view">
+                        <div class="chat-header">
+                            @{ var first = Model.Mensagens.First(); }
+                            <div class="chat-bubble @(first.IsOutgoing ? "outgoing" : "incoming")">@first.Texto</div>
+                            <span class="chat-time">@first.Data.ToString("HH:mm")</span>
+                        </div>
+
+                        <div class="chat-body">
+                            @if (Model.Mensagens.Count > 1)
+                            {
+                                foreach (var m in Model.Mensagens.Skip(1))
+                                {
+                                    <div class="chat-meta">@m.Data.ToString("HH:mm")</div>
+                                    <div class="chat-bubble @(m.IsOutgoing ? "outgoing" : "incoming")">@m.Texto</div>
+                                }
+                            }
+                        </div>
+
+                        <div class="chat-input-area">
+                            <input type="text" placeholder="Write a message..." />
+                            <button class="chat-send">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </section>
+                }
+                else
+                {
+                    <section class="chat-view chat-view-empty">
+                        <div class="chat-body" style="display:flex;align-items:center;justify-content:center;color:#888;font-size:14px;">
+                            Select a conversation to start chatting.
+                        </div>
+                    </section>
+                }
+            </div>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // dropdown user
+            document.addEventListener("click", function (e) {
+                const btn = document.getElementById("userMenuBtn");
+                const dropdown = document.getElementById("userDropdown");
+
+                if (!btn || !dropdown) return;
+
+                if (btn.contains(e.target)) {
+                    dropdown.classList.toggle("show");
+                }
+                else if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove("show");
+                }
+            });
+
+            // sidebar + transicao
+            document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var url = this.getAttribute('data-target');
+                    var main = document.querySelector('.dashboard-main');
+                    if (!url) return;
+                    if (main) {
+                        main.classList.add('page-transition-out');
+                        setTimeout(function () {
+                            window.location.href = url;
+                        }, 220);
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
+}

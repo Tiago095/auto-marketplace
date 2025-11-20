@@ -1,0 +1,191 @@
+@model AutoMatch.Models.ViewModels.SalesViewModel
+@{
+    ViewData["Title"] = "Sales";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="/Home/Index" class="nav-btn">Home</a>
+        <a href="/Home/About" class="nav-btn">About</a>
+        <a href="/Home/Contact" class="nav-btn">Contact</a>
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    <div class="user-avatar">@initial</div>
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Anuncios/Create">Create Ad</a>
+                    <a href="/DashBoard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+     </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
+                        <span>Messages</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn active" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="dashboard-main sales-main">
+            <div class="sales-wrapper-card">
+                <h1>Sales Overview</h1>
+                <p class="subtitle">Manage you sales, performance and revenue</p>
+
+            <form asp-action="Sales" asp-controller="DashBoard" method="get" class="sales-header-actions">
+                <div class="sales-filter">
+                    <select class="sales-range-select" name="range" onchange="this.form.submit()">
+                        <option value="7d" selected="@(Model.SelectedRange == "7d")">Last 7 days</option>
+                        <option value="1m" selected="@(Model.SelectedRange == "1m")">Last month</option>
+                        <option value="1y" selected="@(Model.SelectedRange == "1y")">Last year</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="sales-top-grid">
+                <div class="card sales-quick">
+                    <h2>Quick Stats</h2>
+                    <p><strong>@Model.TotalVendasConcluidas</strong> Vendas Concluídas</p>
+                    @if (!string.IsNullOrEmpty(Model.TopModel))
+                    {
+                        <div class="top-model">
+                            <h3>Top Model Sold</h3>
+                            <p>@Model.TopModel</p>
+                            <span>@Model.TopModelUnidades unidades vendidas</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="card sales-chart">
+                    <h2>Sales Performance</h2>
+                    <div class="chart-placeholder">
+                        <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="sales-chart-svg">
+                            <polyline points="@Model.ChartPointsSvg" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card sales-table-card">
+                <h2>Recent Sales</h2>
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Vehicle</th>
+                            <th>Value</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentSales != null && Model.RecentSales.Any())
+                        {
+                            foreach (var s in Model.RecentSales)
+                            {
+                                <tr>
+                                    <td>@s.Data.ToString("dd/MM/yyyy")</td>
+                                    <td>@s.Cliente</td>
+                                    <td>@s.Veiculo</td>
+                                    <td>@s.Valor.ToString("N0") €</td>
+                                    <td>@s.Estado</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5">No sales yet.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // dropdown user
+            document.addEventListener("click", function (e) {
+                const btn = document.getElementById("userMenuBtn");
+                const dropdown = document.getElementById("userDropdown");
+
+                if (!btn || !dropdown) return;
+
+                if (btn.contains(e.target)) {
+                    dropdown.classList.toggle("show");
+                }
+                else if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove("show");
+                }
+            });
+
+            // sidebar + transicao
+            document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var url = this.getAttribute('data-target');
+                    var main = document.querySelector('.dashboard-main');
+                    if (!url) return;
+                    if (main) {
+                        main.classList.add('page-transition-out');
+                        setTimeout(function () {
+                            window.location.href = url;
+                        }, 220);
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,181 @@
+@model AutoMatch.Models.ViewModels.DocumentsViewModel
+@{
+    ViewData["Title"] = "Documents";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="/" class="nav-btn">Home</a>
+        <a href="/Home/Index#about" class="nav-btn">About</a>
+        <a href="/Home/Index#contact" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">
+                Sign In
+            </a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    <div class="user-avatar">@initial</div>
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Anuncios/Create">Create Ad</a>
+                    <a href="/DashBoard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
+                        <span>Messages</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn active" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="dashboard-main documents-main">
+            <h1>My Documents</h1>
+
+            <div class="documents-section">
+                <h2>My Listings Documents</h2>
+                <div class="documents-list">
+                    @if (Model.ListingDocuments != null && Model.ListingDocuments.Any())
+                    {
+                        foreach (var d in Model.ListingDocuments)
+                        {
+                            <div class="document-card">
+                                <div class="document-thumb"></div>
+                                <div class="document-info">
+                                    <div class="document-title">@d.CarTitle</div>
+                                    <div class="document-sub">@d.Tipo</div>
+                                </div>
+                                <div class="document-actions">
+                                    <button class="btn-secondary">Edit</button>
+                                    <button class="btn-danger">Delete</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>No listing documents.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="documents-section">
+                <h2>My Purchase Documents</h2>
+                <div class="documents-list">
+                    @if (Model.PurchaseDocuments != null && Model.PurchaseDocuments.Any())
+                    {
+                        foreach (var d in Model.PurchaseDocuments)
+                        {
+                            <div class="document-card">
+                                <div class="document-thumb"></div>
+                                <div class="document-info">
+                                    <div class="document-title">@d.CarTitle</div>
+                                    <div class="document-sub">@d.Tipo</div>
+                                </div>
+                                <div class="document-actions">
+                                    <button class="btn-secondary">Download</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>No purchase documents.</p>
+                    }
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // dropdown user
+            document.addEventListener("click", function (e) {
+                const btn = document.getElementById("userMenuBtn");
+                const dropdown = document.getElementById("userDropdown");
+
+                if (!btn || !dropdown) return;
+
+                if (btn.contains(e.target)) {
+                    dropdown.classList.toggle("show");
+                }
+                else if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove("show");
+                }
+            });
+
+            // sidebar + transition
+            document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var url = this.getAttribute('data-target');
+                    var main = document.querySelector('.dashboard-main');
+                    if (!url) return;
+                    if (main) {
+                        main.classList.add('page-transition-out');
+                        setTimeout(function () {
+                            window.location.href = url;
+                        }, 220);
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
+}
