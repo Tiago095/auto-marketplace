@@ -21,13 +21,12 @@ namespace AutoMatch.Models
         [Required, StringLength(50)]
         public string Rua { get; set; }
 
-        [Required, StringLength(8)]
+        [Required, StringLength(8),ForeignKey("CodigoPostal")]
         public string Codigo_Postal { get; set; }
 
         public Utilizador Utilizador { get; set; }
         public CodigoPostal CodigoPostal { get; set; }
 
-        // IMPORTANTE: isto evita erros no Anuncio
         public ICollection<Anuncio> Anuncios { get; set; }
     }
 }

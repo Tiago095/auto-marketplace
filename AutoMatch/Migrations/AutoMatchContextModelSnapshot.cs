@@ -43,9 +43,6 @@ namespace AutoMatch.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Anuncio"));
 
-                    b.Property<int>("AdministradorId_User")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("Ano")
                         .HasColumnType("datetime2");
 
@@ -79,9 +76,6 @@ namespace AutoMatch.Migrations
                         .HasMaxLength(8)
                         .HasColumnType("nvarchar(8)");
 
-                    b.Property<int>("ModeloId_Modelo")
-                        .HasColumnType("int");
-
                     b.Property<int>("Preco")
                         .HasColumnType("int");
 
@@ -92,11 +86,11 @@ namespace AutoMatch.Migrations
 
                     b.HasKey("Id_Anuncio");
 
-                    b.HasIndex("AdministradorId_User");
+                    b.HasIndex("Id_Admin");
+
+                    b.HasIndex("Id_Modelo");
 
                     b.HasIndex("Id_Vendedor");
-
-                    b.HasIndex("ModeloId_Modelo");
 
                     b.ToTable("Anuncios");
                 });
@@ -406,6 +400,10 @@ namespace AutoMatch.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("ProfileImageUrl")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Senha")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -425,9 +423,6 @@ namespace AutoMatch.Migrations
                 {
                     b.Property<int>("Id_User")
                         .HasColumnType("int");
-
-                    b.Property<string>("CodigoPostalCodigo_Postal")
-                        .HasColumnType("nvarchar(8)");
 
                     b.Property<string>("Codigo_Postal")
                         .IsRequired()
@@ -452,7 +447,7 @@ namespace AutoMatch.Migrations
 
                     b.HasKey("Id_User");
 
-                    b.HasIndex("CodigoPostalCodigo_Postal");
+                    b.HasIndex("Codigo_Postal");
 
                     b.ToTable("Vendedores");
                 });
@@ -493,19 +488,19 @@ namespace AutoMatch.Migrations
                 {
                     b.HasOne("AutoMatch.Models.Administrador", "Administrador")
                         .WithMany()
-                        .HasForeignKey("AdministradorId_User")
+                        .HasForeignKey("Id_Admin")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AutoMatch.Models.Modelo", "Modelo")
+                        .WithMany()
+                        .HasForeignKey("Id_Modelo")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("AutoMatch.Models.Vendedor", "Vendedor")
                         .WithMany("Anuncios")
                         .HasForeignKey("Id_Vendedor")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AutoMatch.Models.Modelo", "Modelo")
-                        .WithMany()
-                        .HasForeignKey("ModeloId_Modelo")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -579,7 +574,7 @@ namespace AutoMatch.Migrations
             modelBuilder.Entity("AutoMatch.Models.Imagens", b =>
                 {
                     b.HasOne("AutoMatch.Models.Anuncio", "Anuncio")
-                        .WithMany()
+                        .WithMany("Imagens")
                         .HasForeignKey("Id_Anuncio")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -640,8 +635,9 @@ namespace AutoMatch.Migrations
                 {
                     b.HasOne("AutoMatch.Models.CodigoPostal", "CodigoPostal")
                         .WithMany()
-                        .HasForeignKey("CodigoPostalCodigo_Postal")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("Codigo_Postal")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("AutoMatch.Models.Utilizador", "Utilizador")
                         .WithMany()
@@ -663,6 +659,11 @@ namespace AutoMatch.Migrations
                         .IsRequired();
 
                     b.Navigation("Reserva");
+                });
+
+            modelBuilder.Entity("AutoMatch.Models.Anuncio", b =>
+                {
+                    b.Navigation("Imagens");
                 });
 
             modelBuilder.Entity("AutoMatch.Models.Vendedor", b =>
