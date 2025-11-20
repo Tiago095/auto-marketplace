@@ -290,6 +290,7 @@ namespace AutoMatch.Controllers
             }
 
             var vendedor = _db.Vendedores.FirstOrDefault(v => v.Id_User == userId.Value);
+            ViewBag.IsSeller = vendedor != null;
             if (vendedor == null)
             {
                 return RedirectToAction("MyListings");

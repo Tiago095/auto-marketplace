@@ -51,13 +51,41 @@
     <div class="mylistings-panel">
         <div class="mylistings-header">
             <h2 class="mylistings-title">My Listings</h2>
-            <a href="/Listings/Create" class="mylistings-add-btn">Add New Listing</a>
+
+            @if (ViewBag.IsSeller == true)
+            {
+                <a href="/Listings/Create" class="mylistings-add-btn">Add New Listing</a>
+            }
+            else
+            {
+                <a class="mylistings-add-btn disabled-btn">Add New Listing</a>
+            }
         </div>
 
-        @if (!Model.Any())
+
+
+        </div>
+
+    @if (!Model.Any())
+    {
+        @if (ViewBag.IsSeller != true)
         {
-            <div class="mylistings-empty">You don't have any listings yet.</div>
+           
+            <div class="seller-info-wrapper">
+                <p class="seller-info-text">
+                    You can’t add listings yet. Become a seller to get started!
+                </p>
+
+                <a href="/Forms/SellerForms" class="become-seller-btn">
+                    Become a Seller
+                </a>
+            </div>
         }
+        else
+        {
+        <div class="mylistings-empty">You don't have any listings yet.</div>            
+        }
+    }
         else
         {
             <div class="mylistings-list">
