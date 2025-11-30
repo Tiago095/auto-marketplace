@@ -160,14 +160,31 @@ body {
     color: #f5f5f5;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    min-height: 520px; 
 }
 
-.sidebar-logo-dot {
-    width: 28px;
-    height: 28px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, #ffffff, #bbbbbb);
-    margin-bottom: 30px;
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+    .sidebar-bottom .sidebar-btn {
+        display: block;
+        width: 100%;
+        text-decoration: none;
+    }
+
+    .sidebar-bottom a.sidebar-btn {
+        text-decoration: none;
+        display: flex; 
+        align-items: center;
+        gap: 12px;
+    }
+
+.admin-page {
+    padding: 120px 40px 30px 40px;
 }
 
 .sidebar-menu {
@@ -216,6 +233,30 @@ body {
 
 .sidebar-btn .icon i {
     font-size: 16px;
+}
+
+.sidebar {
+    background: #111111;
+    border-radius: 20px;
+    padding: 30px 18px;
+    color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Add this */
+}
+
+.sidebar-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Add this new class for the admin button wrapper */
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Main content */
@@ -915,3 +956,166 @@ body {
 .sales-table tbody tr:nth-child(even) {
     background: #1f1f1f;
 }
+
+/* admin PAGE LAYOUT */
+.admin-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+    background: #f6f7f9;
+}
+
+/* ADMIN SIDEBAR */
+.admin-sidebar {
+    background: #111;
+    color: #fff;
+    padding: 30px 18px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 520px; 
+}
+
+.admin-logo {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+.admin-nav .nav-item {
+    display: block;
+    padding: 12px 10px;
+    margin-bottom: 8px;
+    color: #ddd;
+    border-radius: 10px;
+    transition: 0.2s;
+}
+
+    .admin-nav .nav-item:hover {
+        background: #222;
+        color: #fff;
+    }
+
+/*.admin-sidebar {
+    background: #111;
+    color: #fff;
+    padding: 30px 18px;*/ /* Changed from 25px 20px to match regular sidebar */
+    /*display: flex;
+    flex-direction: column;
+    justify-content: space-between;*/ /* Add this */
+/*}*/
+
+/* Add this for the back button at bottom */
+.admin-sidebar-bottom {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* MAIN CONTENT */
+.admin-main {
+    padding: 30px;
+}
+
+/* ADMIN TOPBAR */
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+/* admin CARD GRID */
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.admin-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0px 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+    .admin-card h3 {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+.card-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* admin PANEL BLOCKS */
+.admin-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.panel-block {
+    background: #fff;
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0px 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+    .panel-block h3 {
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+.user-menu-container {
+    position: relative;
+}
+
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: #fff;
+    border-radius: 18px;
+    cursor: pointer;
+    font-weight: 500;
+    border: 1px solid #ddd;
+}
+
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    background: #fff;
+    width: 180px;
+    border-radius: 0 0 18px 18px;
+    padding: 10px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    display: none;
+}
+
+    .user-dropdown.show {
+        display: block;
+    }
+
+    .user-dropdown a {
+        display: block;
+        padding: 12px 18px;
+        color: #333;
+    }
+
+        .user-dropdown a:hover {
+            background: #f4f4f4;
+        }
