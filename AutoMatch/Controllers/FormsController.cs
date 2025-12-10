@@ -1,4 +1,5 @@
 ﻿using AutoMatch.Data;
+using AutoMatch.Models;
 using AutoMatch.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,6 +25,22 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // Check if user already has a pending application
+            var existingApplication = _db.SellerApplications
+                .FirstOrDefault(sa => sa.UserId == userId && sa.Status == "Pending");
+
+            if (existingApplication != null)
+            {
+                TempData["Info"] = "You already have a pending application under review.";
+            }
+
+            // Check if user is already a seller
+            var isAlreadySeller = _db.Vendedores.Any(v => v.Id_User == userId);
+            if (isAlreadySeller)
+            {
+                TempData["Info"] = "You are already registered as a seller.";
+            }
+
             var model = BuildSellerFormViewModel(userId.Value);
             return View(model);
         }
@@ -40,7 +57,25 @@ namespace AutoMatch.Controllers
 
             LoadPostalCodeOptions();
 
-            // Tem de aceitar os termos para o formulário ser considerado válido
+            // Check if user already has a pending application
+            var existingApplication = _db.SellerApplications
+                .FirstOrDefault(sa => sa.UserId == userId.Value && sa.Status == "Pending");
+
+            if (existingApplication != null)
+            {
+                TempData["Error"] = "You already have a pending application. Please wait for review.";
+                return RedirectToAction("SellerForms");
+            }
+
+            // Check if user is already a seller
+            var isAlreadySeller = _db.Vendedores.Any(v => v.Id_User == userId.Value);
+            if (isAlreadySeller)
+            {
+                TempData["Error"] = "You are already registered as a seller.";
+                return RedirectToAction("SellerForms");
+            }
+
+            // Validate terms acceptance
             if (!model.AcceptTerms)
             {
                 ModelState.AddModelError(nameof(model.AcceptTerms), "You must accept the Seller Terms & Conditions.");
@@ -52,18 +87,33 @@ namespace AutoMatch.Controllers
                 model.FullName = baseModel.FullName;
                 model.Email = baseModel.Email;
                 model.UserName = baseModel.UserName;
-
                 return View(model);
             }
 
-            TempData["SellerFormSubmitted"] = "Your application has been sent for review.";
+            // Create new seller application
+            var application = new SellerApplication
+            {
+                UserId = userId.Value,
+                SellingType = model.SellingType,
+                DocumentNumber = model.DocumentNumber,
+                PhoneNumber = model.PhoneNumber,
+                PostalCode = model.PostalCode,
+                PreferredContactMethod = model.PreferredContactMethod,
+                AcceptTerms = model.AcceptTerms,
+                SubmissionDate = DateTime.UtcNow,
+                Status = "Pending"
+            };
+
+            _db.SellerApplications.Add(application);
+            _db.SaveChanges();
+
+            TempData["SellerFormSubmitted"] = "Your application has been sent for review. You will be notified within 24-48 hours.";
             return RedirectToAction("SellerForms");
         }
 
         private SellerFormViewModel BuildSellerFormViewModel(int userId)
         {
             var user = _db.Utilizadores.FirstOrDefault(u => u.Id_User == userId);
-
             var comprador = _db.Compradores.FirstOrDefault(c => c.Id_User == userId);
             var vendedor = _db.Vendedores.FirstOrDefault(v => v.Id_User == userId);
 
@@ -71,7 +121,6 @@ namespace AutoMatch.Controllers
             string? postalCode = rawPostalCode == "0000-000" ? null : rawPostalCode;
 
             string? rawContactos = vendedor?.Contactos ?? comprador?.Contactos;
-
             string? contactos = string.IsNullOrWhiteSpace(rawContactos) || rawContactos == "N/A" ? null : rawContactos;
 
             LoadPostalCodeOptions();
@@ -83,7 +132,6 @@ namespace AutoMatch.Controllers
                 PostalCode = postalCode,
                 PreferredContactMethod = "Email",
                 PhoneNumber = contactos,
-
                 FullName = user?.Nome,
                 Email = user?.Email,
                 UserName = user?.UserName

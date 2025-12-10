@@ -54,11 +54,19 @@
         <div class="sidebar">
             <ul class="sidebar-menu">
                 <li>
-                    <button class="sidebar-btn active" onclick="navigateTo('dashboard')">
-                        Dashboard
-                    </button>
+                    <a href="@Url.Action("DashAdmin", "Admin")" class="sidebar-btn active">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("AdminForms", "Admin")" class="sidebar-btn">
+                        <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
+                        <span>Form Submissions</span>
+                    </a>
                 </li>
             </ul>
+            
 
             <div class="sidebar-bottom">
                 <a href="@Url.Action("Index", "Dashboard")" class="sidebar-btn" style="text-decoration: none;">
