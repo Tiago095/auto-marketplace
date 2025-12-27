@@ -178,6 +178,7 @@ namespace AutoMatch.Controllers
 
             var comprador = _db.Compradores.FirstOrDefault(c => c.Id_User == user.Id_User);
             bool isSeller = _db.Vendedores.Any(v => v.Id_User == userId);
+            bool isBuyer = comprador != null;
 
             ViewBag.PostalList = _db.CodigoPostais.OrderBy(c => c.Localidade).ToList();
 
@@ -191,6 +192,7 @@ namespace AutoMatch.Controllers
                     ? user.ProfileImageUrl
                     : $"https://ui-avatars.com/api/?name={user.UserName}&background=111&color=fff",
                 IsSeller = isSeller,
+                IsBuyer = isBuyer,
 
                 // From comprador table
                 Address = comprador?.Rua ?? "Not defined",

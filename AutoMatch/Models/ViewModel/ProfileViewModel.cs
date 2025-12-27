@@ -14,7 +14,7 @@ namespace AutoMatch.Models.ViewModels
         public string ProfileImageUrl { get; set; }
 
         public bool IsSeller { get; set; }
-
+        public bool IsBuyer { get; set; }
 
         // From Compradores
         public string Address { get; set; }
