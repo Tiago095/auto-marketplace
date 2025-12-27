@@ -25,20 +25,20 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Check if user already has a pending application
+            // Optional: show a message if there is already a pending application
             var existingApplication = _db.SellerApplications
-                .FirstOrDefault(sa => sa.UserId == userId && sa.Status == "Pending");
-
+                .FirstOrDefault(sa => sa.UserId == userId.Value && sa.Status == "Pending");
             if (existingApplication != null)
             {
                 TempData["Info"] = "You already have a pending application under review.";
             }
 
-            // Check if user is already a seller
+            // If already a seller, don’t let them apply again
             var isAlreadySeller = _db.Vendedores.Any(v => v.Id_User == userId);
             if (isAlreadySeller)
             {
                 TempData["Info"] = "You are already registered as a seller.";
+                return RedirectToAction("MyListings", "Listings");
             }
 
             var model = BuildSellerFormViewModel(userId.Value);
@@ -57,17 +57,16 @@ namespace AutoMatch.Controllers
 
             LoadPostalCodeOptions();
 
-            // Check if user already has a pending application
+            // Block multiple pending applications
             var existingApplication = _db.SellerApplications
                 .FirstOrDefault(sa => sa.UserId == userId.Value && sa.Status == "Pending");
-
             if (existingApplication != null)
             {
                 TempData["Error"] = "You already have a pending application. Please wait for review.";
                 return RedirectToAction("SellerForms");
             }
 
-            // Check if user is already a seller
+            // Block if already a seller
             var isAlreadySeller = _db.Vendedores.Any(v => v.Id_User == userId.Value);
             if (isAlreadySeller)
             {
@@ -90,7 +89,7 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
-            // Create new seller application
+            // Create new seller application (PENDING)
             var application = new SellerApplication
             {
                 UserId = userId.Value,

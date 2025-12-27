@@ -73,6 +73,8 @@ namespace AutoMatch.Controllers
             // Encontrar o vendedor associado a este utilizador (se existir)
             var vendedor = _db.Vendedores.FirstOrDefault(v => v.Id_User == userId.Value);
 
+            ViewBag.IsSeller = vendedor != null;
+
             List<Anuncio> anuncios;
 
             if (vendedor == null)
@@ -127,6 +129,7 @@ namespace AutoMatch.Controllers
 
             // Garante que existe um vendedor associado a este utilizador
             var vendedor = _db.Vendedores.FirstOrDefault(v => v.Id_User == userId.Value);
+
             if (vendedor == null)
             {
                 vendedor = new Vendedor
