@@ -232,22 +232,43 @@ function onPostalChange() {
     </div>
 
     <div class="car-list" id="ordersList">
-        @foreach (var order in Model.Orders)
+        @if (Model.Orders != null && Model.Orders.Any())
         {
-            @*@<div class="car-box">
-                <img src="@order.Image" />
-                <strong>@order.Name</strong><br>
-                <small>@order.Date.ToString("dd MMM yyyy")</small><br>
-                <span class="status">@order.Status</span>
-            </div>*@
+            @foreach (var order in Model.Orders)
+            {
+                <div class="car-box">
+                    <img src="@order.ImageUrl" alt="@order.Name" />
+                    <strong>@order.Name</strong><br>
+                    <small>@order.Date</small><br>
+                    <span class="status">@order.Status</span>
+                </div>
+            }
+        }
+        else
+        {
+            <p>You don't have any orders yet.</p>
         }
     </div>
 
     <div class="car-list" id="listingsList" style="display:none;">
         @if (Model.IsSeller)
         {
-            @* listings for sellers would go here *@
-            <p>You don't have any listings yet.</p>
+            @if (Model.Listings != null && Model.Listings.Any())
+            {
+                @foreach (var listing in Model.Listings)
+                {
+                    <div class="car-box">
+                        <img src="@listing.ImageUrl" alt="@listing.Name" />
+                        <strong>@listing.Name</strong><br>
+                        <small>Created: @listing.CreatedAt</small><br>
+                        <span class="status">@listing.State</span>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>You don't have any listings yet.</p>
+            }
         }
         else
         {

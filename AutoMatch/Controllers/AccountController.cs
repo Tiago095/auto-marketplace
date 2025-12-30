@@ -168,16 +168,16 @@ namespace AutoMatch.Controllers
         }
 
         // PROFILE PAGE
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login");
 
-            var user = _db.Utilizadores.FirstOrDefault(u => u.Id_User == userId);
+            var user = await _db.Utilizadores.FirstOrDefaultAsync(u => u.Id_User == userId);
             if (user == null) return RedirectToAction("Login");
 
-            var comprador = _db.Compradores.FirstOrDefault(c => c.Id_User == user.Id_User);
-            bool isSeller = _db.Vendedores.Any(v => v.Id_User == userId);
+            var comprador = await _db.Compradores.FirstOrDefaultAsync(c => c.Id_User == user.Id_User);
+            bool isSeller = await _db.Vendedores.AnyAsync(v => v.Id_User == userId);
             bool isBuyer = comprador != null;
 
             ViewBag.PostalList = _db.CodigoPostais.OrderBy(c => c.Localidade).ToList();
@@ -197,30 +197,89 @@ namespace AutoMatch.Controllers
                 // From comprador table
                 Address = comprador?.Rua ?? "Not defined",
                 PostalCode = comprador?.Codigo_Postal ?? "0000-000",
-                Phone = comprador?.Contactos ?? "Not defined",
-
-                //Orders = _db.Encomendas
-                //    .Where(e => e.Id_User == user.Id_User)
-                //    .Select(e => new CarOrderViewModel
-                //    {
-                //        Name = e.Titulo,
-                //        ImageUrl = e.Imagem,
-                //        Date = e.Data.ToString("dd/MM/yyyy"),
-                //        Status = e.Estado
-                //    })
-                //    .ToList(),
-
-                //Listings = _db.Listings
-                //    .Where(a => a.Id_User == user.Id_User)
-                //    .Select(a => new CarListingViewModel
-                //    {
-                //        Name = a.Titulo,
-                //        ImageUrl = a.Imagem,
-                //        CreatedAt = a.DataCriacao.ToString("dd/MM/yyyy"),
-                //        State = a.Estado
-                //    })
-                //    .ToList()
+                Phone = comprador?.Contactos ?? "Not defined"
             };
+
+            // Buscar compras (Orders) do comprador
+            if (comprador != null)
+            {
+                var compras = await _db.Compras
+                    .Include(c => c.Anuncio)
+                    .Where(c => c.Id_Comprador == comprador.Id_User)
+                    .OrderByDescending(c => c.Data_Compra)
+                    .ToListAsync();
+
+                if (compras.Any())
+                {
+                    // Buscar todas as imagens de uma vez para otimizar
+                    var anuncioIds = compras.Select(c => c.Id_Anuncio).Distinct().ToList();
+                    var todasImagens = await _db.Imagens
+                        .Where(i => anuncioIds.Contains(i.Id_Anuncio))
+                        .OrderBy(i => i.Id_Anuncio)
+                        .ThenBy(i => i.Id_Imagem)
+                        .ToListAsync();
+
+                    // Agrupar por Id_Anuncio e pegar a primeira de cada
+                    var primeiraImagemPorAnuncio = todasImagens
+                        .GroupBy(i => i.Id_Anuncio)
+                        .ToDictionary(g => g.Key, g => g.First().CaminhoImagem);
+
+                    foreach (var compra in compras)
+                    {
+                        var imageUrl = primeiraImagemPorAnuncio.ContainsKey(compra.Id_Anuncio)
+                            ? primeiraImagemPorAnuncio[compra.Id_Anuncio]
+                            : "/images/placeholder-car.jpg";
+
+                        vm.Orders.Add(new CarOrderViewModel
+                        {
+                            Name = compra.Anuncio?.Titulo ?? "Anúncio",
+                            ImageUrl = imageUrl,
+                            Date = compra.Data_Compra.ToString("dd/MM/yyyy"),
+                            Status = compra.Estado ? "Ativo" : "Inativo"
+                        });
+                    }
+                }
+            }
+
+            // Buscar listings (Anuncios) do vendedor
+            if (isSeller)
+            {
+                var anuncios = await _db.Anuncios
+                    .Where(a => a.Id_Vendedor == userId)
+                    .OrderByDescending(a => a.Ano)
+                    .ToListAsync();
+
+                if (anuncios.Any())
+                {
+                    // Buscar todas as imagens de uma vez para otimizar
+                    var anuncioIds = anuncios.Select(a => a.Id_Anuncio).ToList();
+                    var todasImagens = await _db.Imagens
+                        .Where(i => anuncioIds.Contains(i.Id_Anuncio))
+                        .OrderBy(i => i.Id_Anuncio)
+                        .ThenBy(i => i.Id_Imagem)
+                        .ToListAsync();
+
+                    // Agrupar por Id_Anuncio e pegar a primeira de cada
+                    var primeiraImagemPorAnuncio = todasImagens
+                        .GroupBy(i => i.Id_Anuncio)
+                        .ToDictionary(g => g.Key, g => g.First().CaminhoImagem);
+
+                    foreach (var anuncio in anuncios)
+                    {
+                        var imageUrl = primeiraImagemPorAnuncio.ContainsKey(anuncio.Id_Anuncio)
+                            ? primeiraImagemPorAnuncio[anuncio.Id_Anuncio]
+                            : "/images/placeholder-car.jpg";
+
+                        vm.Listings.Add(new CarListingViewModel
+                        {
+                            Name = anuncio.Titulo,
+                            ImageUrl = imageUrl,
+                            CreatedAt = anuncio.Ano.ToString("dd/MM/yyyy"),
+                            State = anuncio.Estado ? "Ativo" : "Inativo"
+                        });
+                    }
+                }
+            }
 
             return View(vm);
         }
