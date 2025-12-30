@@ -83,6 +83,21 @@
                 <h1>Bookings</h1>
                 <p class="subtitle">Review and manage your appointments</p>
 
+                @if (ViewBag.IsVendedor == false)
+                {
+                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 10px; padding: 24px; margin-bottom: 24px; text-align: center;">
+                        <h2 style="margin: 0 0 12px 0; color: #856404; font-size: 20px;">Acesso Restrito</h2>
+                        <p style="margin: 0 0 20px 0; color: #856404; font-size: 14px;">
+                            Esta funcionalidade está disponível apenas para vendedores. Torne-se vendedor para gerir as reservas dos seus anúncios.
+                        </p>
+                        <a href="/Forms/SellerForms" class="become-seller-booking-btn" style="display: inline-block; padding: 12px 32px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; transition: background 0.2s;">
+                            Tornar-me Vendedor
+                        </a>
+                    </div>
+                }
+
+                @if (ViewBag.IsVendedor == true)
+                {
                 <div class="booking-filters">
                     <div class="filter-group">
                         <label>Status</label>
@@ -126,12 +141,24 @@
                             {
                                 foreach (var b in Model.Bookings)
                                 {
-                                    <tr>
+                                    <tr data-reserva-id="@b.ReservaId">
                                         <td>@b.Vehicle</td>
                                         <td>@b.Buyer</td>
-                                        <td>@b.Date.ToString("dd MMMM yyyy")</td>
-                                        <td>@b.Status</td>
-                                        <td><button class="btn-secondary">Edit</button></td>
+                                        <td>@b.Date.ToString("dd MMM yyyy HH:mm") - @b.DataFim.ToString("HH:mm")</td>
+                                        <td>
+                                            <span class="status-badge status-@b.Status.ToLower()">@b.Status</span>
+                                        </td>
+                                        <td>
+                                            @if (b.IsVendedor && b.CanAccept)
+                                            {
+                                                <button class="btn-accept" onclick="acceptBooking(@b.ReservaId)">Accept</button>
+                                                <button class="btn-reject" onclick="rejectBooking(@b.ReservaId)">Reject</button>
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        </td>
                                     </tr>
                                 }
                             }
@@ -144,6 +171,7 @@
                         </tbody>
                     </table>
                 </div>
+                }
             </section>
         </main>
     </div>
@@ -165,6 +193,51 @@
                 dropdown.classList.remove("show");
             }
         });
+
+        // Accept/Reject booking functions
+        function acceptBooking(reservaId) {
+            if (!confirm('Tem certeza que deseja aceitar esta reserva?')) return;
+
+            fetch(`/Dashboard/AcceptBooking?reservaId=${reservaId}`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao aceitar reserva');
+            });
+        }
+
+        function rejectBooking(reservaId) {
+            if (!confirm('Tem certeza que deseja rejeitar esta reserva?')) return;
+
+            fetch(`/Dashboard/RejectBooking?reservaId=${reservaId}`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao rejeitar reserva');
+            });
+        }
 
         // sidebar + transicao
         document.querySelectorAll('.sidebar-btn[data-target]').forEach(btn => {

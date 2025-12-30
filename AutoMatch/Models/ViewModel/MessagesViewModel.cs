@@ -7,6 +7,8 @@ namespace AutoMatch.Models.ViewModels
     {
         public int Id { get; set; }
         public string Nome { get; set; }
+        public string UserName { get; set; }
+        public string ProfileImageUrl { get; set; }
         public string UltimaMensagem { get; set; }
         public DateTime DataUltima { get; set; }
         public bool Online { get; set; }

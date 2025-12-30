@@ -42,9 +42,27 @@ namespace AutoMatch.Controllers
 
             ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
 
-            // Quick stats
-            var pendingBookings = await _context.Reservas
-                .CountAsync(r => r.Id_Comprador == userId && !r.Estado);
+            // Verificar se é vendedor
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+
+            // Quick stats - ajustar para vendedor ou comprador
+            int pendingBookings;
+            if (isVendedor)
+            {
+                // Para vendedor: contar reservas pendentes dos seus anúncios
+                var anunciosIds = await _context.Anuncios
+                    .Where(a => a.Id_Vendedor == userId)
+                    .Select(a => a.Id_Anuncio)
+                    .ToListAsync();
+                pendingBookings = await _context.Reservas
+                    .CountAsync(r => anunciosIds.Contains(r.Id_Anuncio) && !r.Estado);
+            }
+            else
+            {
+                // Para comprador: contar suas reservas pendentes
+                pendingBookings = await _context.Reservas
+                    .CountAsync(r => r.Id_Comprador == userId && !r.Estado);
+            }
 
             // Contar mensagens não lidas: mensagens onde o outro participante enviou e Estado = false
             var unreadMessages = await _context.Notificacoes
@@ -53,8 +71,20 @@ namespace AutoMatch.Controllers
                                 ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
                                  (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
 
-            var newNotifications = await _context.Notificacoes
-                .CountAsync(n => n.Id_Comprador == userId && !n.Estado);
+            // Notificações não lidas - ajustar para vendedor ou comprador
+            int newNotifications;
+            if (isVendedor)
+            {
+                // Para vendedor: notificações recebidas (Id_Vendedor == userId)
+                newNotifications = await _context.Notificacoes
+                    .CountAsync(n => n.Id_Vendedor == userId && !n.Estado);
+            }
+            else
+            {
+                // Para comprador: notificações recebidas (Id_Comprador == userId)
+                newNotifications = await _context.Notificacoes
+                    .CountAsync(n => n.Id_Comprador == userId && !n.Estado);
+            }
 
             var comprador = await _context.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
             var filtersSaved = 0;
@@ -64,48 +94,154 @@ namespace AutoMatch.Controllers
                     .CountAsync(p => p.Id_Comprador == comprador.Id_User);
             }
 
-            // Latest Reserva
-            var latestReserva = await _context.Reservas
-                .Include(r => r.Anuncio)
-                .OrderByDescending(r => r.Data_Inicio)
-                .FirstOrDefaultAsync(r => r.Id_Comprador == userId);
+            // Latest Reserva - ajustar para vendedor ou comprador
+            Reserva latestReserva = null;
+            if (isVendedor)
+            {
+                // Para vendedor: última reserva dos seus anúncios
+                var anunciosIds = await _context.Anuncios
+                    .Where(a => a.Id_Vendedor == userId)
+                    .Select(a => a.Id_Anuncio)
+                    .ToListAsync();
+                latestReserva = await _context.Reservas
+                    .Include(r => r.Anuncio)
+                        .ThenInclude(a => a.Imagens)
+                    .OrderByDescending(r => r.Data_Inicio)
+                    .FirstOrDefaultAsync(r => anunciosIds.Contains(r.Id_Anuncio));
+            }
+            else
+            {
+                // Para comprador: última reserva dele
+                latestReserva = await _context.Reservas
+                    .Include(r => r.Anuncio)
+                        .ThenInclude(a => a.Imagens)
+                    .OrderByDescending(r => r.Data_Inicio)
+                    .FirstOrDefaultAsync(r => r.Id_Comprador == userId);
+            }
 
             DashboardBookingInfo latestBookingVm = null;
-            if (latestReserva != null)
+            if (latestReserva != null && latestReserva.Anuncio != null)
             {
+                // Buscar imagem de capa
+                string? carImageUrl = null;
+                if (latestReserva.Anuncio.Imagens != null && latestReserva.Anuncio.Imagens.Any())
+                {
+                    var orderedImages = latestReserva.Anuncio.Imagens
+                        .Where(i => !string.IsNullOrEmpty(i.CaminhoImagem))
+                        .OrderBy(i =>
+                        {
+                            try
+                            {
+                                var nomeArquivo = System.IO.Path.GetFileName(i.CaminhoImagem);
+                                var numeroParte = nomeArquivo.Split('_')[0];
+                                return int.Parse(numeroParte);
+                            }
+                            catch
+                            {
+                                return 999;
+                            }
+                        })
+                        .Select(i => i.CaminhoImagem)
+                        .FirstOrDefault();
+                    carImageUrl = orderedImages;
+                }
+
                 latestBookingVm = new DashboardBookingInfo
                 {
                     ReservaId = latestReserva.Id_Reserva,
-                    CarTitle = latestReserva.Anuncio?.Titulo ?? "Reserva",
+                    AnuncioId = latestReserva.Id_Anuncio,
+                    CarTitle = latestReserva.Anuncio.Titulo ?? "Reserva",
+                    CarImageUrl = carImageUrl,
                     DataInicio = latestReserva.Data_Inicio,
                     DataFim = latestReserva.Data_Fim
                 };
             }
 
-            // Recent messages 
-            var recentMessages = await _context.Notificacoes
-                .Where(n => n.Id_Comprador == userId && n.Tipo == "Mensagem")
+            // Recent messages - ajustar para vendedor ou comprador
+            var recentMessagesQuery = _context.Notificacoes
+                .Where(n => n.Tipo == "Mensagem" &&
+                            ((isVendedor && n.Id_Vendedor == userId) || 
+                             (!isVendedor && n.Id_Comprador == userId)))
                 .OrderByDescending(n => n.Data_Envio)
-                .Take(2)
-                .Select(n => new DashboardMessageInfo
-                {
-                    NomeRemetente = "Vendedor #" + n.Id_Vendedor,
-                    Texto = n.Mensagem,
-                    Data = n.Data_Envio
-                })
+                .Take(2);
+
+            var recentMessagesList = await recentMessagesQuery
+                .Include(n => n.Comprador)
+                    .ThenInclude(c => c.Utilizador)
+                .Include(n => n.Vendedor)
+                    .ThenInclude(v => v.Utilizador)
                 .ToListAsync();
 
-            // Notifications 
-            var notifications = await _context.Notificacoes
-                .Where(n => n.Id_Comprador == userId)
-                .OrderByDescending(n => n.Data_Envio)
-                .Take(5)
-                .Select(n => new DashboardNotificationInfo
+            var recentMessages = recentMessagesList.Select(n =>
+            {
+                // Determinar o outro participante
+                int? outroParticipanteId = null;
+                string nomeRemetente = "Unknown";
+                string? profileImageUrl = null;
+
+                if (isVendedor)
                 {
+                    // Vendedor recebe mensagem de comprador
+                    outroParticipanteId = n.Id_Comprador;
+                    var comprador = n.Comprador?.Utilizador;
+                    nomeRemetente = comprador?.Nome ?? comprador?.UserName ?? $"User #{n.Id_Comprador}";
+                    profileImageUrl = comprador?.ProfileImageUrl;
+                }
+                else
+                {
+                    // Comprador recebe mensagem de vendedor
+                    outroParticipanteId = n.Id_Vendedor;
+                    var vendedor = n.Vendedor?.Utilizador;
+                    nomeRemetente = vendedor?.Nome ?? vendedor?.UserName ?? $"User #{n.Id_Vendedor}";
+                    profileImageUrl = vendedor?.ProfileImageUrl;
+                }
+
+                return new DashboardMessageInfo
+                {
+                    OutroParticipanteId = outroParticipanteId,
+                    NomeRemetente = nomeRemetente,
+                    ProfileImageUrl = profileImageUrl,
                     Texto = n.Mensagem,
                     Data = n.Data_Envio
-                })
+                };
+            }).ToList();
+
+            // Notifications - ajustar para vendedor ou comprador
+            var notificationsQuery = _context.Notificacoes
+                .Where(n => (isVendedor && n.Id_Vendedor == userId) || 
+                           (!isVendedor && n.Id_Comprador == userId))
+                .OrderByDescending(n => n.Data_Envio)
+                .Take(5);
+
+            var notificationsList = await notificationsQuery
+                .Include(n => n.Comprador)
+                    .ThenInclude(c => c.Utilizador)
+                .Include(n => n.Vendedor)
+                    .ThenInclude(v => v.Utilizador)
                 .ToListAsync();
+
+            var notifications = notificationsList.Select(n =>
+            {
+                // Determinar o outro participante para linkar
+                int? outroParticipanteId = null;
+                if (n.Tipo == "Mensagem")
+                {
+                    outroParticipanteId = isVendedor ? n.Id_Comprador : n.Id_Vendedor;
+                }
+                else if (n.Tipo == "Booking")
+                {
+                    outroParticipanteId = isVendedor ? n.Id_Comprador : n.Id_Vendedor;
+                }
+
+                return new DashboardNotificationInfo
+                {
+                    NotificacaoId = n.Id_notificacao,
+                    Tipo = n.Tipo,
+                    OutroParticipanteId = outroParticipanteId,
+                    Texto = n.Mensagem,
+                    Data = n.Data_Envio
+                };
+            }).ToList();
 
             var vm = new DashboardViewModel
             {
@@ -133,37 +269,112 @@ namespace AutoMatch.Controllers
 
             ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
 
-            var comprador = await _context.Compradores
-                .Include(c => c.Utilizador)
-                .FirstOrDefaultAsync(c => c.Id_User == userId);
+            // Verificar se é vendedor
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            ViewBag.IsVendedor = isVendedor;
 
             var vm = new BookingsViewModel
             {
                 UserName = userName
             };
 
-            if (comprador != null)
+            if (isVendedor)
             {
+                // Buscar reservas dos anúncios do vendedor
+                var anunciosIds = await _context.Anuncios
+                    .Where(a => a.Id_Vendedor == userId)
+                    .Select(a => a.Id_Anuncio)
+                    .ToListAsync();
+
                 var reservas = await _context.Reservas
                     .Include(r => r.Anuncio)
-                    .Where(r => r.Id_Comprador == comprador.Id_User)
+                    .Include(r => r.Comprador)
+                        .ThenInclude(c => c.Utilizador)
+                    .Where(r => anunciosIds.Contains(r.Id_Anuncio))
                     .OrderByDescending(r => r.Data_Inicio)
                     .ToListAsync();
 
                 foreach (var r in reservas)
                 {
+                    var status = r.Estado ? "Accepted" : "Pending";
                     vm.Bookings.Add(new BookingRowViewModel
                     {
                         ReservaId = r.Id_Reserva,
                         Vehicle = r.Anuncio?.Titulo ?? "(sem título)",
-                        Buyer = comprador.Utilizador?.Nome ?? "",
+                        Buyer = r.Comprador?.Utilizador?.Nome ?? r.Comprador?.Utilizador?.UserName ?? "Unknown",
                         Date = r.Data_Inicio,
-                        Status = r.Estado ? "Completed" : "Pending"
+                        DataFim = r.Data_Fim,
+                        Status = status,
+                        IsVendedor = true,
+                        CanAccept = !r.Estado // Pode aceitar se ainda estiver pendente
                     });
                 }
             }
+            // Se não for vendedor, não carregar reservas (mostrar apenas mensagem para se tornar vendedor)
 
             return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AcceptBooking(int reservaId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "Not authenticated" });
+            }
+
+            var reserva = await _context.Reservas
+                .Include(r => r.Anuncio)
+                .FirstOrDefaultAsync(r => r.Id_Reserva == reservaId);
+
+            if (reserva == null)
+            {
+                return Json(new { success = false, message = "Reserva não encontrada" });
+            }
+
+            // Verificar se o utilizador é o vendedor do anúncio
+            if (reserva.Anuncio.Id_Vendedor != userId)
+            {
+                return Json(new { success = false, message = "Não autorizado" });
+            }
+
+            // Aceitar a reserva
+            reserva.Estado = true;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Reserva aceite com sucesso" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectBooking(int reservaId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "Not authenticated" });
+            }
+
+            var reserva = await _context.Reservas
+                .Include(r => r.Anuncio)
+                .FirstOrDefaultAsync(r => r.Id_Reserva == reservaId);
+
+            if (reserva == null)
+            {
+                return Json(new { success = false, message = "Reserva não encontrada" });
+            }
+
+            // Verificar se o utilizador é o vendedor do anúncio
+            if (reserva.Anuncio.Id_Vendedor != userId)
+            {
+                return Json(new { success = false, message = "Não autorizado" });
+            }
+
+            // Rejeitar a reserva (apagar)
+            _context.Reservas.Remove(reserva);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Reserva rejeitada" });
         }
 
         // GET: /Dashboard/Messages
@@ -226,7 +437,10 @@ namespace AutoMatch.Controllers
             var outrosParticipantesIds = conversasDict.Keys.ToList();
             var outrosParticipantes = await _context.Utilizadores
                 .Where(u => outrosParticipantesIds.Contains(u.Id_User))
-                .ToDictionaryAsync(u => u.Id_User, u => u.Nome);
+                .Select(u => new { u.Id_User, u.Nome, u.UserName, u.ProfileImageUrl })
+                .ToListAsync();
+
+            var outrosParticipantesDict = outrosParticipantes.ToDictionary(u => u.Id_User);
 
             // Contar mensagens não lidas por conversa
             foreach (var kvp in conversasDict)
@@ -234,7 +448,14 @@ namespace AutoMatch.Controllers
                 var outroId = kvp.Key;
                 var mensagens = kvp.Value.mensagens;
                 var ultimaMensagem = mensagens.OrderByDescending(m => m.Data_Envio).First();
-                var nomeOutro = outrosParticipantes.ContainsKey(outroId) ? outrosParticipantes[outroId] : $"User #{outroId}";
+                
+                var outroParticipante = outrosParticipantesDict.ContainsKey(outroId) 
+                    ? outrosParticipantesDict[outroId] 
+                    : null;
+                
+                var nomeOutro = outroParticipante?.Nome ?? $"User #{outroId}";
+                var userNameOutro = outroParticipante?.UserName ?? $"User{outroId}";
+                var profileImageUrlOutro = outroParticipante?.ProfileImageUrl;
                 
                 // Contar mensagens não lidas: mensagens enviadas pelo outro participante que ainda não foram lidas (Estado = false)
                 var mensagensNaoLidas = mensagens.Count(m => 
@@ -246,6 +467,8 @@ namespace AutoMatch.Controllers
                 {
                     Id = outroId,
                     Nome = nomeOutro,
+                    UserName = userNameOutro,
+                    ProfileImageUrl = profileImageUrlOutro,
                     UltimaMensagem = ultimaMensagem.Mensagem.Length > 50 ? ultimaMensagem.Mensagem.Substring(0, 50) + "..." : ultimaMensagem.Mensagem,
                     DataUltima = ultimaMensagem.Data_Envio,
                     Online = false,
@@ -278,11 +501,15 @@ namespace AutoMatch.Controllers
                 {
                     var outro = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Id_User == conversaId.Value);
                     var nomeOutro = outro?.Nome ?? $"User #{conversaId.Value}";
+                    var userNameOutro = outro?.UserName ?? $"User{conversaId.Value}";
+                    var profileImageUrlOutro = outro?.ProfileImageUrl;
 
                     vm.Conversas.Insert(0, new ConversationItemViewModel
                     {
                         Id = conversaId.Value,
                         Nome = nomeOutro,
+                        UserName = userNameOutro,
+                        ProfileImageUrl = profileImageUrlOutro,
                         UltimaMensagem = "Start a conversation...",
                         DataUltima = DateTime.Now,
                         Online = false,
@@ -300,9 +527,11 @@ namespace AutoMatch.Controllers
 
                 foreach (var n in mensagensConversa)
                 {
+                    // IsOutgoing = true se a mensagem foi enviada pelo utilizador atual
+                    // Como Id_Comprador é sempre o remetente, verificar se é o userId
                     vm.Mensagens.Add(new MessageBubbleViewModel
                     {
-                        IsOutgoing = n.Id_Comprador == userId || (n.Id_Vendedor == userId && n.Id_Comprador != userId),
+                        IsOutgoing = n.Id_Comprador == userId,
                         Texto = n.Mensagem,
                         Data = n.Data_Envio
                     });
@@ -344,33 +573,73 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Message cannot be empty" });
             }
 
-            // Determinar o outro participante
-            int outroParticipanteId;
-            bool usuarioEhComprador;
+            // Determinar o destinatário (aceita vendedorId ou compradorId, ambos tratados como qualquer utilizador)
+            int? recipientId = vendedorId ?? compradorId;
 
-            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
-            
-            if (vendedorId.HasValue && vendedorId.Value != userId)
-            {
-                outroParticipanteId = vendedorId.Value;
-                usuarioEhComprador = true;
-            }
-            else if (compradorId.HasValue && compradorId.Value != userId)
-            {
-                outroParticipanteId = compradorId.Value;
-                usuarioEhComprador = false;
-            }
-            else
+            if (!recipientId.HasValue || recipientId.Value == userId)
             {
                 return Json(new { success = false, message = "Invalid recipient" });
             }
 
             try
             {
+                // Para a tabela Notificacoes, precisamos de:
+                // - Id_Comprador: sempre o remetente (userId)
+                // - Id_Vendedor: sempre o destinatário (recipientId)
+                // Isto é apenas uma convenção da estrutura da tabela, não uma limitação real
+
+                int idComprador = userId.Value;
+                int idVendedor = recipientId.Value;
+
+                // Garantir que o remetente existe como comprador
+                var compradorExiste = await _context.Compradores.AnyAsync(c => c.Id_User == idComprador);
+                if (!compradorExiste)
+                {
+                    var novoComprador = new Comprador
+                    {
+                        Id_User = idComprador,
+                        Contactos = "N/A",
+                        Rua = "Desconhecida",
+                        Codigo_Postal = "0000-000"
+                    };
+                    _context.Compradores.Add(novoComprador);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Garantir que o destinatário existe como vendedor (criar se necessário)
+                var vendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == idVendedor);
+                if (!vendedorExiste)
+                {
+                    // Garantir que o código postal padrão existe
+                    var codigoPostalExiste = await _context.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
+                    if (!codigoPostalExiste)
+                    {
+                        var novoCodigoPostal = new CodigoPostal
+                        {
+                            Codigo_Postal = "0000-000",
+                            Localidade = "Desconhecida"
+                        };
+                        _context.CodigoPostais.Add(novoCodigoPostal);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    // Criar registo temporário de vendedor para permitir mensagens entre qualquer utilizador
+                    var novoVendedor = new Vendedor
+                    {
+                        Id_User = idVendedor,
+                        Tipo = false, // false = pessoa física
+                        Contactos = "N/A",
+                        Rua = "Desconhecida",
+                        Codigo_Postal = "0000-000"
+                    };
+                    _context.Vendedores.Add(novoVendedor);
+                    await _context.SaveChangesAsync();
+                }
+
                 var notificacao = new Notificacoes
                 {
-                    Id_Comprador = usuarioEhComprador ? userId.Value : outroParticipanteId,
-                    Id_Vendedor = usuarioEhComprador ? outroParticipanteId : userId.Value,
+                    Id_Comprador = idComprador,
+                    Id_Vendedor = idVendedor,
                     Tipo = "Mensagem",
                     Mensagem = mensagem,
                     Data_Envio = DateTime.Now,
@@ -393,7 +662,13 @@ namespace AutoMatch.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                // Capturar a exceção interna para mais detalhes
+                var errorMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    errorMessage += " | Inner: " + ex.InnerException.Message;
+                }
+                return Json(new { success = false, message = errorMessage });
             }
         }
 
@@ -446,18 +721,57 @@ namespace AutoMatch.Controllers
                 UserName = userName
             };
 
-            // Buscar todas as notificações onde o usuário participa (como comprador OU como vendedor)
+            // Buscar apenas notificações recebidas pelo utilizador (não as que ele enviou)
+            // Para mensagens: mostrar apenas quando Id_Vendedor == userId (destinatário)
+            // Para bookings: mostrar apenas quando Id_Vendedor == userId (vendedor recebe a notificação)
+            // Para outras notificações: mostrar quando o utilizador é destinatário
             var list = await _context.Notificacoes
-                .Where(n => (n.Id_Comprador == userId) || (n.Id_Vendedor == userId))
+                .Where(n => n.Tipo == "Mensagem" 
+                    ? (n.Id_Vendedor == userId) // Apenas mensagens recebidas
+                    : n.Tipo == "Booking"
+                    ? (n.Id_Vendedor == userId) // Apenas bookings recebidos pelo vendedor
+                    : ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId))) // Outras notificações
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
+            // Buscar informações dos remetentes para melhorar os títulos
+            var remetentesIds = list
+                .Where(n => n.Tipo == "Mensagem" || n.Tipo == "Booking")
+                .Select(n => n.Id_Comprador) // Remetente da mensagem/booking
+                .Distinct()
+                .ToList();
+
+            var remetentes = await _context.Utilizadores
+                .Where(u => remetentesIds.Contains(u.Id_User))
+                .ToDictionaryAsync(u => u.Id_User, u => u.UserName);
+
             foreach (var n in list)
             {
-                // Determinar o outro participante para linkar mensagens
+                // Determinar o outro participante para linkar mensagens/bookings
                 int? outroParticipanteId = null;
+                string titulo = n.Tipo;
+
                 if (n.Tipo == "Mensagem")
                 {
+                    // Para mensagens, o remetente é sempre Id_Comprador
+                    outroParticipanteId = n.Id_Comprador;
+                    var remetenteNome = remetentes.ContainsKey(n.Id_Comprador) 
+                        ? remetentes[n.Id_Comprador] 
+                        : $"User #{n.Id_Comprador}";
+                    titulo = $"Nova mensagem de {remetenteNome}";
+                }
+                else if (n.Tipo == "Booking")
+                {
+                    // Para bookings, o remetente é sempre Id_Comprador (quem fez a reserva)
+                    outroParticipanteId = n.Id_Comprador;
+                    var remetenteNome = remetentes.ContainsKey(n.Id_Comprador) 
+                        ? remetentes[n.Id_Comprador] 
+                        : $"User #{n.Id_Comprador}";
+                    titulo = $"Nova reserva de test drive de {remetenteNome}";
+                }
+                else
+                {
+                    // Para outras notificações, determinar o outro participante
                     if (n.Id_Comprador == userId)
                     {
                         outroParticipanteId = n.Id_Vendedor;
@@ -471,7 +785,7 @@ namespace AutoMatch.Controllers
                 vm.Items.Add(new NotificationItemViewModel
                 {
                     Id = n.Id_notificacao,
-                    Titulo = n.Tipo,
+                    Titulo = titulo,
                     Texto = n.Mensagem,
                     Data = n.Data_Envio,
                     Lida = n.Estado,

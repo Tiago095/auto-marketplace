@@ -6,6 +6,7 @@ using AutoMatch.Services;
 using AutoMatch.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting.Internal;
 using System.Threading.Tasks;
 
 namespace AutoMatch.Controllers
@@ -170,7 +171,8 @@ namespace AutoMatch.Controllers
                 NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber),
                 Tipo = application.SellingType == "Professional",
                 Contactos = application.PhoneNumber,
-                Codigo_Postal = application.PostalCode
+                Codigo_Postal = application.PostalCode,
+                Rua = application.PostalCode
             };
 
             _context.Vendedores.Add(vendedor);

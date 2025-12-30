@@ -310,6 +310,147 @@ namespace AutoMatch.Controllers
             return RedirectToAction("Details", new { id = anuncio.Id_Anuncio });
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "Not authenticated" });
+            }
+
+            if (request == null)
+            {
+                return Json(new { success = false, message = "Dados inválidos" });
+            }
+
+            // Verificar se o anúncio existe e está ativo
+            var anuncio = await _db.Anuncios
+                .FirstOrDefaultAsync(a => a.Id_Anuncio == request.anuncioId && a.Estado);
+
+            if (anuncio == null)
+            {
+                return Json(new { success = false, message = "Anúncio não encontrado" });
+            }
+
+            // Verificar se já existe uma reserva para este horário (pendente ou aceite)
+            var reservaExistente = await _db.Reservas
+                .AnyAsync(r => r.Id_Anuncio == request.anuncioId &&
+                              r.Data_Inicio <= request.dataFim &&
+                              r.Data_Fim >= request.dataInicio &&
+                              (r.Estado == true || r.Estado == false)); // Pendente ou aceite
+
+            if (reservaExistente)
+            {
+                return Json(new { success = false, message = "Este horário já está reservado" });
+            }
+
+            // Verificar se o utilizador é comprador
+            var comprador = await _db.Compradores
+                .FirstOrDefaultAsync(c => c.Id_User == userId);
+
+            if (comprador == null)
+            {
+                // Criar comprador se não existir
+                comprador = new Comprador
+                {
+                    Id_User = userId.Value,
+                    Contactos = "N/A",
+                    Rua = "Desconhecida",
+                    Codigo_Postal = "0000-000"
+                };
+                _db.Compradores.Add(comprador);
+                await _db.SaveChangesAsync();
+            }
+
+            // Criar a reserva (Estado = false significa pendente)
+            var reserva = new Reserva
+            {
+                Id_Anuncio = request.anuncioId,
+                Id_Comprador = comprador.Id_User,
+                Data_Inicio = request.dataInicio,
+                Data_Fim = request.dataFim,
+                Estado = false // Pendente - aguardando aprovação do vendedor
+            };
+
+            _db.Reservas.Add(reserva);
+            await _db.SaveChangesAsync();
+
+            // Buscar informações do comprador para a notificação
+            var compradorInfo = await _db.Utilizadores
+                .FirstOrDefaultAsync(u => u.Id_User == comprador.Id_User);
+
+            var compradorNome = compradorInfo?.Nome ?? compradorInfo?.UserName ?? "Um comprador";
+
+            // Criar notificação para o vendedor
+            // Para notificações, Id_Comprador = remetente (sistema), Id_Vendedor = destinatário (vendedor)
+            // Mas como é uma notificação do sistema, vamos usar uma estrutura diferente
+            // Vamos criar uma notificação onde o vendedor é o destinatário
+            var vendedorId = anuncio.Id_Vendedor;
+            
+            // Garantir que o vendedor existe como vendedor na tabela
+            var vendedorExiste = await _db.Vendedores.AnyAsync(v => v.Id_User == vendedorId);
+            if (!vendedorExiste)
+            {
+                // Criar registo temporário se necessário
+                var codigoPostalExiste = await _db.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
+                if (!codigoPostalExiste)
+                {
+                    var novoCodigoPostal = new CodigoPostal
+                    {
+                        Codigo_Postal = "0000-000",
+                        Localidade = "Desconhecida"
+                    };
+                    _db.CodigoPostais.Add(novoCodigoPostal);
+                    await _db.SaveChangesAsync();
+                }
+
+                var novoVendedor = new Vendedor
+                {
+                    Id_User = vendedorId,
+                    Tipo = false,
+                    Contactos = "N/A",
+                    Rua = "Desconhecida",
+                    Codigo_Postal = "0000-000"
+                };
+                _db.Vendedores.Add(novoVendedor);
+                await _db.SaveChangesAsync();
+            }
+
+            // Criar notificação: Id_Comprador = comprador que fez a reserva, Id_Vendedor = vendedor do anúncio
+            var notificacao = new Notificacoes
+            {
+                Id_Comprador = comprador.Id_User,
+                Id_Vendedor = vendedorId,
+                Tipo = "Booking",
+                Mensagem = $"Nova reserva de test drive de {compradorNome} para {anuncio.Titulo} em {request.dataInicio:dd/MM/yyyy} das {request.dataInicio:HH:mm} às {request.dataFim:HH:mm}",
+                Data_Envio = DateTime.Now,
+                Estado = false // Não lida
+            };
+
+            _db.Notificacoes.Add(notificacao);
+            await _db.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Reserva criada com sucesso. Aguardando aprovação do vendedor." });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBookedSlots(int anuncioId)
+        {
+            // Retornar todos os horários bloqueados (pendentes ou aceites) para este anúncio
+            var reservas = await _db.Reservas
+                .Where(r => r.Id_Anuncio == anuncioId &&
+                           (r.Estado == true || r.Estado == false)) // Pendente ou aceite
+                .Select(r => new
+                {
+                    inicio = r.Data_Inicio,
+                    fim = r.Data_Fim
+                })
+                .ToListAsync();
+
+            return Json(reservas);
+        }
+
         // Método auxiliar para escolher a imagem de capa (menor número no nome do ficheiro)
         private static string GetCoverImagePath(IEnumerable<Imagens> imagens)
         {

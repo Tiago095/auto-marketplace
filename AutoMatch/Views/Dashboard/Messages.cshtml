@@ -95,10 +95,17 @@
                                 var hasUnread = c.MensagensNaoLidas > 0;
                                 <div class="conv-item @(isActive ? "active" : "") @(hasUnread ? "unread" : "")" data-participant-id="@c.Id">
                                     <div class="conv-avatar @(c.Online ? "" : "muted")">
-                                        @c.Nome.Substring(0, 1).ToUpper()
+                                        @if (!string.IsNullOrEmpty(c.ProfileImageUrl))
+                                        {
+                                            <img src="@c.ProfileImageUrl" alt="@c.Nome" />
+                                        }
+                                        else
+                                        {
+                                            @c.UserName.Substring(0, 1).ToUpper()
+                                        }
                                     </div>
                                     <div class="conv-info">
-                                        <div class="conv-name">@c.Nome</div>
+                                        <div class="conv-name">@c.UserName</div>
                                         <div class="conv-preview">@c.UltimaMensagem</div>
                                         <div class="conv-meta">@c.DataUltima.ToString("g")</div>
                                     </div>
@@ -124,9 +131,18 @@
                                 <div class="conv-avatar">
                                     @{
                                         var vendedorAtual = Model.Conversas.FirstOrDefault(c => c.Id == Model.VendedorAtualId);
-                                        var nomeVendedor = vendedorAtual?.Nome ?? "Seller";
+                                        var nomeVendedor = vendedorAtual?.UserName ?? "Seller";
+                                        var userNameVendedor = vendedorAtual?.UserName ?? "Seller";
+                                        var profileImageUrlVendedor = vendedorAtual?.ProfileImageUrl;
                                     }
-                                    @nomeVendedor.Substring(0, 1).ToUpper()
+                                    @if (!string.IsNullOrEmpty(profileImageUrlVendedor))
+                                    {
+                                        <img src="@profileImageUrlVendedor" alt="@nomeVendedor" />
+                                    }
+                                    else
+                                    {
+                                        @userNameVendedor.Substring(0, 1).ToUpper()
+                                    }
                                 </div>
                                 <div>
                                     <div style="font-weight: 600; font-size: 16px;">@nomeVendedor</div>
@@ -294,6 +310,25 @@
                 // Auto-scroll para o fundo do chat
                 const chatBody = document.getElementById('chatBody');
                 if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            // --- Funcionalidade de Search nas Conversas ---
+            const searchConv = document.getElementById('searchConv');
+            const convList = document.getElementById('convList');
+            
+            if (searchConv && convList) {
+                searchConv.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    const convItems = convList.querySelectorAll('.conv-item');
+                    
+                    convItems.forEach(item => {
+                        const convName = item.querySelector('.conv-name')?.textContent.toLowerCase() || '';
+                        const convPreview = item.querySelector('.conv-preview')?.textContent.toLowerCase() || '';
+                        const matches = convName.includes(searchTerm) || convPreview.includes(searchTerm);
+                        
+                        item.style.display = matches ? '' : 'none';
+                    });
+                });
             }
         });
     </script>

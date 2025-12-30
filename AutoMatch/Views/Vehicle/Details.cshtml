@@ -184,7 +184,26 @@
             <p class="booking-summary-line">Location: <span id="summaryLocation">Automatch Porto</span></p>
         </div>
 
-        <button type="button" class="booking-confirm-btn">Confirm Booking</button>
+        @if (username == null)
+        {
+            <div style="padding: 16px; background: #fff3cd; border-radius: 8px; margin-bottom: 16px;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                    <strong>Nota:</strong> Precisa de estar autenticado como comprador para fazer uma reserva. 
+                    <a href="/Account/Login" style="color: #2563eb; text-decoration: underline;">Faça login</a> ou 
+                    <a href="/Forms/SellerForms" style="color: #2563eb; text-decoration: underline;">torne-se vendedor</a>.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div style="padding: 12px; background: #f0f4ff; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                <p style="margin: 0; color: #1e40af; font-size: 13px;">
+                    Quer vender o seu carro? <a href="/Forms/SellerForms" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Torne-se vendedor</a>
+                </p>
+            </div>
+        }
+
+        <button type="button" class="booking-confirm-btn" id="confirmBookingBtn">Confirm Booking</button>
     </div>
 </div>
 
@@ -240,15 +259,20 @@
         });
 
         // Booking modal logic
+        const anuncioId = @Model.Id;
+        let bookedSlots = [];
+
         document.addEventListener('DOMContentLoaded', function () {
             const openBtn = document.getElementById('openBookingModal');
             const overlay = document.getElementById('bookingOverlay');
             const closeBtn = document.getElementById('closeBookingModal');
+            const confirmBtn = document.querySelector('.booking-confirm-btn');
             const body = document.body;
 
             const dateInput = document.getElementById('bookingDate');
             const timeInput = document.getElementById('bookingTime');
             const locationInput = document.getElementById('bookingLocation');
+            const commentInput = document.querySelector('.booking-comment');
 
             const summaryDate = document.getElementById('summaryDate');
             const summaryTime = document.getElementById('summaryTime');
@@ -256,9 +280,72 @@
 
             if (!openBtn || !overlay) return;
 
+            // Carregar horários bloqueados
+            async function loadBookedSlots() {
+                try {
+                    const response = await fetch(`/Vehicle/GetBookedSlots?anuncioId=${anuncioId}`);
+                    bookedSlots = await response.json();
+                    updateTimeOptions();
+                } catch (error) {
+                    console.error('Erro ao carregar horários bloqueados:', error);
+                }
+            }
+
+            // Atualizar opções de horário baseado na data selecionada e horários bloqueados
+            function updateTimeOptions() {
+                if (!dateInput.value) return;
+
+                const selectedDate = new Date(dateInput.value);
+                const timeSlots = [
+                    { start: '10:00', end: '11:00' },
+                    { start: '11:00', end: '12:00' },
+                    { start: '15:00', end: '16:00' },
+                    { start: '16:00', end: '17:00' },
+                    { start: '17:00', end: '18:00' }
+                ];
+
+                timeInput.innerHTML = '';
+
+                timeSlots.forEach(slot => {
+                    const slotStart = new Date(selectedDate);
+                    const [hours, minutes] = slot.start.split(':');
+                    slotStart.setHours(parseInt(hours), parseInt(minutes), 0);
+
+                    const slotEnd = new Date(selectedDate);
+                    const [endHours, endMinutes] = slot.end.split(':');
+                    slotEnd.setHours(parseInt(endHours), parseInt(endMinutes), 0);
+
+                    // Verificar se o horário está bloqueado
+                    const isBlocked = bookedSlots.some(booked => {
+                        const bookedStart = new Date(booked.inicio);
+                        const bookedEnd = new Date(booked.fim);
+                        return (slotStart < bookedEnd && slotEnd > bookedStart);
+                    });
+
+                    const option = document.createElement('option');
+                    option.value = `${slot.start}-${slot.end}`;
+                    option.textContent = isBlocked ? `${slot.start} - ${slot.end} (Unavailable)` : `${slot.start} - ${slot.end}`;
+                    option.disabled = isBlocked;
+                    timeInput.appendChild(option);
+                });
+            }
+
             function openModal() {
+                @if (username == null)
+                {
+                    <text>
+                    alert('Precisa de estar autenticado para fazer uma reserva. Por favor, faça login primeiro.');
+                    window.location.href = '/Account/Login';
+                    return;
+                    </text>
+                }
+                
                 overlay.classList.add('visible');
                 body.classList.add('modal-open');
+                loadBookedSlots();
+                // Definir data mínima como hoje
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.min = today;
             }
 
             function closeModal() {
@@ -281,9 +368,85 @@
                 summaryLocation.textContent = locationInput.value || '—';
             }
 
-            dateInput?.addEventListener('change', updateSummary);
+            dateInput?.addEventListener('change', async function() {
+                updateSummary();
+                await loadBookedSlots();
+                updateTimeOptions();
+            });
             timeInput?.addEventListener('change', updateSummary);
             locationInput?.addEventListener('change', updateSummary);
+
+            // Confirmar booking
+            const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+            (confirmBookingBtn || confirmBtn)?.addEventListener('click', async function() {
+                @if (username == null)
+                {
+                    <text>
+                    alert('Precisa de estar autenticado como comprador para fazer uma reserva.');
+                    window.location.href = '/Account/Login';
+                    return;
+                    </text>
+                }
+
+                if (!dateInput.value || !timeInput.value) {
+                    alert('Por favor, selecione data e horário');
+                    return;
+                }
+
+                const [startTime, endTime] = timeInput.value.split('-');
+                const selectedDate = new Date(dateInput.value);
+                const [startHours, startMinutes] = startTime.trim().split(':');
+                const [endHours, endMinutes] = endTime.trim().split(':');
+
+                const dataInicio = new Date(selectedDate);
+                dataInicio.setHours(parseInt(startHours), parseInt(startMinutes), 0);
+
+                const dataFim = new Date(selectedDate);
+                dataFim.setHours(parseInt(endHours), parseInt(endMinutes), 0);
+
+                // Verificar se o horário ainda está disponível
+                const isBlocked = bookedSlots.some(booked => {
+                    const bookedStart = new Date(booked.inicio);
+                    const bookedEnd = new Date(booked.fim);
+                    return (dataInicio < bookedEnd && dataFim > bookedStart);
+                });
+
+                if (isBlocked) {
+                    alert('Este horário já está reservado. Por favor, escolha outro.');
+                    await loadBookedSlots();
+                    updateTimeOptions();
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Vehicle/CreateBooking', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            anuncioId: anuncioId,
+                            dataInicio: dataInicio.toISOString(),
+                            dataFim: dataFim.toISOString(),
+                            comentario: commentInput?.value || null
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(data.message);
+                        closeModal();
+                        // Recarregar horários bloqueados
+                        await loadBookedSlots();
+                    } else {
+                        alert('Erro: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao criar reserva');
+                }
+            });
         });
     </script>
 }

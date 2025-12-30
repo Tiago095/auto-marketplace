@@ -110,27 +110,27 @@
                     <div class="card quick-stats">
                         <h2>Quick Stats</h2>
                         <div class="stats-grid">
-                            <div class="stat-item">
+                            <a href="/DashBoard/Bookings" class="stat-item" style="text-decoration: none; color: inherit; display: flex; align-items: center; cursor: pointer;">
                                 <div class="stat-icon circle"></div>
                                 <div class="stat-text">
                                     <span class="stat-number">@Model.PendingBookings</span>
                                     <span class="stat-label">Pending Bookings</span>
                                 </div>
-                            </div>
-                            <div class="stat-item">
+                            </a>
+                            <a href="/DashBoard/Messages" class="stat-item" style="text-decoration: none; color: inherit; display: flex; align-items: center; cursor: pointer;">
                                 <div class="stat-icon"></div>
                                 <div class="stat-text">
                                     <span class="stat-number">@Model.UnreadMessages</span>
                                     <span class="stat-label">Unread Messages</span>
                                 </div>
-                            </div>
-                            <div class="stat-item">
+                            </a>
+                            <a href="/DashBoard/Notifications" class="stat-item" style="text-decoration: none; color: inherit; display: flex; align-items: center; cursor: pointer;">
                                 <div class="stat-icon"></div>
                                 <div class="stat-text">
                                     <span class="stat-number">@Model.NewNotifications</span>
                                     <span class="stat-label">New Notifications</span>
                                 </div>
-                            </div>
+                            </a>
                             <div class="stat-item">
                                 <div class="stat-icon"></div>
                                 <div class="stat-text">
@@ -147,16 +147,32 @@
                         {
                             foreach (var msg in Model.RecentMessages)
                             {
-                                <div class="message-item">
-                                    <div class="avatar"></div>
-                                    <div class="message-content">
-                                        <div class="message-header">
-                                            <span class="name">@msg.NomeRemetente</span>
-                                            <span class="time">@msg.Data.ToString("g")</span>
+                                var messageLink = msg.OutroParticipanteId.HasValue 
+                                    ? $"/DashBoard/Messages?vendedorId={msg.OutroParticipanteId.Value}" 
+                                    : "/DashBoard/Messages";
+                                <a href="@messageLink" style="text-decoration: none; color: inherit; display: block;">
+                                    <div class="message-item" style="cursor: pointer;">
+                                        <div class="avatar">
+                                            @if (!string.IsNullOrEmpty(msg.ProfileImageUrl))
+                                            {
+                                                <img src="@msg.ProfileImageUrl" alt="@msg.NomeRemetente" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                                            }
+                                            else
+                                            {
+                                                <span style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: white; font-weight: 600; font-size: 14px;">
+                                                    @(msg.NomeRemetente?.Substring(0, 1).ToUpper() ?? "?")
+                                                </span>
+                                            }
                                         </div>
-                                        <p class="message-preview">@msg.Texto</p>
+                                        <div class="message-content">
+                                            <div class="message-header">
+                                                <span class="name">@msg.NomeRemetente</span>
+                                                <span class="time">@msg.Data.ToString("g")</span>
+                                            </div>
+                                            <p class="message-preview">@msg.Texto</p>
+                                        </div>
                                     </div>
-                                </div>
+                                </a>
                             }
                         }
                         else
@@ -172,12 +188,23 @@
                         @if (Model.LatestBooking != null)
                         {
                             <div class="booking-content">
-                                <div class="booking-image"></div>
-                        <div class="booking-info">
+                                <div class="booking-image">
+                                    @if (!string.IsNullOrEmpty(Model.LatestBooking.CarImageUrl))
+                                    {
+                                        <img src="@Model.LatestBooking.CarImageUrl" alt="@Model.LatestBooking.CarTitle" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" />
+                                    }
+                                    else
+                                    {
+                                        <div style="width: 100%; height: 100%; background: #e0e0e0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #999;">
+                                            <i class="fa-solid fa-car" style="font-size: 32px;"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="booking-info">
                                     <h3>@Model.LatestBooking.CarTitle</h3>
                                     <p>Date: @Model.LatestBooking.DataInicio.ToString("dd MMMM yyyy")</p>
-                                    <p>Time: @Model.LatestBooking.DataInicio.ToString("HH:mm")</p>
-                                    <button class="btn-view">View More</button>
+                                    <p>Time: @Model.LatestBooking.DataInicio.ToString("HH:mm") - @Model.LatestBooking.DataFim.ToString("HH:mm")</p>
+                                    <a href="/DashBoard/Bookings" class="btn-view" style="text-decoration: none; display: inline-block;">View More</a>
                                 </div>
                             </div>
                         }
@@ -194,7 +221,16 @@
                             {
                                 foreach (var n in Model.Notifications)
                                 {
-                                    <li>
+                                    string notificationLink = "#";
+                                    if (n.Tipo == "Mensagem" && n.OutroParticipanteId.HasValue)
+                                    {
+                                        notificationLink = $"/DashBoard/Messages?vendedorId={n.OutroParticipanteId.Value}";
+                                    }
+                                    else if (n.Tipo == "Booking")
+                                    {
+                                        notificationLink = "/DashBoard/Bookings";
+                                    }
+                                    <li style="cursor: pointer;" onclick="window.location.href='@notificationLink'">
                                         <p>@n.Texto</p>
                                         <span class="time">@n.Data.ToString("g")</span>
                                     </li>

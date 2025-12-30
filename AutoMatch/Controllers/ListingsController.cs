@@ -71,9 +71,9 @@ namespace AutoMatch.Controllers
             ViewBag.Marcas = new SelectList(marcasList);
 
             // Modelos com todas as informações necessárias
-            var modelos = _db.Modelos.Select(m => new { 
-                m.Id_Modelo, 
-                m.Marca, 
+            var modelos = _db.Modelos.Select(m => new {
+                m.Id_Modelo,
+                m.Marca,
                 m.NomeModelo,
                 m.Transmissao,
                 m.Combustivel,
@@ -139,7 +139,7 @@ namespace AutoMatch.Controllers
             }
 
             // Criar título automaticamente: Marca + Modelo + Ano
-            string tituloAuto = $"{modeloInfo.Marca} {modeloInfo.NomeModelo} {model.Ano}";
+            string tituloAuto = $"{modeloInfo.Marca} {modeloInfo.NomeModelo}";
 
             // Criar o anúncio
             var anuncio = new Anuncio
@@ -154,7 +154,7 @@ namespace AutoMatch.Controllers
                 Matricula = model.Matricula,
                 Estado = true,
                 Id_Vendedor = vendedor.Id_User,
-                Id_Admin = 2
+                Id_Admin = 1
             };
 
             _db.Anuncios.Add(anuncio);
@@ -239,9 +239,9 @@ namespace AutoMatch.Controllers
             marcasList.AddRange(marcas);
             ViewBag.Marcas = new SelectList(marcasList);
 
-            var modelos = _db.Modelos.Select(m => new { 
-                m.Id_Modelo, 
-                m.Marca, 
+            var modelos = _db.Modelos.Select(m => new {
+                m.Id_Modelo,
+                m.Marca,
                 m.NomeModelo,
                 m.Transmissao,
                 m.Combustivel,
