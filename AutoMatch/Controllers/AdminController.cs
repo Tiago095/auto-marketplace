@@ -170,7 +170,8 @@ namespace AutoMatch.Controllers
                 NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber),
                 Tipo = application.SellingType == "Professional",
                 Contactos = application.PhoneNumber,
-                Codigo_Postal = application.PostalCode
+                Codigo_Postal = application.PostalCode,
+                Rua = application.PostalCode // Set Rua to PostalCode as requested
             };
 
             _context.Vendedores.Add(vendedor);

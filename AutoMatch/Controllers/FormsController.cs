@@ -94,19 +94,20 @@ namespace AutoMatch.Controllers
             {
                 UserId = userId.Value,
                 SellingType = model.SellingType,
-                DocumentNumber = model.DocumentNumber,
+                DocumentNumber = model.DocumentNumber ?? string.Empty,
                 PhoneNumber = model.PhoneNumber,
                 PostalCode = model.PostalCode,
                 PreferredContactMethod = model.PreferredContactMethod,
                 AcceptTerms = model.AcceptTerms,
                 SubmissionDate = DateTime.UtcNow,
-                Status = "Pending"
+                Status = "Pending",
+                RejectionReason = string.Empty // Empty string for pending applications, will be set if rejected
             };
 
             _db.SellerApplications.Add(application);
             _db.SaveChanges();
 
-            TempData["SellerFormSubmitted"] = "Your application has been sent for review. You will be notified within 24-48 hours.";
+            TempData["SellerFormSubmitted"] = "Your seller application has been successfully submitted and is now under review. You will be notified within 24-48 hours.";
             return RedirectToAction("SellerForms");
         }
 
