@@ -100,7 +100,8 @@ namespace AutoMatch.Controllers
                 PreferredContactMethod = model.PreferredContactMethod,
                 AcceptTerms = model.AcceptTerms,
                 SubmissionDate = DateTime.UtcNow,
-                Status = "Pending"
+                Status = "Pending",
+                RejectionReason = ""
             };
 
             _db.SellerApplications.Add(application);

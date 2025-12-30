@@ -11,13 +11,6 @@ namespace AutoMatch.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ProfileImageUrl",
-                table: "Utilizadores",
-                type: "nvarchar(200)",
-                maxLength: 200,
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "SellerApplications",
                 columns: table => new
@@ -70,10 +63,6 @@ namespace AutoMatch.Migrations
         {
             migrationBuilder.DropTable(
                 name: "SellerApplications");
-
-            migrationBuilder.DropColumn(
-                name: "ProfileImageUrl",
-                table: "Utilizadores");
         }
     }
 }
