@@ -1,17 +1,33 @@
 ﻿using AutoMatch.Data;
+using AutoMatch.Models;
 using AutoMatch.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace AutoMatch.Controllers
 {
     public class DashBoardController : Controller
     {
         private readonly AutoMatchContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public DashBoardController(AutoMatchContext context)
+        public DashBoardController(AutoMatchContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
+        }
+
+        private async Task<int> GetUnreadMessagesCount(int userId)
+        {
+            // Contar mensagens não lidas: mensagens onde o outro participante enviou (não o usuário atual) e Estado = false
+            return await _context.Notificacoes
+                .CountAsync(n => n.Tipo == "Mensagem" && 
+                                !n.Estado && 
+                                ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                                 (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
         }
 
         public async Task<IActionResult> Index()
@@ -24,12 +40,18 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
             // Quick stats
             var pendingBookings = await _context.Reservas
                 .CountAsync(r => r.Id_Comprador == userId && !r.Estado);
 
+            // Contar mensagens não lidas: mensagens onde o outro participante enviou e Estado = false
             var unreadMessages = await _context.Notificacoes
-                .CountAsync(n => n.Id_Comprador == userId && !n.Estado && n.Tipo == "Mensagem");
+                .CountAsync(n => n.Tipo == "Mensagem" && 
+                                !n.Estado && 
+                                ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                                 (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
 
             var newNotifications = await _context.Notificacoes
                 .CountAsync(n => n.Id_Comprador == userId && !n.Estado);
@@ -109,6 +131,8 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
             var comprador = await _context.Compradores
                 .Include(c => c.Utilizador)
                 .FirstOrDefaultAsync(c => c.Id_User == userId);
@@ -142,7 +166,8 @@ namespace AutoMatch.Controllers
             return View(vm);
         }
 
-        public async Task<IActionResult> Messages()
+        // GET: /Dashboard/Messages
+        public async Task<IActionResult> Messages(int? vendedorId, int? compradorId)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             var userName = HttpContext.Session.GetString("UserName") ?? "Utilizador";
@@ -152,48 +177,256 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
+            // Verificar se o usuário é vendedor ou comprador
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            var isComprador = await _context.Compradores.AnyAsync(c => c.Id_User == userId);
+
             var vm = new MessagesViewModel
             {
                 UserName = userName
             };
 
-            var notificacoes = await _context.Notificacoes
-                .Where(n => n.Id_Comprador == userId && n.Tipo == "Mensagem")
+            // Buscar todas as mensagens onde o usuário participa (como comprador OU como vendedor)
+            var todasNotificacoes = await _context.Notificacoes
+                .Where(n => n.Tipo == "Mensagem" && 
+                           ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId)))
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
-            var grupos = notificacoes
-                .GroupBy(n => n.Id_Vendedor)
-                .ToList();
-
-            foreach (var g in grupos)
+            // Agrupar conversas: identificar o outro participante de cada conversa
+            var conversasDict = new Dictionary<int, (List<Notificacoes> mensagens, DateTime ultimaData)>();
+            
+            foreach (var n in todasNotificacoes)
             {
-                var ultima = g.First();
+                int outroParticipanteId;
+                if (n.Id_Comprador == userId)
+                {
+                    outroParticipanteId = n.Id_Vendedor;
+                }
+                else
+                {
+                    outroParticipanteId = n.Id_Comprador;
+                }
+
+                if (!conversasDict.ContainsKey(outroParticipanteId))
+                {
+                    conversasDict[outroParticipanteId] = (new List<Notificacoes>(), n.Data_Envio);
+                }
+                
+                conversasDict[outroParticipanteId].mensagens.Add(n);
+                if (n.Data_Envio > conversasDict[outroParticipanteId].ultimaData)
+                {
+                    conversasDict[outroParticipanteId] = (conversasDict[outroParticipanteId].mensagens, n.Data_Envio);
+                }
+            }
+
+            // Buscar informações dos outros participantes
+            var outrosParticipantesIds = conversasDict.Keys.ToList();
+            var outrosParticipantes = await _context.Utilizadores
+                .Where(u => outrosParticipantesIds.Contains(u.Id_User))
+                .ToDictionaryAsync(u => u.Id_User, u => u.Nome);
+
+            // Contar mensagens não lidas por conversa
+            foreach (var kvp in conversasDict)
+            {
+                var outroId = kvp.Key;
+                var mensagens = kvp.Value.mensagens;
+                var ultimaMensagem = mensagens.OrderByDescending(m => m.Data_Envio).First();
+                var nomeOutro = outrosParticipantes.ContainsKey(outroId) ? outrosParticipantes[outroId] : $"User #{outroId}";
+                
+                // Contar mensagens não lidas: mensagens enviadas pelo outro participante que ainda não foram lidas (Estado = false)
+                var mensagensNaoLidas = mensagens.Count(m => 
+                    ((m.Id_Comprador == outroId && m.Id_Vendedor == userId) || 
+                     (m.Id_Vendedor == outroId && m.Id_Comprador == userId)) &&
+                    !m.Estado);
+
                 vm.Conversas.Add(new ConversationItemViewModel
                 {
-                    Id = g.Key,
-                    Nome = "Vendedor #" + g.Key,
-                    UltimaMensagem = ultima.Mensagem,
-                    DataUltima = ultima.Data_Envio,
-                    Online = false
+                    Id = outroId,
+                    Nome = nomeOutro,
+                    UltimaMensagem = ultimaMensagem.Mensagem.Length > 50 ? ultimaMensagem.Mensagem.Substring(0, 50) + "..." : ultimaMensagem.Mensagem,
+                    DataUltima = ultimaMensagem.Data_Envio,
+                    Online = false,
+                    MensagensNaoLidas = mensagensNaoLidas
                 });
             }
 
-            var primeira = grupos.FirstOrDefault();
-            if (primeira != null)
+            // Ordenar conversas por data da última mensagem
+            vm.Conversas = vm.Conversas.OrderByDescending(c => c.DataUltima).ToList();
+
+            // Determinar qual conversa carregar
+            int? conversaId = null;
+            if (vendedorId.HasValue && vendedorId.Value != userId)
             {
-                foreach (var n in primeira.OrderBy(n => n.Data_Envio))
+                conversaId = vendedorId.Value;
+            }
+            else if (compradorId.HasValue && compradorId.Value != userId)
+            {
+                conversaId = compradorId.Value;
+            }
+            else if (vm.Conversas.Any())
+            {
+                conversaId = vm.Conversas.First().Id;
+            }
+
+            if (conversaId.HasValue)
+            {
+                // Verificar se já existe conversa
+                if (!vm.Conversas.Any(c => c.Id == conversaId.Value))
+                {
+                    var outro = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Id_User == conversaId.Value);
+                    var nomeOutro = outro?.Nome ?? $"User #{conversaId.Value}";
+
+                    vm.Conversas.Insert(0, new ConversationItemViewModel
+                    {
+                        Id = conversaId.Value,
+                        Nome = nomeOutro,
+                        UltimaMensagem = "Start a conversation...",
+                        DataUltima = DateTime.Now,
+                        Online = false,
+                        MensagensNaoLidas = 0
+                    });
+                }
+
+                // Carregar mensagens desta conversa
+                var mensagensConversa = await _context.Notificacoes
+                    .Where(n => n.Tipo == "Mensagem" &&
+                               ((n.Id_Comprador == userId && n.Id_Vendedor == conversaId.Value) ||
+                                (n.Id_Vendedor == userId && n.Id_Comprador == conversaId.Value)))
+                    .OrderBy(n => n.Data_Envio)
+                    .ToListAsync();
+
+                foreach (var n in mensagensConversa)
                 {
                     vm.Mensagens.Add(new MessageBubbleViewModel
                     {
-                        IsOutgoing = n.Estado,
+                        IsOutgoing = n.Id_Comprador == userId || (n.Id_Vendedor == userId && n.Id_Comprador != userId),
                         Texto = n.Mensagem,
                         Data = n.Data_Envio
                     });
                 }
+
+                vm.VendedorAtualId = conversaId.Value;
+
+                // Marcar mensagens como lidas quando a conversa é aberta
+                var mensagensParaMarcar = mensagensConversa
+                    .Where(n => ((n.Id_Comprador == conversaId.Value && n.Id_Vendedor == userId) ||
+                                (n.Id_Vendedor == conversaId.Value && n.Id_Comprador == userId)) &&
+                               !n.Estado)
+                    .ToList();
+
+                foreach (var msg in mensagensParaMarcar)
+                {
+                    msg.Estado = true;
+                }
+
+                await _context.SaveChangesAsync();
             }
 
             return View(vm);
+        }
+
+        // POST: Enviar mensagem
+        [HttpPost]
+        public async Task<IActionResult> SendMessage([FromQuery] int? vendedorId, [FromQuery] int? compradorId, [FromQuery] string mensagem)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "Not authenticated" });
+            }
+
+            if (string.IsNullOrWhiteSpace(mensagem))
+            {
+                return Json(new { success = false, message = "Message cannot be empty" });
+            }
+
+            // Determinar o outro participante
+            int outroParticipanteId;
+            bool usuarioEhComprador;
+
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            
+            if (vendedorId.HasValue && vendedorId.Value != userId)
+            {
+                outroParticipanteId = vendedorId.Value;
+                usuarioEhComprador = true;
+            }
+            else if (compradorId.HasValue && compradorId.Value != userId)
+            {
+                outroParticipanteId = compradorId.Value;
+                usuarioEhComprador = false;
+            }
+            else
+            {
+                return Json(new { success = false, message = "Invalid recipient" });
+            }
+
+            try
+            {
+                var notificacao = new Notificacoes
+                {
+                    Id_Comprador = usuarioEhComprador ? userId.Value : outroParticipanteId,
+                    Id_Vendedor = usuarioEhComprador ? outroParticipanteId : userId.Value,
+                    Tipo = "Mensagem",
+                    Mensagem = mensagem,
+                    Data_Envio = DateTime.Now,
+                    Estado = false // Não lida pelo destinatário
+                };
+
+                _context.Notificacoes.Add(notificacao);
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        texto = mensagem,
+                        data = DateTime.Now.ToString("HH:mm"),
+                        isOutgoing = true
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Carregar mensagens de uma conversa específica
+        [HttpGet]
+        public async Task<IActionResult> GetConversation(int? vendedorId, int? compradorId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "Not authenticated" });
+            }
+
+            int? outroId = vendedorId ?? compradorId;
+            if (!outroId.HasValue)
+            {
+                return Json(new { success = false, message = "Invalid conversation" });
+            }
+
+            var mensagens = await _context.Notificacoes
+                .Where(n => n.Tipo == "Mensagem" &&
+                           ((n.Id_Comprador == userId && n.Id_Vendedor == outroId.Value) ||
+                            (n.Id_Vendedor == userId && n.Id_Comprador == outroId.Value)))
+                .OrderBy(n => n.Data_Envio)
+                .Select(n => new {
+                    texto = n.Mensagem,
+                    data = n.Data_Envio.ToString("HH:mm"),
+                    isOutgoing = (n.Id_Comprador == userId) || (n.Id_Vendedor == userId && n.Id_Comprador != userId)
+                })
+                .ToListAsync();
+
+            return Json(new { success = true, data = mensagens });
         }
 
         public async Task<IActionResult> Notifications()
@@ -206,25 +439,43 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
             var vm = new NotificationsViewModel
             {
                 UserName = userName
             };
 
+            // Buscar todas as notificações onde o usuário participa (como comprador OU como vendedor)
             var list = await _context.Notificacoes
-                .Where(n => n.Id_Comprador == userId)
+                .Where(n => (n.Id_Comprador == userId) || (n.Id_Vendedor == userId))
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
             foreach (var n in list)
             {
+                // Determinar o outro participante para linkar mensagens
+                int? outroParticipanteId = null;
+                if (n.Tipo == "Mensagem")
+                {
+                    if (n.Id_Comprador == userId)
+                    {
+                        outroParticipanteId = n.Id_Vendedor;
+                    }
+                    else if (n.Id_Vendedor == userId)
+                    {
+                        outroParticipanteId = n.Id_Comprador;
+                    }
+                }
+
                 vm.Items.Add(new NotificationItemViewModel
                 {
                     Id = n.Id_notificacao,
                     Titulo = n.Tipo,
                     Texto = n.Mensagem,
                     Data = n.Data_Envio,
-                    Lida = n.Estado
+                    Lida = n.Estado,
+                    OutroParticipanteId = outroParticipanteId
                 });
             }
 
@@ -241,61 +492,199 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
             var vm = new DocumentsViewModel
             {
                 UserName = userName
             };
 
+            // Buscar listings do vendedor com seus documentos
             var vendedor = await _context.Vendedores.FirstOrDefaultAsync(v => v.Id_User == userId);
             if (vendedor != null)
             {
-                var listingDocs = await _context.Documentos
-                    .Include(d => d.Anuncio)
-                    .Where(d => d.Anuncio.Id_Vendedor == vendedor.Id_User)
+                var listings = await _context.Anuncios
+                    .Where(a => a.Id_Vendedor == vendedor.Id_User && a.Estado)
                     .ToListAsync();
 
-                foreach (var d in listingDocs)
+                var listingIds = listings.Select(l => l.Id_Anuncio).ToList();
+                var allDocs = await _context.Documentos
+                    .Where(d => listingIds.Contains(d.Id_Anuncio))
+                    .ToListAsync();
+
+                foreach (var listing in listings)
                 {
-                    vm.ListingDocuments.Add(new DocumentItemViewModel
+                    var listingVm = new ListingWithDocumentsViewModel
                     {
-                        Id = d.Id_Doc,
-                        CarTitle = d.Anuncio?.Titulo ?? "Anuncio",
-                        Tipo = d.Tipo,
-                        Caminho = d.CaminhoDocumento,
-                        IsListing = true
-                    });
+                        Id_Anuncio = listing.Id_Anuncio,
+                        Titulo = listing.Titulo
+                    };
+
+                    var listingDocs = allDocs.Where(d => d.Id_Anuncio == listing.Id_Anuncio).ToList();
+                    foreach (var doc in listingDocs)
+                    {
+                        listingVm.Documents.Add(new DocumentItemViewModel
+                        {
+                            Id = doc.Id_Doc,
+                            CarTitle = listing.Titulo,
+                            Tipo = doc.Tipo,
+                            Caminho = doc.CaminhoDocumento,
+                            IsListing = true
+                        });
+                    }
+
+                    vm.Listings.Add(listingVm);
                 }
             }
 
+            // Buscar compras do comprador com seus documentos
             var comprador = await _context.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
             if (comprador != null)
             {
                 var compras = await _context.Compras
                     .Include(c => c.Anuncio)
-                    .Where(c => c.Id_Comprador == comprador.Id_User)
+                    .Where(c => c.Id_Comprador == comprador.Id_User && c.Estado)
                     .ToListAsync();
 
                 var anuncioIds = compras.Select(c => c.Id_Anuncio).ToList();
-
                 var purchaseDocs = await _context.Documentos
-                    .Include(d => d.Anuncio)
                     .Where(d => anuncioIds.Contains(d.Id_Anuncio))
                     .ToListAsync();
 
-                foreach (var d in purchaseDocs)
+                foreach (var compra in compras)
                 {
-                    vm.PurchaseDocuments.Add(new DocumentItemViewModel
+                    var purchaseVm = new PurchaseWithDocumentsViewModel
                     {
-                        Id = d.Id_Doc,
-                        CarTitle = d.Anuncio?.Titulo ?? "Anuncio",
-                        Tipo = d.Tipo,
-                        Caminho = d.CaminhoDocumento,
-                        IsListing = false
-                    });
+                        Id_Compra = compra.Id_Compra,
+                        CarTitle = compra.Anuncio?.Titulo ?? "Anuncio"
+                    };
+
+                    var compraDocs = purchaseDocs.Where(d => d.Id_Anuncio == compra.Id_Anuncio).ToList();
+                    foreach (var doc in compraDocs)
+                    {
+                        purchaseVm.Documents.Add(new DocumentItemViewModel
+                        {
+                            Id = doc.Id_Doc,
+                            CarTitle = compra.Anuncio?.Titulo ?? "Anuncio",
+                            Tipo = doc.Tipo,
+                            Caminho = doc.CaminhoDocumento,
+                            IsListing = false
+                        });
+                    }
+
+                    vm.Purchases.Add(purchaseVm);
                 }
             }
 
             return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddDocument(int anuncioId, IFormFile file, string tipo)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return Unauthorized();
+
+            var anuncio = await _context.Anuncios
+                .FirstOrDefaultAsync(a => a.Id_Anuncio == anuncioId && a.Id_Vendedor == userId);
+
+            if (anuncio == null)
+                return NotFound();
+
+            if (file == null || file.Length == 0)
+                return BadRequest("File is required");
+
+            var basePath = Path.Combine(_env.WebRootPath, "Anuncios", $"Anuncio{anuncioId}", "Docs");
+            Directory.CreateDirectory(basePath);
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            var filePath = Path.Combine(basePath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var documento = new Documento
+            {
+                Id_Anuncio = anuncioId,
+                Tipo = tipo ?? "Document",
+                CaminhoDocumento = $"/Anuncios/Anuncio{anuncioId}/Docs/{fileName}"
+            };
+
+            _context.Documentos.Add(documento);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Documents");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteDocument(int docId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return Unauthorized();
+
+            var documento = await _context.Documentos
+                .Include(d => d.Anuncio)
+                .FirstOrDefaultAsync(d => d.Id_Doc == docId);
+
+            if (documento == null || documento.Anuncio.Id_Vendedor != userId)
+                return NotFound();
+
+            // Delete file
+            var filePath = Path.Combine(_env.WebRootPath, documento.CaminhoDocumento.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            _context.Documentos.Remove(documento);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Documents");
+        }
+
+        public async Task<IActionResult> DownloadDocument(int docId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+                return Unauthorized();
+
+            var documento = await _context.Documentos
+                .Include(d => d.Anuncio)
+                .FirstOrDefaultAsync(d => d.Id_Doc == docId);
+
+            if (documento == null)
+                return NotFound();
+
+            // Verificar se é documento de compra do utilizador
+            var comprador = await _context.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
+            if (comprador != null)
+            {
+                var compra = await _context.Compras
+                    .FirstOrDefaultAsync(c => c.Id_Comprador == comprador.Id_User && c.Id_Anuncio == documento.Id_Anuncio);
+                
+                if (compra == null)
+                    return Unauthorized();
+            }
+            else
+            {
+                // Verificar se é documento de listing do utilizador
+                if (documento.Anuncio.Id_Vendedor != userId)
+                    return Unauthorized();
+            }
+
+            var filePath = Path.Combine(_env.WebRootPath, documento.CaminhoDocumento.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));
+            
+            if (!System.IO.File.Exists(filePath))
+                return NotFound();
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var fileName = Path.GetFileName(documento.CaminhoDocumento);
+
+            return File(fileBytes, "application/octet-stream", fileName);
         }
 
         public async Task<IActionResult> Sales(string range = "7d")
@@ -307,6 +696,8 @@ namespace AutoMatch.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
 
             var vm = new SalesViewModel
             {

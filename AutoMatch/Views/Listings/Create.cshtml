@@ -1,12 +1,14 @@
-@model AutoMatch.Models.ViewModel.CreateListingViewModel
+@model CreateListingViewModel
+
 @{
-    ViewData["Title"] = "Add New Listing";
+    ViewData["Title"] = "Create Listing";
 
     var username = Context.Session.GetString("UserName");
     var initial = Context.Session.GetString("UserInitial");
 }
 
-<!-- Floating Header -->
+<link rel="stylesheet" href="~/css/listings.css" />
+
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
@@ -45,271 +47,375 @@
     </div>
 </div>
 
-<!-- Create Car Listing layout -->
-<div class="create-page-wrapper">
-    <div class="create-card">
-        <div class="create-card-header">
-            <h1 class="create-card-title">Create Car Listing</h1>
-        </div>
+<div class="page-wrapper">
+    <div class="listing-container">
+        <h1>Create Car Listing</h1>
 
-        <form asp-action="Create" asp-controller="Listings" method="post" class="create-form" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
+        <form asp-action="Create" asp-controller="Listings" method="post" enctype="multipart/form-data" onsubmit="enableDisabledFields()">
 
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-section">
+                <div class="left-panel">
+                    <h2>Car</h2>
 
-            <div class="create-card-body">
-                <div class="create-card-left">
-                    <h3 class="create-section-title">Car</h3>
-
-                    <div class="create-row-two">
-                        <div class="create-field">
-                            <label asp-for="Marca"></label>
-                            <select asp-for="Marca" id="brandSelect" class="create-input create-select">
-                                <option value="">Brand</option>
-                                @foreach (var marca in (IEnumerable<string>)ViewBag.Marcas)
-                                {
-                                    <option value="@marca">@marca</option>
-                                }
-                            </select>
-                            <span asp-validation-for="Marca" class="text-danger"></span>
-                        </div>
-                        <div class="create-field">
-                            <label asp-for="Modelo"></label>
-                            <select asp-for="Modelo" id="modelSelect" class="create-input create-select" disabled>
-                                <option value="">Model</option>
-                                @foreach (var m in (IEnumerable<AutoMatch.Models.Modelo>)ViewBag.TodosModelos)
-                                {
-                                    <option value="@m.NomeModelo" data-marca="@m.Marca">@m.NomeModelo</option>
-                                }
-                            </select>
-                            <span asp-validation-for="Modelo" class="text-danger"></span>
-                        </div>
+                    <div class="form-row">
+                        <label>Brand</label>
+                        <select asp-for="Marca" id="marca-select" asp-items="ViewBag.Marcas" class="input-select" required>
+                            <option value="">Select Brand</option>
+                        </select>
                     </div>
 
-                    <div class="create-row-two">
-                        <div class="create-field">
-                            <label asp-for="Tipo"></label>
-                            <select asp-for="Tipo" class="create-input create-select">
-                                <option value="">Type</option>
-                                @foreach (var tipo in (IEnumerable<string>)ViewBag.Tipos)
-                                {
-                                    <option value="@tipo">@tipo</option>
-                                }
-                            </select>
-                            <span asp-validation-for="Tipo" class="text-danger"></span>
-                        </div>
-                        <div class="create-field">
-                            <label>Transmission</label>
-                            <select name="Transmission" class="create-input create-select">
-                                <option value="">Transmission</option>
-                                <option value="automatic">Automatic</option>
-                                <option value="manual">Manual</option>
-                            </select>
-                        </div>
+                    <div class="form-row">
+                        <label>Model</label>
+                        <select asp-for="IdModelo" id="modelo-select" class="input-select" required disabled>
+                            <option value="">Select Model</option>
+                        </select>
                     </div>
 
-                    <div class="create-row-two">
-                        <div class="create-field">
-                            <label asp-for="Price"></label>
-                            <input asp-for="Price" class="create-input" placeholder="30000" />
-                            <span asp-validation-for="Price" class="text-danger"></span>
-                        </div>
-                        <div class="create-field">
-                            <label asp-for="Year"></label>
-                            <input asp-for="Year" class="create-input" placeholder="2023" />
-                            <span asp-validation-for="Year" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="create-field">
-                        <label asp-for="Localizacao"></label>
-                        <input asp-for="Localizacao" class="create-input" placeholder="Lisbon" />
-                        <span asp-validation-for="Localizacao" class="text-danger"></span>
-                    </div>
-
-                </div>
-
-                <div class="create-card-right">
-                    <div class="photos-panel">
-                        <input type="file" id="photoInput" name="Photos" multiple accept="image/*" hidden />
-                        <div class="photos-stack">
-                            <div class="photo-frame frame-back" data-slot="0">
-                                <img id="photoPreview1" class="photo-preview" />
-                            </div>
-                            <div class="photo-frame frame-middle" data-slot="1">
-                                <img id="photoPreview2" class="photo-preview" />
-                            </div>
-                            <div class="photo-frame frame-front" data-slot="2">
-                                <img id="photoPreview3" class="photo-preview" />
-                            </div>
-                        </div>
-                        <div class="photos-label">Photos</div>
-                        <div class="photos-controls">
-                            <button type="button" class="photos-btn" id="addPhotoBtn">+</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="create-desc-docs-row">
-                <div class="create-field">
-                    <label asp-for="Descricao"></label>
-                    <textarea asp-for="Descricao" rows="5" class="create-input create-textarea" placeholder="Short description of the car..."></textarea>
-                    <span asp-validation-for="Descricao" class="text-danger"></span>
-                </div>
-
-                <div class="create-documents-section">
-                    <h3 class="create-section-title">Documents</h3>
-                    <div class="create-documents-row">
-                        <div class="create-field">
+                    <div class="form-double-row">
+                        <div>
                             <label>Type</label>
-                            <select name="DocumentType" class="create-input create-select">
-                                <option value="">Type</option>
-                                <option value="registration">Registration</option>
-                                <option value="inspection">Inspection</option>
-                                <option value="insurance">Insurance</option>
+                            <select asp-for="Categoria" id="categoria-select" class="input-select" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                                <option value="">Select Type</option>
+                                <option value="SUV">SUV</option>
+                                <option value="Sedan">Sedan</option>
+                                <option value="Hatchback">Hatchback</option>
+                                <option value="Coupe">Coupe</option>
                             </select>
                         </div>
-                        <div class="create-field create-file-field">
-                            <label class="sr-only">Upload</label>
-                            <div class="create-file-actions">
-                                <label class="create-file-button">
-                                    <span>Select</span>
-                                    <input type="file" name="DocumentFile" hidden />
-                                </label>
-                                <button type="button" class="create-file-upload">Upload</button>
-                            </div>
+                        <div>
+                            <label>Transmission</label>
+                            <select asp-for="Transmissao" id="transmissao-select" class="input-select" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                                <option value="">Select Transmission</option>
+                                <option value="Manual">Manual</option>
+                                <option value="Automatic">Automatic</option>
+                            </select>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="create-actions">
-                <button type="submit" name="action" value="save" class="create-btn create-btn-secondary">Save</button>
-                <button type="submit" name="action" value="submit" class="create-btn create-btn-primary">Submit</button>
+                    <div class="form-double-row">
+                        <div>
+                            <label>Price</label>
+                            <input asp-for="Preco" type="number" step="0.01" class="input-text" required />
+                        </div>
+                        <div>
+                            <label>Year</label>
+                            <input asp-for="Ano" type="number" class="input-text" required />
+                        </div>
+                    </div>
+
+                    <div class="form-double-row">
+                        <div>
+                            <label>Kilometers</label>
+                            <input asp-for="Kilometros" type="number" class="input-text" required />
+                        </div>
+                        <div>
+                            <label>Plate</label>
+                            <input asp-for="Matricula" class="input-text" maxlength="8" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Fuel Type</label>
+                        <select asp-for="Combustivel" id="combustivel-select" class="input-select" disabled style="background-color: #f5f5f5; cursor: not-allowed;">
+                            <option value="">Select Fuel Type</option>
+                            <option value="Gasolina">Gasolina</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Híbrido">Híbrido</option>
+                            <option value="Elétrico">Elétrico</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Description</label>
+                        <textarea asp-for="Descricao" class="input-textarea" required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Location</label>
+                        <input asp-for="Localizacao" class="input-text" required />
+                    </div>
+                </div>
+
+                <div class="right-panel">
+                    <div class="photos-box">
+                        <div class="photos-header">PHOTOS</div>
+
+                        <div class="photos-stack">
+                            <div class="photo-card card-1" onclick="selectCard(0)">
+                                <input asp-for="Imagens" type="file" id="file-input-0" class="hidden" accept="image/*" onchange="handleImageSelect(0, event)">
+                                <div class="photo-placeholder">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <span>1</span>
+                                </div>
+                            </div>
+
+                            <div class="photo-card card-2" onclick="selectCard(1)">
+                                <input asp-for="Imagens" type="file" id="file-input-1" class="hidden" accept="image/*" onchange="handleImageSelect(1, event)">
+                                <div class="photo-placeholder">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <span>2</span>
+                                </div>
+                            </div>
+
+                            <div class="photo-card card-3" onclick="selectCard(2)">
+                                <input asp-for="Imagens" type="file" id="file-input-2" class="hidden" accept="image/*" onchange="handleImageSelect(2, event)">
+                                <div class="photo-placeholder">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <span>3</span>
+                                </div>
+                            </div>
+
+                            <div class="photo-card card-4" onclick="selectCard(3)">
+                                <input asp-for="Imagens" type="file" id="file-input-3" class="hidden" accept="image/*" onchange="handleImageSelect(3, event)">
+                                <div class="photo-placeholder">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <span>4</span>
+                                </div>
+                            </div>
+
+                            <div class="photo-card card-5" onclick="selectCard(4)">
+                                <input asp-for="Imagens" type="file" id="file-input-4" class="hidden" accept="image/*" onchange="handleImageSelect(4, event)">
+                                <div class="photo-placeholder">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <span>5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="photo-buttons">
+                            <button type="button" class="plus-btn" id="plusBtn">+</button>
+                            <button type="button" class="minus-btn" id="minusBtn">−</button>
+                        </div>
+
+                        <div class="upload-instructions">
+                            <p>Click on a photo slot to select it</p>
+                            <p>Then use + to add or - to remove image</p>
+                        </div>
+                    </div>
+
+                    <h2>Documents</h2>
+
+                    <div class="docs-row">
+                        <label>Documents (optional)</label>
+                        <input asp-for="Documentos" type="file" name="Documentos" multiple accept=".pdf,.png,.jpg,.jpeg" class="input-text" />
+                    </div>
+
+                    <div class="action-row">
+                        <button type="submit" class="save-btn">Save</button>
+                        <a href="/Listings/MyListings" class="cancel-btn">Cancel</a>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        // Dropdown do utilizador
-        document.addEventListener("click", function (e) {
-            const btn = document.getElementById("userMenuBtn");
-            const dropdown = document.getElementById("userDropdown");
+<script>
+    const modelos = JSON.parse('@Html.Raw(ViewBag.ModelosJson)');
 
-            if (!btn || !dropdown) return;
+    const marcaSelect = document.getElementById('marca-select');
+    const modeloSelect = document.getElementById('modelo-select');
+    const categoriaSelect = document.getElementById('categoria-select');
+    const transmissaoSelect = document.getElementById('transmissao-select');
+    const combustivelSelect = document.getElementById('combustivel-select');
 
-            if (btn.contains(e.target)) {
-                dropdown.classList.toggle("show");
-            }
-            else if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove("show");
-            }
-        });
+    marcaSelect.addEventListener('change', () => {
+        const marca = marcaSelect.value;
+        
+        if (!marca) {
+            // Se não houver marca selecionada, desabilitar modelo e limpar campos (sempre bloqueados)
+            modeloSelect.innerHTML = '<option value="">Select Model</option>';
+            modeloSelect.disabled = true;
+            categoriaSelect.value = '';
+            transmissaoSelect.value = '';
+            combustivelSelect.value = '';
+            return;
+        }
 
-        // Marca/Modelo dinâmicos com base nos Modelos existentes
-        document.addEventListener("DOMContentLoaded", function () {
-            const brandSelect = document.getElementById("brandSelect");
-            const modelSelect = document.getElementById("modelSelect");
-            const addPhotoBtn = document.getElementById("addPhotoBtn");
-            const removePhotoBtn = document.getElementById("removePhotoBtn");
-            const photoInput = document.getElementById("photoInput");
-            if (!brandSelect || !modelSelect) return;
+        // Habilitar modelo e preencher opções
+        modeloSelect.innerHTML = '<option value="">Select Model</option>';
+        modeloSelect.disabled = false;
 
-            const allModelOptions = Array.from(modelSelect.querySelectorAll("option[data-marca]"));
-
-            let selectedSlot = 2; // por omissão, a moldura da frente
-            const frames = document.querySelectorAll(".photos-stack .photo-frame");
-
-            frames.forEach(frame => {
-                frame.addEventListener("click", function () {
-                    frames.forEach(f => f.classList.remove("photo-frame-selected"));
-                    frame.classList.add("photo-frame-selected");
-                    const slot = frame.getAttribute("data-slot");
-                    if (slot !== null) {
-                        selectedSlot = parseInt(slot);
-                    }
-                });
+        modelos
+            .filter(m => m.Marca === marca)
+            .forEach(m => {
+                const option = document.createElement('option');
+                option.value = m.Id_Modelo;
+                option.text = m.NomeModelo;
+                modeloSelect.add(option);
             });
 
-            if (addPhotoBtn && photoInput) {
-                addPhotoBtn.addEventListener("click", function () {
-                    photoInput.click();
-                });
+        // Limpar campos quando a marca muda (sempre bloqueados)
+        categoriaSelect.value = '';
+        transmissaoSelect.value = '';
+        combustivelSelect.value = '';
+    });
+
+    modeloSelect.addEventListener('change', () => {
+        const modeloId = parseInt(modeloSelect.value);
+        if (!modeloId) {
+            categoriaSelect.value = '';
+            transmissaoSelect.value = '';
+            combustivelSelect.value = '';
+            return;
+        }
+
+        const modelo = modelos.find(m => m.Id_Modelo === modeloId);
+        if (modelo) {
+            // Preencher Categoria (Type) - sempre bloqueado
+            const categoriaValue = (modelo.Categoria || '').trim();
+            categoriaSelect.value = categoriaValue;
+            
+            // Se a categoria não existir nas opções, criar dinamicamente
+            const categoriaExists = Array.from(categoriaSelect.options).some(opt => opt.value === categoriaValue);
+            if (!categoriaExists && categoriaValue) {
+                const newOption = document.createElement('option');
+                newOption.value = categoriaValue;
+                newOption.text = categoriaValue;
+                categoriaSelect.appendChild(newOption);
+                categoriaSelect.value = categoriaValue;
             }
 
-            if (removePhotoBtn) {
-                removePhotoBtn.addEventListener("click", function () {
-                    const previewIds = ["photoPreview1", "photoPreview2", "photoPreview3"]; 
-                    const preview = document.getElementById(previewIds[selectedSlot] || "");
-                    if (preview) {
-                        preview.src = "";
-                    }
-                });
+            // Preencher Transmissao (Transmission) - sempre bloqueado
+            // modelo.Transmissao é boolean: true = Automatic, false = Manual
+            transmissaoSelect.value = modelo.Transmissao ? 'Automatic' : 'Manual';
+
+            // Preencher Combustivel (Fuel Type) - sempre bloqueado
+            // Remover espaços e garantir correspondência exata
+            const combustivelValue = (modelo.Combustivel || '').trim();
+            
+            // Verificar se a opção existe antes de definir o valor
+            let combustivelExists = Array.from(combustivelSelect.options).some(opt => opt.value === combustivelValue);
+            
+            if (!combustivelExists && combustivelValue) {
+                // Criar a opção dinamicamente se não existir
+                const newOption = document.createElement('option');
+                newOption.value = combustivelValue;
+                newOption.text = combustivelValue;
+                combustivelSelect.appendChild(newOption);
+                combustivelExists = true;
             }
-
-            if (photoInput) {
-                photoInput.addEventListener("change", function () {
-                    const files = Array.from(photoInput.files || []);
-                    if (files.length === 0) return;
-
-                    const previews = [
-                        document.getElementById("photoPreview1"),
-                        document.getElementById("photoPreview2"),
-                        document.getElementById("photoPreview3")
-                    ];
-
-                    // Se tiver múltiplas imagens, preencher os slots
-                    if (files.length > 1) {
-                        previews.forEach((preview, index) => {
-                            if (!preview) return;
-                            const file = files[index];
-                            if (file) {
-                                const url = URL.createObjectURL(file);
-                                preview.src = url;
-                            }
-                        });
-                    } else if (files.length === 1) {
-                        // Se tiver apenas 1 imagem, adicionar ao slot selecionado
-                        const preview = previews[selectedSlot];
-                        if (preview && files[0]) {
-                            const url = URL.createObjectURL(files[0]);
-                            preview.src = url;
-                        }
-                    }
-                    
-                    // Limpar o input para permitir selecionar a mesma imagem novamente
-                    photoInput.value = "";
-                });
+            
+            // Habilitar temporariamente para definir o valor, depois desabilitar novamente
+            if (combustivelExists && combustivelValue) {
+                combustivelSelect.disabled = false;
+                combustivelSelect.value = combustivelValue;
+                combustivelSelect.disabled = true;
             }
+        }
+    });
 
-            const selectedBrand = brandSelect.value;
-            if (selectedBrand) {
-                modelSelect.disabled = false;
-                filterModels(selectedBrand);
-            }
+    // Inicializar estado: modelo e campos bloqueados no início
+    modeloSelect.disabled = true;
+    categoriaSelect.disabled = true;
+    transmissaoSelect.disabled = true;
+    combustivelSelect.disabled = true;
 
-            brandSelect.addEventListener("change", function () {
-                const brand = this.value;
-                filterModels(brand);
-            });
+    // Função para habilitar campos disabled antes do submit (para enviar os valores)
+    function enableDisabledFields() {
+        modeloSelect.disabled = false;
+        // Habilitar temporariamente apenas para enviar os valores, mas visualmente permanecem bloqueados
+        categoriaSelect.disabled = false;
+        transmissaoSelect.disabled = false;
+        combustivelSelect.disabled = false;
+    }
 
-            function filterModels(brand) {
-                modelSelect.innerHTML = '<option value="">Model</option>';
-                if (!brand) {
-                    modelSelect.disabled = true;
-                    return;
-                }
+    var images = [null, null, null, null, null];
+    var selectedIndex = null;
 
-                allModelOptions.forEach(opt => {
-                    if (opt.getAttribute("data-marca") === brand) {
-                        modelSelect.appendChild(opt.cloneNode(true));
-                    }
-                });
-                modelSelect.disabled = false;
-            }
+    function selectCard(index) {
+        var cards = document.querySelectorAll('.photo-card');
+
+        cards.forEach(function(card) {
+            card.classList.remove('selected');
         });
-    </script>
-}
+
+        cards[index].classList.add('selected');
+        selectedIndex = index;
+
+        updateButtons();
+    }
+
+    function updateButtons() {
+        var plusBtn = document.getElementById('plusBtn');
+        var minusBtn = document.getElementById('minusBtn');
+
+        if (selectedIndex === null) {
+            plusBtn.disabled = true;
+            minusBtn.disabled = true;
+        } else {
+            plusBtn.disabled = images[selectedIndex] !== null;
+            minusBtn.disabled = images[selectedIndex] === null;
+        }
+    }
+
+    function addImageToSelected() {
+        if (selectedIndex !== null && images[selectedIndex] === null) {
+            document.getElementById('file-input-' + selectedIndex).click();
+        }
+    }
+
+    function removeImageFromSelected() {
+        if (selectedIndex !== null && images[selectedIndex] !== null) {
+            images[selectedIndex] = null;
+            document.getElementById('file-input-' + selectedIndex).value = '';
+            updateCard(selectedIndex);
+            updateButtons();
+        }
+    }
+
+    function handleImageSelect(index, event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                images[index] = reader.result;
+                updateCard(index);
+                updateButtons();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function updateCard(index) {
+        var card = document.querySelectorAll('.photo-card')[index];
+        var placeholder = card.querySelector('.photo-placeholder');
+
+        if (images[index]) {
+            if (!card.querySelector('img')) {
+                var img = document.createElement('img');
+                card.appendChild(img);
+            }
+            card.querySelector('img').src = images[index];
+            placeholder.style.display = 'none';
+            card.classList.add('has-image');
+        } else {
+            var img = card.querySelector('img');
+            if (img) img.remove();
+            placeholder.style.display = 'flex';
+            card.classList.remove('has-image');
+        }
+    }
+
+    document.getElementById('plusBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        addImageToSelected();
+    });
+
+    document.getElementById('minusBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        removeImageFromSelected();
+    });
+
+    updateButtons();
+</script>

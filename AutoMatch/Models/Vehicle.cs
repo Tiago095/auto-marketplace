@@ -13,5 +13,6 @@ namespace AutoMatch.Models
         public string BodyType { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public int SellerId { get; set; }
     }
 }

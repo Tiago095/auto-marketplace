@@ -4,6 +4,7 @@ using AutoMatch.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AutoMatch.Migrations
 {
     [DbContext(typeof(AutoMatchContext))]
-    partial class AutoMatchContextModelSnapshot : ModelSnapshot
+    [Migration("20251229184656_docslength")]
+    partial class docslength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -379,73 +382,6 @@ namespace AutoMatch.Migrations
                     b.ToTable("Reservas");
                 });
 
-            modelBuilder.Entity("AutoMatch.Models.SellerApplication", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("AcceptTerms")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("DocumentNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PostalCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("PreferredContactMethod")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("RejectionReason")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int?>("ReviewedByAdminId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ReviewedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SellingType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("SubmissionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReviewedByAdminId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SellerApplications");
-                });
-
             modelBuilder.Entity("AutoMatch.Models.Utilizador", b =>
                 {
                     b.Property<int>("Id_User")
@@ -696,24 +632,6 @@ namespace AutoMatch.Migrations
                     b.Navigation("Anuncio");
 
                     b.Navigation("Comprador");
-                });
-
-            modelBuilder.Entity("AutoMatch.Models.SellerApplication", b =>
-                {
-                    b.HasOne("AutoMatch.Models.Administrador", "ReviewedByAdmin")
-                        .WithMany()
-                        .HasForeignKey("ReviewedByAdminId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("AutoMatch.Models.Utilizador", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ReviewedByAdmin");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AutoMatch.Models.Vendedor", b =>

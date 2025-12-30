@@ -6,6 +6,8 @@
     var initial = Context.Session.GetString("UserInitial");
 }
 
+<link rel="stylesheet" href="~/css/listings.css" />
+
 <!-- Floating Header (same as Contact / Home) -->
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
@@ -62,30 +64,26 @@
             }
         </div>
 
-
-
-        </div>
-
-    @if (!Model.Any())
-    {
-        @if (ViewBag.IsSeller != true)
+        @if (!Model.Any())
         {
-           
-            <div class="seller-info-wrapper">
-                <p class="seller-info-text">
-                    You can’t add listings yet. Become a seller to get started!
-                </p>
+            @if (ViewBag.IsSeller != true)
+            {
 
-                <a href="/Forms/SellerForms" class="become-seller-btn">
-                    Become a Seller
-                </a>
-            </div>
+                <div class="seller-info-wrapper">
+                    <p class="seller-info-text">
+                        You can't add listings yet. Become a seller to get started!
+                    </p>
+
+                    <a href="/Forms/SellerForms" class="become-seller-btn">
+                        Become a Seller
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="mylistings-empty">You don't have any listings yet.</div>
+            }
         }
-        else
-        {
-        <div class="mylistings-empty">You don't have any listings yet.</div>            
-        }
-    }
         else
         {
             <div class="mylistings-list">
@@ -94,12 +92,27 @@
                     <div class="mylistings-card">
                         <div class="mylistings-image">
                             @{
+                                // ✅ Versão mais simples - ordenar pelo número no início do nome
                                 var firstImage = anuncio.Imagens?
-                                    .OrderByDescending(i => i.Id_Imagem)
-                                    .FirstOrDefault();
+                                .Where(i => !string.IsNullOrEmpty(i.CaminhoImagem))
+                                .OrderBy(i =>
+                                {
+                                    try
+                                    {
+                                        var nomeArquivo = System.IO.Path.GetFileName(i.CaminhoImagem);
+                                        var numeroParte = nomeArquivo.Split('_')[0];
+                                        return int.Parse(numeroParte);
+                                    }
+                                    catch
+                                    {
+                                        return 999;
+                                    }
+                                })
+                                .FirstOrDefault();
+
                                 var imagePath = firstImage != null
-                                    ? Url.Content("~/images/listings/" + firstImage.CaminhoImagem)
-                                    : Url.Content("~/images/eletric.png");
+                                ? firstImage.CaminhoImagem
+                                : Url.Content("~/images/eletric.png");
                             }
                             <img src="@imagePath" alt="@anuncio.Titulo" />
                         </div>
@@ -109,8 +122,8 @@
                                 <div class="mylistings-car-price">@anuncio.Preco.ToString("N0") €</div>
                             </div>
                             <div class="mylistings-actions">
-                                <form asp-action="Edit" asp-controller="Listings" asp-route-id="@anuncio.Id_Anuncio" class="mylistings-btn edit">Edit</form>
-
+                                <a href="@Url.Action("Edit", "Listings", new { id = anuncio.Id_Anuncio })"
+                                   class="mylistings-btn edit">Edit</a>
                                 <form asp-action="Delete" asp-controller="Listings" asp-route-id="@anuncio.Id_Anuncio" method="post" style="display:inline;">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="mylistings-btn delete" onclick="return confirm('Are you sure you want to delete this listing?');">Delete</button>

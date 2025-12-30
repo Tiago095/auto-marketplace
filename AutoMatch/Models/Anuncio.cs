@@ -10,13 +10,13 @@ namespace AutoMatch.Models
         [Key]
         public int Id_Anuncio { get; set; }
 
-        [Required]
+        [Required,ForeignKey("Vendedor")]
         public int Id_Vendedor { get; set; }
 
-        [Required]
+        [Required,ForeignKey("Administrador")]
         public int Id_Admin { get; set; }
 
-        [Required]
+        [Required,ForeignKey("Modelo")]
         public int Id_Modelo { get; set; }
 
         [Required, StringLength(50)]

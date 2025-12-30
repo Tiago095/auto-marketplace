@@ -50,6 +50,10 @@
                     <button class="sidebar-btn active" type="button" data-target="/DashBoard/Messages">
                         <span class="icon"><i class="fa-regular fa-message"></i></span>
                         <span>Messages</span>
+                        @if (ViewBag.UnreadMessagesCount != null && (int)ViewBag.UnreadMessagesCount > 0)
+                        {
+                            <span class="sidebar-badge">@ViewBag.UnreadMessagesCount</span>
+                        }
                     </button>
                 </li>
                 <li>
@@ -79,55 +83,80 @@
                     <h1>Messaging</h1>
 
                     <div class="conv-search">
-                        <input type="text" placeholder="Search conversations..." />
+                        <input type="text" id="searchConv" placeholder="Search conversations..." />
                     </div>
 
-                    <div class="conv-items">
+                    <div class="conv-items" id="convList">
                         @if (Model.Conversas != null && Model.Conversas.Any())
                         {
-                            var firstId = Model.Conversas.First().Id;
                             foreach (var c in Model.Conversas)
                             {
-                                var isActive = c.Id == firstId;
-                                <div class="conv-item @(isActive ? "active" : "")">
-                                    <div class="conv-avatar @(c.Online ? "" : "muted")"></div>
+                                var isActive = c.Id == Model.VendedorAtualId;
+                                var hasUnread = c.MensagensNaoLidas > 0;
+                                <div class="conv-item @(isActive ? "active" : "") @(hasUnread ? "unread" : "")" data-participant-id="@c.Id">
+                                    <div class="conv-avatar @(c.Online ? "" : "muted")">
+                                        @c.Nome.Substring(0, 1).ToUpper()
+                                    </div>
                                     <div class="conv-info">
                                         <div class="conv-name">@c.Nome</div>
+                                        <div class="conv-preview">@c.UltimaMensagem</div>
                                         <div class="conv-meta">@c.DataUltima.ToString("g")</div>
                                     </div>
+                                    @if (hasUnread)
+                                    {
+                                        <span class="conv-badge">@c.MensagensNaoLidas</span>
+                                    }
                                 </div>
                             }
                         }
                         else
                         {
-                            <p>No conversations.</p>
+                            <p style="padding: 20px; color: #888; text-align: center;">No conversations yet.</p>
                         }
                     </div>
                 </section>
 
-                @if (Model.Mensagens != null && Model.Mensagens.Any())
+                @if (Model.Mensagens != null && Model.Mensagens.Any() || Model.VendedorAtualId.HasValue)
                 {
-                    <section class="chat-view">
+                    <section class="chat-view" id="chatView">
                         <div class="chat-header">
-                            @{ var first = Model.Mensagens.First(); }
-                            <div class="chat-bubble @(first.IsOutgoing ? "outgoing" : "incoming")">@first.Texto</div>
-                            <span class="chat-time">@first.Data.ToString("HH:mm")</span>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="conv-avatar">
+                                    @{
+                                        var vendedorAtual = Model.Conversas.FirstOrDefault(c => c.Id == Model.VendedorAtualId);
+                                        var nomeVendedor = vendedorAtual?.Nome ?? "Seller";
+                                    }
+                                    @nomeVendedor.Substring(0, 1).ToUpper()
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 16px;">@nomeVendedor</div>
+                                    <div style="font-size: 12px; color: #888;">Active</div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="chat-body">
-                            @if (Model.Mensagens.Count > 1)
+                        <div class="chat-body" id="chatBody">
+                            @if (Model.Mensagens != null && Model.Mensagens.Any())
                             {
-                                foreach (var m in Model.Mensagens.Skip(1))
+                                foreach (var m in Model.Mensagens)
                                 {
-                                    <div class="chat-meta">@m.Data.ToString("HH:mm")</div>
-                                    <div class="chat-bubble @(m.IsOutgoing ? "outgoing" : "incoming")">@m.Texto</div>
+                                    <div class="chat-message-wrapper @(m.IsOutgoing ? "outgoing" : "incoming")">
+                                        <div class="chat-bubble">@m.Texto</div>
+                                        <div class="chat-time">@m.Data.ToString("HH:mm")</div>
+                                    </div>
                                 }
+                            }
+                            else
+                            {
+                                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:14px;">
+                                    Start a conversation!
+                                </div>
                             }
                         </div>
 
                         <div class="chat-input-area">
-                            <input type="text" placeholder="Write a message..." />
-                            <button class="chat-send">
+                            <input type="text" id="messageInput" placeholder="Write a message..." />
+                            <button class="chat-send" id="sendBtn">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </button>
                         </div>
@@ -148,8 +177,66 @@
 
 @section Scripts {
     <script>
+        // 1. Vari�vel Global (Corrigida para evitar erros se for null)
+        const vendedorAtualId = parseInt("@(Model.VendedorAtualId ?? 0)");
+
+        // 2. Fun��o de Enviar Mensagem (Fica fora do DOMContentLoaded para n�o partir o c�digo)
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if (!input) return;
+
+            const mensagem = input.value.trim();
+
+            if (!mensagem) return;
+
+            if (vendedorAtualId === 0 || isNaN(vendedorAtualId)) {
+                alert("Selecione uma conversa para enviar mensagem.");
+                return;
+            }
+
+            // URL com Query String (M�todo que funciona sem criar classes C# extra)
+            const url = `/Dashboard/SendMessage?vendedorId=${vendedorAtualId}&mensagem=${encodeURIComponent(mensagem)}`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Erro HTTP: " + response.status);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const chatBody = document.getElementById('chatBody');
+
+                    // Remove o texto "Start a conversation" se existir
+                    if (chatBody.innerText.includes("Start a conversation")) {
+                        chatBody.innerHTML = '';
+                    }
+
+                    const messageHtml = `
+                        <div class="chat-message-wrapper outgoing">
+                            <div class="chat-bubble">${data.data.texto}</div>
+                            <div class="chat-time">${data.data.data}</div>
+                        </div>
+                    `;
+                    chatBody.insertAdjacentHTML('beforeend', messageHtml);
+                    input.value = '';
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                } else {
+                    alert("Erro: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+                alert("Erro ao enviar mensagem.");
+            });
+        }
+
+        // 3. Carregamento da P�gina (Aqui est�o os teus scripts originais)
         document.addEventListener('DOMContentLoaded', function () {
-            // dropdown user
+
+            // --- L�gica do User Dropdown (Mantida) ---
             document.addEventListener("click", function (e) {
                 const btn = document.getElementById("userMenuBtn");
                 const dropdown = document.getElementById("userDropdown");
@@ -158,18 +245,18 @@
 
                 if (btn.contains(e.target)) {
                     dropdown.classList.toggle("show");
-                }
-                else if (!dropdown.contains(e.target)) {
+                } else if (!dropdown.contains(e.target)) {
                     dropdown.classList.remove("show");
                 }
             });
 
-            // sidebar + transicao
+            // --- L�gica da Sidebar (Mantida) ---
             document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var url = this.getAttribute('data-target');
                     var main = document.querySelector('.dashboard-main');
                     if (!url) return;
+
                     if (main) {
                         main.classList.add('page-transition-out');
                         setTimeout(function () {
@@ -180,6 +267,34 @@
                     }
                 });
             });
+
+            // --- L�gica de Trocar de Conversa (Mantida) ---
+            document.querySelectorAll('.conv-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const participantId = this.dataset.participantId;
+                    window.location.href = `/Dashboard/Messages?vendedorId=${participantId}`;
+                });
+            });
+
+            // --- L�gica dos Bot�es do Chat (Corrigida) ---
+            const sendBtn = document.getElementById('sendBtn');
+            const messageInput = document.getElementById('messageInput');
+
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+            }
+
+            if (messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                // Auto-scroll para o fundo do chat
+                const chatBody = document.getElementById('chatBody');
+                if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+            }
         });
     </script>
 }

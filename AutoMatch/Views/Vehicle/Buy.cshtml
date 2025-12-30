@@ -1,0 +1,339 @@
+﻿@model AutoMatch.Models.Vehicle
+@{
+    ViewData["Title"] = "Buy";
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+
+    decimal tax = ViewBag.Tax ?? 0m;
+    decimal deliveryFee = 250m;
+    decimal insurance = 300m;
+    decimal total = ViewBag.Total ?? (Model.Price + tax + deliveryFee + insurance);
+}
+
+<link rel="stylesheet" href="~/css/vehicle.css" />
+
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+
+                    @if (!string.IsNullOrEmpty(Context.Session.GetString("UserProfileImageUrl")))
+                    {
+                        <img src="@Context.Session.GetString("UserProfileImageUrl")" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<section class="checkout-container">
+
+    <h1 class="checkout-title">Checkout</h1>
+
+    <form asp-action="ConfirmPurchase" asp-controller="Vehicle" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="vehicleId" value="@Model.Id" />
+
+        <div class="checkout-grid">
+            <!-- Left Column -->
+            <div class="checkout-left">
+                <!-- Payment Method -->
+                <div class="checkout-card">
+                    <h2>Payment Method</h2>
+
+                    <div class="payment-options">
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="creditcard" checked />
+                            <span>Credit Card</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="paypal" />
+                            <span>Paypal</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="googlepay" />
+                            <span>Google Pay</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment" value="applepay" />
+                            <span>Apple Pay</span>
+                        </label>
+                    </div>
+
+                    <div class="payment-fields">
+                        <input type="text" placeholder="Card number" />
+                        <div class="payment-row">
+                            <input type="text" placeholder="Expiration Date" />
+                            <input type="text" placeholder="CVV" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Address -->
+                <div class="checkout-card address-card">
+                    <h2>Billing Address</h2>
+
+                    <input type="text" name="FullName" placeholder="Full name" required />
+                    <input type="text" name="Address" placeholder="Address" required />
+                    <input type="text" name="City" placeholder="City" required />
+
+                    <select name="Country" required>
+                        <option value="">Country</option>
+                        <option value="Portugal">Portugal</option>
+                        <option value="Spain">Spain</option>
+                        <option value="France">France</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Right Column - Summary -->
+            <div class="checkout-right">
+                <div class="checkout-summary">
+                    <h2>Summary</h2>
+
+                    <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? Url.Content("~/images/eletric.png") : Model.ImageUrl)" class="summary-image" />
+
+                    <div class="summary-info">
+                        <p class="car-name">@Model.Brand @Model.Model</p>
+                        <p class="car-condition">New</p>
+
+                        <div class="summary-row">
+                            <span>Price</span>
+                            <span>@Model.Price.ToString("N0")€</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Tax</span>
+                            <span>@tax.ToString("N0")€</span>
+                        </div>
+
+                        <div class="summary-total">
+                            <span>Total</span>
+                            <span>@total.ToString("N0")€</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="simulate-btn">Simulate Checkout</button>
+                    <button type="submit" class="finish-btn">Finish Payment</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</section>
+
+<div id="simulateOverlay" class="booking-overlay">
+    <div class="booking-modal simulated-modal">
+        <div class="simulated-header">
+            <h2>Simulated Checkout</h2>
+        </div>
+
+        <div class="booking-main-card simulated-main-card">
+            <div class="simulated-top">
+                <div class="simulated-image-wrapper">
+                    <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? Url.Content("~/images/eletric.png") : Model.ImageUrl)" class="simulated-car-image" />
+                </div>
+                <div class="simulated-base">
+                    <h3>Base Price</h3>
+                    <p class="simulated-car-name">@Model.Brand @Model.Model</p>
+                    <p class="simulated-car-condition">New</p>
+                    <div class="simulated-price-list">
+                        <div class="simulated-price-row">
+                            <span>Price:</span>
+                            <span id="simPrice">@Model.Price.ToString("N0")€</span>
+                        </div>
+                        <div class="simulated-price-row">
+                            <span>Tax:</span>
+                            <span id="simTax">@tax.ToString("N0")€</span>
+                        </div>
+                        <div class="simulated-price-row">
+                            <span>Delivery Fee:</span>
+                            <span id="simDelivery">250€</span>
+                        </div>
+                        <div class="simulated-price-row">
+                            <span>Insurance:</span>
+                            <span id="simInsurance">300€</span>
+                        </div>
+                        <div class="simulated-price-row simulated-total-row">
+                            <span>Total Estimate:</span>
+                            <span id="simTotal">@((Model.Price + tax + 250m + 300m).ToString("N0"))€</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="simulated-plan">
+                <label class="simulated-plan-label">Selected Payment Plan</label>
+                <div class="simulated-plan-row">
+                    <div class="payment-plan-pill" id="planPill">
+                        <span id="planMonths">6 Months</span>
+                    </div>
+                    <button type="button" class="change-plan-btn" id="changePlanBtn">Change Plan</button>
+                </div>
+                <label class="simulated-plan-label">Estimated Monthly Payment</label>
+                <div class="monthly-payment-display">
+                    <span id="simMonthly">0€</span>
+                </div>
+            </div>
+
+            <div class="simulated-actions">
+                <button type="button" class="confirm-sim-btn" id="confirmSimBtn">Confirm Simulation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const simulateBtn = document.querySelector('.simulate-btn');
+        const overlay = document.getElementById('simulateOverlay');
+        const simMonthly = document.getElementById('simMonthly');
+        const simTotal = document.getElementById('simTotal');
+        const confirmSimBtn = document.getElementById('confirmSimBtn');
+        const changePlanBtn = document.getElementById('changePlanBtn');
+        const planPill = document.getElementById('planPill');
+        const planMonths = document.getElementById('planMonths');
+        
+        // Hidden select for months - create it first
+        let hiddenSelect = document.getElementById('simMonths');
+        if (!hiddenSelect) {
+            hiddenSelect = document.createElement('select');
+            hiddenSelect.id = 'simMonths';
+            hiddenSelect.style.display = 'none';
+            hiddenSelect.innerHTML = `
+                <option value="6">6 Months</option>
+                <option value="12">12 Months</option>
+                <option value="24">24 Months</option>
+            `;
+            document.body.appendChild(hiddenSelect);
+        }
+        
+        // Set initial value
+        hiddenSelect.value = '6';
+
+        function openSimModal() {
+            overlay.classList.add('visible');
+            document.body.classList.add('modal-open');
+            // Ensure initial values are set
+            if (planMonths) {
+                planMonths.textContent = '6 Months';
+            }
+            runSimulation();
+        }
+
+        function closeSimModal() {
+            overlay.classList.remove('visible');
+            document.body.classList.remove('modal-open');
+        }
+
+        async function runSimulation() {
+            const months = parseInt(hiddenSelect.value || '6');
+            
+            // Update display immediately
+            if (planMonths) {
+                planMonths.textContent = `${months} Months`;
+            }
+            
+            try {
+                const response = await fetch('@Url.Action("SimulateCheckout", "Vehicle")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: `vehicleId=@Model.Id&months=${months}`
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to fetch simulation data');
+                    return;
+                }
+
+                const data = await response.json();
+                
+                // Update all price fields
+                const simPriceEl = document.getElementById('simPrice');
+                const simTaxEl = document.getElementById('simTax');
+                const simDeliveryEl = document.getElementById('simDelivery');
+                const simInsuranceEl = document.getElementById('simInsurance');
+                
+                if (simPriceEl) simPriceEl.textContent = data.basePrice.toLocaleString('de-DE') + '€';
+                if (simTaxEl) simTaxEl.textContent = data.tax.toLocaleString('de-DE') + '€';
+                if (simDeliveryEl) simDeliveryEl.textContent = data.deliveryFee.toLocaleString('de-DE') + '€';
+                if (simInsuranceEl) simInsuranceEl.textContent = data.insurance.toLocaleString('de-DE') + '€';
+                if (simTotal) simTotal.textContent = data.totalEstimate.toLocaleString('de-DE') + '€';
+                if (simMonthly) simMonthly.textContent = data.monthly.toLocaleString('de-DE') + '€';
+                
+                // Update plan months display
+                if (planMonths) {
+                    planMonths.textContent = `${data.months} Months`;
+                }
+            } catch (e) {
+                console.error('Error running simulation:', e);
+            }
+        }
+
+        function changePlan() {
+            const currentValue = parseInt(hiddenSelect.value);
+            let nextValue;
+            if (currentValue === 6) {
+                nextValue = 12;
+            } else if (currentValue === 12) {
+                nextValue = 24;
+            } else {
+                nextValue = 6;
+            }
+            hiddenSelect.value = nextValue;
+            runSimulation();
+        }
+
+        simulateBtn?.addEventListener('click', openSimModal);
+        overlay?.addEventListener('click', e => {
+            if (e.target === overlay) closeSimModal();
+        });
+        
+        planPill?.addEventListener('click', changePlan);
+        changePlanBtn?.addEventListener('click', changePlan);
+        hiddenSelect.addEventListener('change', runSimulation);
+        confirmSimBtn?.addEventListener('click', closeSimModal);
+
+        // USER DROPDOWN TOGGLE
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+    </script>
+}

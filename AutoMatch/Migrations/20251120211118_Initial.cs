@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AutoMatch.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,7 +50,8 @@ namespace AutoMatch.Migrations
                     Nome = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(60)", maxLength: 60, nullable: false),
-                    Senha = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    Senha = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ProfileImageUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -110,15 +111,14 @@ namespace AutoMatch.Migrations
                     NIF = table.Column<int>(type: "int", nullable: true),
                     Contactos = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Rua = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Codigo_Postal = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
-                    CodigoPostalCodigo_Postal = table.Column<string>(type: "nvarchar(8)", nullable: true)
+                    Codigo_Postal = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Vendedores", x => x.Id_User);
                     table.ForeignKey(
-                        name: "FK_Vendedores_CodigoPostais_CodigoPostalCodigo_Postal",
-                        column: x => x.CodigoPostalCodigo_Postal,
+                        name: "FK_Vendedores_CodigoPostais_Codigo_Postal",
+                        column: x => x.Codigo_Postal,
                         principalTable: "CodigoPostais",
                         principalColumn: "Codigo_Postal",
                         onDelete: ReferentialAction.Restrict);
@@ -167,22 +167,20 @@ namespace AutoMatch.Migrations
                     Kilometros = table.Column<int>(type: "int", nullable: false),
                     Localizacao = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Estado = table.Column<bool>(type: "bit", nullable: false),
-                    Matricula = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
-                    AdministradorId_User = table.Column<int>(type: "int", nullable: false),
-                    ModeloId_Modelo = table.Column<int>(type: "int", nullable: false)
+                    Matricula = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Anuncios", x => x.Id_Anuncio);
                     table.ForeignKey(
-                        name: "FK_Anuncios_Administradores_AdministradorId_User",
-                        column: x => x.AdministradorId_User,
+                        name: "FK_Anuncios_Administradores_Id_Admin",
+                        column: x => x.Id_Admin,
                         principalTable: "Administradores",
                         principalColumn: "Id_User",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Anuncios_Modelos_ModeloId_Modelo",
-                        column: x => x.ModeloId_Modelo,
+                        name: "FK_Anuncios_Modelos_Id_Modelo",
+                        column: x => x.Id_Modelo,
                         principalTable: "Modelos",
                         principalColumn: "Id_Modelo",
                         onDelete: ReferentialAction.Restrict);
@@ -364,19 +362,19 @@ namespace AutoMatch.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Anuncios_AdministradorId_User",
+                name: "IX_Anuncios_Id_Admin",
                 table: "Anuncios",
-                column: "AdministradorId_User");
+                column: "Id_Admin");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Anuncios_Id_Modelo",
+                table: "Anuncios",
+                column: "Id_Modelo");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Anuncios_Id_Vendedor",
                 table: "Anuncios",
                 column: "Id_Vendedor");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Anuncios_ModeloId_Modelo",
-                table: "Anuncios",
-                column: "ModeloId_Modelo");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Compradores_Codigo_Postal",
@@ -434,9 +432,9 @@ namespace AutoMatch.Migrations
                 column: "Id_Comprador");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Vendedores_CodigoPostalCodigo_Postal",
+                name: "IX_Vendedores_Codigo_Postal",
                 table: "Vendedores",
-                column: "CodigoPostalCodigo_Postal");
+                column: "Codigo_Postal");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Visitas_Id_Reserva",
