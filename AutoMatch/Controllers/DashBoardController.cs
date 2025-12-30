@@ -1,4 +1,5 @@
 ﻿using AutoMatch.Data;
+using AutoMatch.Models;
 using AutoMatch.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +68,9 @@ namespace AutoMatch.Controllers
                 .Take(2)
                 .Select(n => new DashboardMessageInfo
                 {
-                    NomeRemetente = "Vendedor #" + n.Id_Vendedor,
+                    NomeRemetente = n.Id_Vendedor.HasValue 
+                        ? "Vendedor #" + n.Id_Vendedor.Value 
+                        : "AutoMatch",
                     Texto = n.Mensagem,
                     Data = n.Data_Envio
                 })
@@ -169,10 +172,11 @@ namespace AutoMatch.Controllers
             foreach (var g in grupos)
             {
                 var ultima = g.First();
+                var sellerId = g.Key; // int? agora
                 vm.Conversas.Add(new ConversationItemViewModel
                 {
-                    Id = g.Key,
-                    Nome = "Vendedor #" + g.Key,
+                    Id = sellerId ?? 0,
+                    Nome = sellerId.HasValue ? "Vendedor #" + sellerId.Value : "AutoMatch",
                     UltimaMensagem = ultima.Mensagem,
                     DataUltima = ultima.Data_Envio,
                     Online = false
@@ -314,6 +318,7 @@ namespace AutoMatch.Controllers
                 SelectedRange = range
             };
 
+            var now = DateTime.UtcNow;
             var vendedor = await _context.Vendedores.FirstOrDefaultAsync(v => v.Id_User == userId);
             if (vendedor != null)
             {
@@ -322,7 +327,6 @@ namespace AutoMatch.Controllers
                     .Include(c => c.Comprador).ThenInclude(b => b.Utilizador)
                     .Where(c => c.Anuncio.Id_Vendedor == vendedor.Id_User);
 
-                var now = DateTime.UtcNow;
                 DateTime fromDate = range switch
                 {
                     "1m" => now.AddMonths(-1),
@@ -360,48 +364,54 @@ namespace AutoMatch.Controllers
                         Estado = c.Estado ? "Payed" : "Pending"
                     });
                 }
+            }
 
-                var buckets = vendas
-                    .GroupBy(c => c.Data_Compra.Date)
-                    .OrderBy(g => g.Key)
-                    .Select(g => g.Count())
-                    .Take(8)
-                    .ToList();
-
-                if (buckets.Count == 0)
+            // Dados estáticos para o gráfico (sempre gerados, independentemente de ser vendedor)
+            if (range == "1y")
+            {
+                // Dados estáticos para 1 ano (últimos 12 meses)
+                var staticData = new[] { 3, 5, 4, 6, 8, 7, 9, 5, 6, 4, 7, 8 };
+                for (int i = 11; i >= 0; i--)
                 {
-                    vm.ChartPoints.Add(0);
-                }
-                else
-                {
-                    var max = buckets.Max();
-                    foreach (var b in buckets)
+                    var monthDate = now.AddMonths(-i);
+                    vm.MonthlySales.Add(new MonthlySalesData
                     {
-                        var value = max == 0 ? 0 : (int)Math.Round((double)b / max * 10);
-                        vm.ChartPoints.Add(value);
-                    }
+                        Month = monthDate.ToString("MMM yyyy", new System.Globalization.CultureInfo("en-US")),
+                        Count = staticData[11 - i]
+                    });
                 }
-
-                var svgPoints = new List<string>();
-                if (vm.ChartPoints.Count > 0)
+            }
+            else if (range == "1m")
+            {
+                // Dados estáticos para 1 mês (últimos 30 dias, agrupados por semana)
+                var staticData = new[] { 2, 3, 4, 5, 3 };
+                var weeksInMonth = 5;
+                for (int i = 0; i < weeksInMonth; i++)
                 {
-                    var step = 100.0 / Math.Max(vm.ChartPoints.Count - 1, 1);
-                    for (int i = 0; i < vm.ChartPoints.Count; i++)
+                    vm.MonthlySales.Add(new MonthlySalesData
                     {
-                        var x = step * i;
-                        var y = 35 - vm.ChartPoints[i] * 3; 
-                        svgPoints.Add($"{x},{y}");
-                    }
+                        Month = $"Semana {i + 1}",
+                        Count = staticData[i % staticData.Length]
+                    });
                 }
-                else
+            }
+            else
+            {
+                // Dados estáticos para 7 dias
+                var staticData = new[] { 1, 2, 3, 2, 4, 3, 2 };
+                var days = new[] { "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom" };
+                for (int i = 0; i < 7; i++)
                 {
-                    svgPoints.Add("0,35");
-                    svgPoints.Add("100,35");
+                    vm.MonthlySales.Add(new MonthlySalesData
+                    {
+                        Month = days[i],
+                        Count = staticData[i]
+                    });
                 }
-                vm.ChartPointsSvg = string.Join(" ", svgPoints);
             }
 
             return View(vm);
         }
+
     }
 }

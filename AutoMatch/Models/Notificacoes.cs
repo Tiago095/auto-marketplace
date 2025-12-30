@@ -9,8 +9,8 @@ namespace AutoMatch.Models
         [Key]
         public int Id_notificacao { get; set; }
 
-        [Required, ForeignKey("Vendedor")]
-        public int Id_Vendedor { get; set; }
+        [ForeignKey("Vendedor")]
+        public int? Id_Vendedor { get; set; }
 
         [Required, ForeignKey("Comprador")]
         public int Id_Comprador { get; set; }

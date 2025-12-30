@@ -1,4 +1,5 @@
 @model AutoMatch.Models.ViewModels.SalesViewModel
+@using System.Text.Json
 @{
     ViewData["Title"] = "Sales";
 
@@ -104,10 +105,8 @@
 
                 <div class="card sales-chart">
                     <h2>Sales Performance</h2>
-                    <div class="chart-placeholder">
-                        <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="sales-chart-svg">
-                            <polyline points="@Model.ChartPointsSvg" />
-                        </svg>
+                    <div class="chart-container" style="padding: 20px;">
+                        <canvas id="salesChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -153,6 +152,7 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // dropdown user
@@ -186,6 +186,139 @@
                     }
                 });
             });
+
+            // Gráfico de vendas
+            function initChart() {
+                var ctx = document.getElementById('salesChart');
+                if (!ctx) {
+                    console.error('Canvas não encontrado!');
+                    return;
+                }
+
+                // Verificar se Chart está disponível
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js não está carregado!');
+                    setTimeout(initChart, 100);
+                    return;
+                }
+
+                @{
+                    var jsonOptions = new System.Text.Json.JsonSerializerOptions 
+                    { 
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase 
+                    };
+                    var salesDataJson = System.Text.Json.JsonSerializer.Serialize(Model.MonthlySales ?? new List<AutoMatch.Models.ViewModels.MonthlySalesData>(), jsonOptions);
+                }
+                var monthlySalesData = @Html.Raw(salesDataJson);
+                
+                console.log('Dados recebidos:', monthlySalesData);
+                
+                var labels = [];
+                var data = [];
+                
+                if (monthlySalesData && monthlySalesData.length > 0) {
+                    labels = monthlySalesData.map(function(item) { 
+                        return item.month || item.Month || ''; 
+                    });
+                    data = monthlySalesData.map(function(item) { 
+                        return item.count || item.Count || 0; 
+                    });
+                } else {
+                    // Dados de fallback se não houver dados
+                    labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    data = [3, 5, 4, 6, 8, 7, 9, 5, 6, 4, 7, 8];
+                }
+                
+                console.log('Labels:', labels);
+                console.log('Data:', data);
+
+                try {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Carros Vendidos',
+                                data: data,
+                                borderColor: 'rgba(74, 222, 128, 1)',
+                                backgroundColor: 'rgba(74, 222, 128, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgba(74, 222, 128, 1)',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        color: '#ffffff',
+                                        font: {
+                                            size: 13,
+                                            weight: 'bold'
+                                        },
+                                        padding: 15
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#ffffff',
+                                    borderColor: 'rgba(74, 222, 128, 1)',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                    displayColors: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: '#888',
+                                        font: {
+                                            size: 11
+                                        },
+                                        stepSize: 1
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.08)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: '#888',
+                                        font: {
+                                            size: 11
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.08)',
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    console.log('Gráfico criado com sucesso!');
+                } catch (error) {
+                    console.error('Erro ao criar gráfico:', error);
+                }
+            }
+
+            // Aguardar um pouco para garantir que Chart.js está carregado
+            if (typeof Chart !== 'undefined') {
+                initChart();
+            } else {
+                setTimeout(initChart, 500);
+            }
         });
     </script>
 }

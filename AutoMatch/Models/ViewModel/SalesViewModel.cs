@@ -12,6 +12,12 @@ namespace AutoMatch.Models.ViewModels
         public string Estado { get; set; }
     }
 
+    public class MonthlySalesData
+    {
+        public string Month { get; set; }
+        public int Count { get; set; }
+    }
+
     public class SalesViewModel
     {
         public string UserName { get; set; }
@@ -21,14 +27,9 @@ namespace AutoMatch.Models.ViewModels
         public int TopModelUnidades { get; set; }
 
         public IList<SaleRowViewModel> RecentSales { get; set; } = new List<SaleRowViewModel>();
+        public IList<MonthlySalesData> MonthlySales { get; set; } = new List<MonthlySalesData>();
 
         // Filtro selecionado: "7d", "1m", "1y"
         public string SelectedRange { get; set; } = "7d";
-
-        // Pontos simples para o gráfico (já normalizados para 0-10 por ex.)
-        public IList<int> ChartPoints { get; set; } = new List<int>();
-
-        // String pronta para o polyline do SVG ("x,y x,y ...")
-        public string ChartPointsSvg { get; set; } = string.Empty;
     }
 }

@@ -134,14 +134,46 @@ namespace AutoMatch.Controllers
             _db.Utilizadores.Add(user);
             await _db.SaveChangesAsync();
 
+            // Escolhe um código postal válido existente para o comprador por defeito
+            var defaultPostal = await _db.CodigoPostais
+                .Select(c => c.Codigo_Postal)
+                .FirstOrDefaultAsync();
+
+            // Se não existir nenhum código postal na BD, cria um genérico
+            if (defaultPostal == null)
+            {
+                defaultPostal = "0000-000";
+                if (!await _db.CodigoPostais.AnyAsync(c => c.Codigo_Postal == defaultPostal))
+                {
+                    _db.CodigoPostais.Add(new CodigoPostal
+                    {
+                        Codigo_Postal = defaultPostal,
+                        Localidade = "Unknown"
+                    });
+                    await _db.SaveChangesAsync();
+                }
+            }
+
             var comprador = new Comprador
             {
                 Id_User = user.Id_User,
                 Contactos = "N/A",
                 Rua = "Desconhecida",
-                Codigo_Postal = "0000-000"
+                Codigo_Postal = defaultPostal
             };
             _db.Compradores.Add(comprador);
+            await _db.SaveChangesAsync();
+
+            // Notificação de boas-vindas (notificação de sistema, sem remetente específico)
+            _db.Notificacoes.Add(new Notificacoes
+            {
+                Id_Comprador = comprador.Id_User,
+                Id_Vendedor = null,
+                Mensagem = $"Welcome to AutoMatch, {user.UserName}! We're glad to have you here.",
+                Data_Envio = DateTime.UtcNow,
+                Estado = false,
+                Tipo = "Welcome"
+            });
             await _db.SaveChangesAsync();
 
             // Sessão

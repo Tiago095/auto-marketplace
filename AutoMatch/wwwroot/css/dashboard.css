@@ -682,10 +682,30 @@ body {
     padding: 10px 10px;
     border-radius: 10px;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, padding 0.2s ease;
 }
 
 .notif-item.unread {
     background: #f0f4ff;
+}
+
+/* Estado expandido: parece uma "mensagem aberta" */
+.notif-item.expanded {
+    background: #e0e7ff;
+    padding: 14px 14px;
+    transform: translateX(2px);
+}
+
+/* Por defeito mostramos só uma altura pequena de texto */
+.notif-text {
+    max-height: 32px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Quando expandida mostramos todo o texto da notificação */
+.notif-item.expanded .notif-text {
+    max-height: none;
 }
 
 .notif-dot {
@@ -881,11 +901,34 @@ body {
     justify-content: center;
 }
 
+.chart-container {
+    margin-top: 12px;
+    height: 350px;
+    position: relative;
+}
+
 .sales-chart-svg {
     width: 90%;
     height: 70%;
     stroke: #4ade80;
     stroke-width: 2;
+    fill: none;
+}
+
+.sales-chart-svg .chart-grid line {
+    stroke: rgba(255,255,255,0.08);
+    stroke-width: 0.3;
+}
+
+.sales-chart-svg .chart-y-labels text,
+.sales-chart-svg .chart-x-label {
+    fill: #888;
+    font-size: 3px;
+}
+
+.sales-chart-svg polyline {
+    stroke: #4ade80;
+    stroke-width: 1.5;
     fill: none;
 }
 
