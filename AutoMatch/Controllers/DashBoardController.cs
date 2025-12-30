@@ -794,5 +794,22 @@ namespace AutoMatch.Controllers
 
             return View(vm);
         }
+        public async Task<IActionResult> Admin()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+                return RedirectToAction("Login", "Account");
+
+            // check if admin
+            bool isAdmin = await _context.Administradores
+                .AnyAsync(a => a.Id_User == userId);
+
+            if (!isAdmin)
+                return RedirectToAction("Index"); // Normal user dashboard
+
+            // Admin encontrado — redireciona para o controlador Admin
+            return RedirectToAction("DashAdmin", "Admin");
+        }
     }
 }

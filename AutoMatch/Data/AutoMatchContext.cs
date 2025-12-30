@@ -24,6 +24,7 @@ namespace AutoMatch.Data
         public DbSet<Visita> Visitas { get; set; }
         public DbSet<Notificacoes> Notificacoes { get; set; }
         public DbSet<Compra> Compras { get; set; }
+        public DbSet<SellerApplication> SellerApplications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

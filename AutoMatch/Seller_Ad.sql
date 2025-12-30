@@ -29,9 +29,9 @@ VALUES (
     1,            -- Id_Vendedor (same as Id_User of seller)
     1,             -- Id_Admin
     3,             -- Id_Modelo (must exist!)
-    'BMW Série 3',
-    'Carro em excelente estado',
-    '2018-01-01',
+    'BMW Seris 1000',
+    'CBom CAraro',
+    '2019-01-01',
     23000,
     85000,
     'Lisboa',
@@ -41,3 +41,5 @@ VALUES (
     1              -- ModeloId_Modelo
 );
 
+INSERT INTO Administradores (Id_User, Id_Admin)
+VALUES (3, 2);
