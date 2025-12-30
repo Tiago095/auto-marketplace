@@ -50,6 +50,10 @@
                     <button class="sidebar-btn active" type="button" data-target="/DashBoard/Messages">
                         <span class="icon"><i class="fa-regular fa-message"></i></span>
                         <span>Messages</span>
+                        @if (ViewBag.UnreadMessagesCount != null && (int)ViewBag.UnreadMessagesCount > 0)
+                        {
+                            <span class="sidebar-badge">@ViewBag.UnreadMessagesCount</span>
+                        }
                     </button>
                 </li>
                 <li>
@@ -88,7 +92,8 @@
                             foreach (var c in Model.Conversas)
                             {
                                 var isActive = c.Id == Model.VendedorAtualId;
-                                <div class="conv-item @(isActive ? "active" : "")" data-vendedor-id="@c.Id">
+                                var hasUnread = c.MensagensNaoLidas > 0;
+                                <div class="conv-item @(isActive ? "active" : "") @(hasUnread ? "unread" : "")" data-participant-id="@c.Id">
                                     <div class="conv-avatar @(c.Online ? "" : "muted")">
                                         @c.Nome.Substring(0, 1).ToUpper()
                                     </div>
@@ -97,6 +102,10 @@
                                         <div class="conv-preview">@c.UltimaMensagem</div>
                                         <div class="conv-meta">@c.DataUltima.ToString("g")</div>
                                     </div>
+                                    @if (hasUnread)
+                                    {
+                                        <span class="conv-badge">@c.MensagensNaoLidas</span>
+                                    }
                                 </div>
                             }
                         }
@@ -168,10 +177,10 @@
 
 @section Scripts {
     <script>
-        // 1. Variável Global (Corrigida para evitar erros se for null)
+        // 1. Variï¿½vel Global (Corrigida para evitar erros se for null)
         const vendedorAtualId = parseInt("@(Model.VendedorAtualId ?? 0)");
 
-        // 2. Função de Enviar Mensagem (Fica fora do DOMContentLoaded para não partir o código)
+        // 2. Funï¿½ï¿½o de Enviar Mensagem (Fica fora do DOMContentLoaded para nï¿½o partir o cï¿½digo)
         function sendMessage() {
             const input = document.getElementById('messageInput');
             if (!input) return;
@@ -181,11 +190,11 @@
             if (!mensagem) return;
 
             if (vendedorAtualId === 0 || isNaN(vendedorAtualId)) {
-                alert("Selecione um vendedor para conversar.");
+                alert("Selecione uma conversa para enviar mensagem.");
                 return;
             }
 
-            // URL com Query String (Método que funciona sem criar classes C# extra)
+            // URL com Query String (Mï¿½todo que funciona sem criar classes C# extra)
             const url = `/Dashboard/SendMessage?vendedorId=${vendedorAtualId}&mensagem=${encodeURIComponent(mensagem)}`;
 
             fetch(url, {
@@ -224,10 +233,10 @@
             });
         }
 
-        // 3. Carregamento da Página (Aqui estão os teus scripts originais)
+        // 3. Carregamento da Pï¿½gina (Aqui estï¿½o os teus scripts originais)
         document.addEventListener('DOMContentLoaded', function () {
 
-            // --- Lógica do User Dropdown (Mantida) ---
+            // --- Lï¿½gica do User Dropdown (Mantida) ---
             document.addEventListener("click", function (e) {
                 const btn = document.getElementById("userMenuBtn");
                 const dropdown = document.getElementById("userDropdown");
@@ -241,7 +250,7 @@
                 }
             });
 
-            // --- Lógica da Sidebar (Mantida) ---
+            // --- Lï¿½gica da Sidebar (Mantida) ---
             document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var url = this.getAttribute('data-target');
@@ -259,15 +268,15 @@
                 });
             });
 
-            // --- Lógica de Trocar de Conversa (Mantida) ---
+            // --- Lï¿½gica de Trocar de Conversa (Mantida) ---
             document.querySelectorAll('.conv-item').forEach(item => {
                 item.addEventListener('click', function() {
-                    const vendedorId = this.dataset.vendedorId;
-                    window.location.href = `/Dashboard/Messages?vendedorId=${vendedorId}`;
+                    const participantId = this.dataset.participantId;
+                    window.location.href = `/Dashboard/Messages?vendedorId=${participantId}`;
                 });
             });
 
-            // --- Lógica dos Botões do Chat (Corrigida) ---
+            // --- Lï¿½gica dos Botï¿½es do Chat (Corrigida) ---
             const sendBtn = document.getElementById('sendBtn');
             const messageInput = document.getElementById('messageInput');
 

@@ -10,6 +10,7 @@ namespace AutoMatch.Models.ViewModels
         public string UltimaMensagem { get; set; }
         public DateTime DataUltima { get; set; }
         public bool Online { get; set; }
+        public int MensagensNaoLidas { get; set; } = 0;
     }
 
     public class MessageBubbleViewModel

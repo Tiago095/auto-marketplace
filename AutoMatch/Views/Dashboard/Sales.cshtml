@@ -50,6 +50,10 @@
                     <button class="sidebar-btn" type="button" data-target="/DashBoard/Messages">
                         <span class="icon"><i class="fa-regular fa-message"></i></span>
                         <span>Messages</span>
+                        @if (ViewBag.UnreadMessagesCount != null && (int)ViewBag.UnreadMessagesCount > 0)
+                        {
+                            <span class="sidebar-badge">@ViewBag.UnreadMessagesCount</span>
+                        }
                     </button>
                 </li>
                 <li>

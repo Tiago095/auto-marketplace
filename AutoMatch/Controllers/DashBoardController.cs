@@ -20,6 +20,16 @@ namespace AutoMatch.Controllers
             _env = env;
         }
 
+        private async Task<int> GetUnreadMessagesCount(int userId)
+        {
+            // Contar mensagens não lidas: mensagens onde o outro participante enviou (não o usuário atual) e Estado = false
+            return await _context.Notificacoes
+                .CountAsync(n => n.Tipo == "Mensagem" && 
+                                !n.Estado && 
+                                ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                                 (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
+        }
+
         public async Task<IActionResult> Index()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -30,12 +40,18 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
             // Quick stats
             var pendingBookings = await _context.Reservas
                 .CountAsync(r => r.Id_Comprador == userId && !r.Estado);
 
+            // Contar mensagens não lidas: mensagens onde o outro participante enviou e Estado = false
             var unreadMessages = await _context.Notificacoes
-                .CountAsync(n => n.Id_Comprador == userId && !n.Estado && n.Tipo == "Mensagem");
+                .CountAsync(n => n.Tipo == "Mensagem" && 
+                                !n.Estado && 
+                                ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                                 (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
 
             var newNotifications = await _context.Notificacoes
                 .CountAsync(n => n.Id_Comprador == userId && !n.Estado);
@@ -115,6 +131,8 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
             var comprador = await _context.Compradores
                 .Include(c => c.Utilizador)
                 .FirstOrDefaultAsync(c => c.Id_User == userId);
@@ -149,7 +167,7 @@ namespace AutoMatch.Controllers
         }
 
         // GET: /Dashboard/Messages
-        public async Task<IActionResult> Messages(int? vendedorId)
+        public async Task<IActionResult> Messages(int? vendedorId, int? compradorId)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             var userName = HttpContext.Session.GetString("UserName") ?? "Utilizador";
@@ -159,68 +177,124 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
+            // Verificar se o usuário é vendedor ou comprador
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            var isComprador = await _context.Compradores.AnyAsync(c => c.Id_User == userId);
+
             var vm = new MessagesViewModel
             {
                 UserName = userName
             };
 
-            // Buscar todas as notificações de mensagens do comprador
-            var notificacoes = await _context.Notificacoes
-                .Where(n => n.Id_Comprador == userId && n.Tipo == "Mensagem")
+            // Buscar todas as mensagens onde o usuário participa (como comprador OU como vendedor)
+            var todasNotificacoes = await _context.Notificacoes
+                .Where(n => n.Tipo == "Mensagem" && 
+                           ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId)))
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
-            // Agrupar por vendedor
-            var grupos = notificacoes
-                .GroupBy(n => n.Id_Vendedor)
-                .ToList();
+            // Agrupar conversas: identificar o outro participante de cada conversa
+            var conversasDict = new Dictionary<int, (List<Notificacoes> mensagens, DateTime ultimaData)>();
+            
+            foreach (var n in todasNotificacoes)
+            {
+                int outroParticipanteId;
+                if (n.Id_Comprador == userId)
+                {
+                    outroParticipanteId = n.Id_Vendedor;
+                }
+                else
+                {
+                    outroParticipanteId = n.Id_Comprador;
+                }
 
-            // Buscar informações dos vendedores
-            var vendedorIds = grupos.Select(g => g.Key).ToList();
-            var vendedores = await _context.Utilizadores
-                .Where(u => vendedorIds.Contains(u.Id_User))
+                if (!conversasDict.ContainsKey(outroParticipanteId))
+                {
+                    conversasDict[outroParticipanteId] = (new List<Notificacoes>(), n.Data_Envio);
+                }
+                
+                conversasDict[outroParticipanteId].mensagens.Add(n);
+                if (n.Data_Envio > conversasDict[outroParticipanteId].ultimaData)
+                {
+                    conversasDict[outroParticipanteId] = (conversasDict[outroParticipanteId].mensagens, n.Data_Envio);
+                }
+            }
+
+            // Buscar informações dos outros participantes
+            var outrosParticipantesIds = conversasDict.Keys.ToList();
+            var outrosParticipantes = await _context.Utilizadores
+                .Where(u => outrosParticipantesIds.Contains(u.Id_User))
                 .ToDictionaryAsync(u => u.Id_User, u => u.Nome);
 
-            foreach (var g in grupos)
+            // Contar mensagens não lidas por conversa
+            foreach (var kvp in conversasDict)
             {
-                var ultima = g.First();
-                var nomeVendedor = vendedores.ContainsKey(g.Key) ? vendedores[g.Key] : $"Vendedor #{g.Key}";
+                var outroId = kvp.Key;
+                var mensagens = kvp.Value.mensagens;
+                var ultimaMensagem = mensagens.OrderByDescending(m => m.Data_Envio).First();
+                var nomeOutro = outrosParticipantes.ContainsKey(outroId) ? outrosParticipantes[outroId] : $"User #{outroId}";
+                
+                // Contar mensagens não lidas: mensagens enviadas pelo outro participante que ainda não foram lidas (Estado = false)
+                var mensagensNaoLidas = mensagens.Count(m => 
+                    ((m.Id_Comprador == outroId && m.Id_Vendedor == userId) || 
+                     (m.Id_Vendedor == outroId && m.Id_Comprador == userId)) &&
+                    !m.Estado);
 
                 vm.Conversas.Add(new ConversationItemViewModel
                 {
-                    Id = g.Key,
-                    Nome = nomeVendedor,
-                    UltimaMensagem = ultima.Mensagem,
-                    DataUltima = ultima.Data_Envio,
-                    Online = false
+                    Id = outroId,
+                    Nome = nomeOutro,
+                    UltimaMensagem = ultimaMensagem.Mensagem.Length > 50 ? ultimaMensagem.Mensagem.Substring(0, 50) + "..." : ultimaMensagem.Mensagem,
+                    DataUltima = ultimaMensagem.Data_Envio,
+                    Online = false,
+                    MensagensNaoLidas = mensagensNaoLidas
                 });
             }
 
-            // Se vendedorId foi passado, iniciar conversa com esse vendedor
-            if (vendedorId.HasValue)
-            {
-                // Verificar se já existe conversa com este vendedor
-                if (!vm.Conversas.Any(c => c.Id == vendedorId.Value))
-                {
-                    // Buscar nome do vendedor
-                    var vendedor = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Id_User == vendedorId.Value);
-                    var nomeVendedor = vendedor?.Nome ?? $"Vendedor #{vendedorId.Value}";
+            // Ordenar conversas por data da última mensagem
+            vm.Conversas = vm.Conversas.OrderByDescending(c => c.DataUltima).ToList();
 
-                    // Adicionar conversa nova (vazia por enquanto)
+            // Determinar qual conversa carregar
+            int? conversaId = null;
+            if (vendedorId.HasValue && vendedorId.Value != userId)
+            {
+                conversaId = vendedorId.Value;
+            }
+            else if (compradorId.HasValue && compradorId.Value != userId)
+            {
+                conversaId = compradorId.Value;
+            }
+            else if (vm.Conversas.Any())
+            {
+                conversaId = vm.Conversas.First().Id;
+            }
+
+            if (conversaId.HasValue)
+            {
+                // Verificar se já existe conversa
+                if (!vm.Conversas.Any(c => c.Id == conversaId.Value))
+                {
+                    var outro = await _context.Utilizadores.FirstOrDefaultAsync(u => u.Id_User == conversaId.Value);
+                    var nomeOutro = outro?.Nome ?? $"User #{conversaId.Value}";
+
                     vm.Conversas.Insert(0, new ConversationItemViewModel
                     {
-                        Id = vendedorId.Value,
-                        Nome = nomeVendedor,
+                        Id = conversaId.Value,
+                        Nome = nomeOutro,
                         UltimaMensagem = "Start a conversation...",
                         DataUltima = DateTime.Now,
-                        Online = false
+                        Online = false,
+                        MensagensNaoLidas = 0
                     });
                 }
 
                 // Carregar mensagens desta conversa
                 var mensagensConversa = await _context.Notificacoes
-                    .Where(n => (n.Id_Comprador == userId && n.Id_Vendedor == vendedorId.Value) ||
-                               (n.Id_Vendedor == userId && n.Id_Comprador == vendedorId.Value))
+                    .Where(n => n.Tipo == "Mensagem" &&
+                               ((n.Id_Comprador == userId && n.Id_Vendedor == conversaId.Value) ||
+                                (n.Id_Vendedor == userId && n.Id_Comprador == conversaId.Value)))
                     .OrderBy(n => n.Data_Envio)
                     .ToListAsync();
 
@@ -228,32 +302,27 @@ namespace AutoMatch.Controllers
                 {
                     vm.Mensagens.Add(new MessageBubbleViewModel
                     {
-                        IsOutgoing = n.Id_Comprador == userId, // Se eu enviei
+                        IsOutgoing = n.Id_Comprador == userId || (n.Id_Vendedor == userId && n.Id_Comprador != userId),
                         Texto = n.Mensagem,
                         Data = n.Data_Envio
                     });
                 }
 
-                vm.VendedorAtualId = vendedorId.Value;
-            }
-            else
-            {
-                // Carregar mensagens da primeira conversa (comportamento atual)
-                var primeira = grupos.FirstOrDefault();
-                if (primeira != null)
-                {
-                    foreach (var n in primeira.OrderBy(n => n.Data_Envio))
-                    {
-                        vm.Mensagens.Add(new MessageBubbleViewModel
-                        {
-                            IsOutgoing = n.Estado,
-                            Texto = n.Mensagem,
-                            Data = n.Data_Envio
-                        });
-                    }
+                vm.VendedorAtualId = conversaId.Value;
 
-                    vm.VendedorAtualId = primeira.Key;
+                // Marcar mensagens como lidas quando a conversa é aberta
+                var mensagensParaMarcar = mensagensConversa
+                    .Where(n => ((n.Id_Comprador == conversaId.Value && n.Id_Vendedor == userId) ||
+                                (n.Id_Vendedor == conversaId.Value && n.Id_Comprador == userId)) &&
+                               !n.Estado)
+                    .ToList();
+
+                foreach (var msg in mensagensParaMarcar)
+                {
+                    msg.Estado = true;
                 }
+
+                await _context.SaveChangesAsync();
             }
 
             return View(vm);
@@ -261,7 +330,7 @@ namespace AutoMatch.Controllers
 
         // POST: Enviar mensagem
         [HttpPost]
-        public async Task<IActionResult> SendMessage([FromQuery] int vendedorId, [FromQuery] string mensagem)
+        public async Task<IActionResult> SendMessage([FromQuery] int? vendedorId, [FromQuery] int? compradorId, [FromQuery] string mensagem)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
 
@@ -275,16 +344,37 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Message cannot be empty" });
             }
 
+            // Determinar o outro participante
+            int outroParticipanteId;
+            bool usuarioEhComprador;
+
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            
+            if (vendedorId.HasValue && vendedorId.Value != userId)
+            {
+                outroParticipanteId = vendedorId.Value;
+                usuarioEhComprador = true;
+            }
+            else if (compradorId.HasValue && compradorId.Value != userId)
+            {
+                outroParticipanteId = compradorId.Value;
+                usuarioEhComprador = false;
+            }
+            else
+            {
+                return Json(new { success = false, message = "Invalid recipient" });
+            }
+
             try
             {
                 var notificacao = new Notificacoes
                 {
-                    Id_Comprador = userId.Value,
-                    Id_Vendedor = vendedorId,
+                    Id_Comprador = usuarioEhComprador ? userId.Value : outroParticipanteId,
+                    Id_Vendedor = usuarioEhComprador ? outroParticipanteId : userId.Value,
                     Tipo = "Mensagem",
                     Mensagem = mensagem,
                     Data_Envio = DateTime.Now,
-                    Estado = false 
+                    Estado = false // Não lida pelo destinatário
                 };
 
                 _context.Notificacoes.Add(notificacao);
@@ -309,7 +399,7 @@ namespace AutoMatch.Controllers
 
         // GET: Carregar mensagens de uma conversa específica
         [HttpGet]
-        public async Task<IActionResult> GetConversation(int vendedorId)
+        public async Task<IActionResult> GetConversation(int? vendedorId, int? compradorId)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
 
@@ -318,14 +408,21 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Not authenticated" });
             }
 
+            int? outroId = vendedorId ?? compradorId;
+            if (!outroId.HasValue)
+            {
+                return Json(new { success = false, message = "Invalid conversation" });
+            }
+
             var mensagens = await _context.Notificacoes
-                .Where(n => (n.Id_Comprador == userId && n.Id_Vendedor == vendedorId) ||
-                           (n.Id_Vendedor == userId && n.Id_Comprador == vendedorId))
+                .Where(n => n.Tipo == "Mensagem" &&
+                           ((n.Id_Comprador == userId && n.Id_Vendedor == outroId.Value) ||
+                            (n.Id_Vendedor == userId && n.Id_Comprador == outroId.Value)))
                 .OrderBy(n => n.Data_Envio)
                 .Select(n => new {
                     texto = n.Mensagem,
                     data = n.Data_Envio.ToString("HH:mm"),
-                    isOutgoing = n.Id_Comprador == userId
+                    isOutgoing = (n.Id_Comprador == userId) || (n.Id_Vendedor == userId && n.Id_Comprador != userId)
                 })
                 .ToListAsync();
 
@@ -342,25 +439,43 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
             var vm = new NotificationsViewModel
             {
                 UserName = userName
             };
 
+            // Buscar todas as notificações onde o usuário participa (como comprador OU como vendedor)
             var list = await _context.Notificacoes
-                .Where(n => n.Id_Comprador == userId)
+                .Where(n => (n.Id_Comprador == userId) || (n.Id_Vendedor == userId))
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
             foreach (var n in list)
             {
+                // Determinar o outro participante para linkar mensagens
+                int? outroParticipanteId = null;
+                if (n.Tipo == "Mensagem")
+                {
+                    if (n.Id_Comprador == userId)
+                    {
+                        outroParticipanteId = n.Id_Vendedor;
+                    }
+                    else if (n.Id_Vendedor == userId)
+                    {
+                        outroParticipanteId = n.Id_Comprador;
+                    }
+                }
+
                 vm.Items.Add(new NotificationItemViewModel
                 {
                     Id = n.Id_notificacao,
                     Titulo = n.Tipo,
                     Texto = n.Mensagem,
                     Data = n.Data_Envio,
-                    Lida = n.Estado
+                    Lida = n.Estado,
+                    OutroParticipanteId = outroParticipanteId
                 });
             }
 
@@ -376,6 +491,8 @@ namespace AutoMatch.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
 
             var vm = new DocumentsViewModel
             {
@@ -579,6 +696,8 @@ namespace AutoMatch.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+
+            ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
 
             var vm = new SalesViewModel
             {

@@ -10,6 +10,7 @@ namespace AutoMatch.Models.ViewModels
         public string Texto { get; set; }
         public DateTime Data { get; set; }
         public bool Lida { get; set; }
+        public int? OutroParticipanteId { get; set; } // Para linkar mensagens
     }
 
     public class NotificationsViewModel
