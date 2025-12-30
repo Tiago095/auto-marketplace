@@ -15,7 +15,7 @@ public class EmailService : IEmailService
         }
 
     public async Task<bool> SendContactEmailAsync(string fullName, string userEmail, string topic, string message)
-        {
+    {
         try
         {
             var smtpSettings = _configuration.GetSection("SmtpSettings");
@@ -62,6 +62,43 @@ Reply directly to this email to respond to: {userEmail}
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send contact email from {UserEmail}", userEmail);
+            return false;
+        }
+    }
+
+    public async Task<bool> SendPurchaseConfirmationAsync(string userEmail, string subject, string body)
+    {
+        try
+        {
+            var smtpSettings = _configuration.GetSection("SmtpSettings");
+            var host = smtpSettings["Host"] ?? "smtp.gmail.com";
+            var port = int.Parse(smtpSettings["Port"] ?? "587");
+            var username = smtpSettings["Username"] ?? "automatchtest@gmail.com";
+            var password = smtpSettings["Password"] ?? "your-app-password";
+
+            using var smtpClient = new SmtpClient(host, port)
+            {
+                EnableSsl = true,
+                Credentials = new NetworkCredential(username, password)
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(username, "AutoMatch"),
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = false
+            };
+
+            mailMessage.To.Add(userEmail);
+
+            await smtpClient.SendMailAsync(mailMessage);
+            _logger.LogInformation("Purchase confirmation email sent to {UserEmail}", userEmail);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send purchase confirmation email to {UserEmail}", userEmail);
             return false;
         }
     }

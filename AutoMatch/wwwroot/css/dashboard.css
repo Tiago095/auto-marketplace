@@ -737,9 +737,58 @@ body {
     margin-bottom: 8px;
 }
 
-.documents-list {
+.listing-group {
     background: #ffffff;
     border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.listing-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #000;
+}
+
+.no-docs {
+    color: #888;
+    font-size: 14px;
+    margin: 10px 0;
+    font-style: italic;
+}
+
+.add-document-form {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.add-document-form form {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.add-document-form input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.add-document-form input[type="file"] {
+    padding: 8px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.documents-list {
+    background: #f9f9f9;
+    border-radius: 12px;
     padding: 12px 10px;
     display: flex;
     flex-direction: column;

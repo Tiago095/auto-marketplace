@@ -24,5 +24,7 @@ namespace AutoMatch.Models.ViewModels
         public string UserName { get; set; }
         public IList<ConversationItemViewModel> Conversas { get; set; } = new List<ConversationItemViewModel>();
         public IList<MessageBubbleViewModel> Mensagens { get; set; } = new List<MessageBubbleViewModel>();
+
+        public int? VendedorAtualId { get; set; }
     }
 }

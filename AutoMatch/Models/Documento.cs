@@ -14,7 +14,7 @@ namespace AutoMatch.Models
         [Required, StringLength(50)]
         public string Tipo { get; set; }
 
-        [Required, StringLength(50)]
+        [Required, StringLength(500)]
         public string CaminhoDocumento { get; set; }
 
         public Anuncio Anuncio { get; set; }

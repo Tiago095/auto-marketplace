@@ -11,7 +11,7 @@ namespace AutoMatch.Models
         [Required, ForeignKey("Anuncio")]
         public int Id_Anuncio { get; set; }
 
-        [Required, StringLength(50)]
+        [Required, StringLength(255)]
         public string CaminhoImagem { get; set; }
 
         public Anuncio Anuncio { get; set; }

@@ -4,7 +4,20 @@
 
     var username = Context.Session.GetString("UserName");
     var initial = Context.Session.GetString("UserInitial");
+
+    // lista de imagens em ordem (1_,2_,3_,4_,5_) vinda do controller via ViewBag
+    var orderedImages = ViewBag.OrderedImages as List<string> ?? new List<string>();
+    if (orderedImages.Count < 5)
+    {
+        // garantir sempre 5 posições para o JS
+        while (orderedImages.Count < 5)
+        {
+            orderedImages.Add(string.Empty);
+        }
+    }
 }
+
+<link rel="stylesheet" href="~/css/vehicle.css" />
 
 <!-- Floating Header (same as other pages) -->
 <div class="floating-header floating-header-dark">
@@ -73,38 +86,41 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <button class="btn-contact">Contact Seller</button>
+                <a class="btn-contact" href="@Url.Action("Messages", "Dashboard", new { vendedorId = Model.SellerId })">Contact Seller</a>
                 <button class="btn-test-drive" id="openBookingModal">Book Test Drive</button>
-                <button class="btn-buy-now">@Model.Price.ToString("N0")€ Buy Now</button>
+                <a class="btn-buy-now" href="@Url.Action("Buy", "Vehicle", new { id = Model.Id })">
+                    @Model.Price.ToString("N0")€ Buy Now
+                </a>
+
             </div>
         </div>
 
         <!-- Right Column - Image Gallery -->
         <div class="details-right">
             <div class="main-image-container">
-                <button class="image-nav prev">‹</button>
+                <button class="image-nav prev" type="button">‹</button>
                 <div class="main-image-placeholder">
-                    <!-- Placeholder cinza para imagem principal -->
+                    @* Mantemos o tamanho via CSS; aqui só pomos a imagem *@
+                    <img id="mainImage" src="@(string.IsNullOrEmpty(orderedImages[0]) ? Url.Content("~/images/eletric.png") : orderedImages[0])" alt="@Model.Brand @Model.Model" />
                 </div>
-                <button class="image-nav next">›</button>
+                <button class="image-nav next" type="button">›</button>
             </div>
 
             <!-- Thumbnail Gallery -->
-            <div class="thumbnail-gallery">
-                <div class="thumbnail-item active">
-                    <div class="thumbnail-placeholder"></div>
-                </div>
-                <div class="thumbnail-item">
-                    <div class="thumbnail-placeholder"></div>
-                </div>
-                <div class="thumbnail-item">
-                    <div class="thumbnail-placeholder"></div>
-                </div>
-                <div class="thumbnail-item add-more">
-                    <div class="thumbnail-placeholder">
-                        <span class="plus-icon">+</span>
+            <div class="thumbnail-gallery" id="thumbGallery">
+                @for (int i = 0; i < 5; i++)
+                {
+                    var img = orderedImages[i];
+                    var isActive = i == 0;
+                    <div class="thumbnail-item @(isActive ? "active" : "")" data-index="@i">
+                        <div class="thumbnail-placeholder">
+                            @if (!string.IsNullOrEmpty(img))
+                            {
+                                <img src="@img" alt="Thumb @(i + 1)" />
+                            }
+                        </div>
                     </div>
-                </div>
+                }
             </div>
         </div>
     </div>
@@ -189,13 +205,38 @@
             }
         });
 
-        // Image navigation (para quando adicionares imagens reais)
+        // Image navigation + thumbnails usando as imagens ordenadas vindas do ViewBag
+        const orderedImages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(orderedImages));
+        const mainImage = document.getElementById('mainImage');
+        const thumbs = Array.from(document.querySelectorAll('#thumbGallery .thumbnail-item'));
+        let currentIndex = 0;
+
+        function setImage(index) {
+            if (index < 0 || index >= orderedImages.length) return;
+            const src = orderedImages[index] || '@Url.Content("~/images/eletric.png")';
+            mainImage.src = src;
+            currentIndex = index;
+
+            thumbs.forEach((t, i) => {
+                if (i === index) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+        }
+
         document.querySelector('.image-nav.prev')?.addEventListener('click', function () {
-            console.log('Previous image');
+            const next = (currentIndex - 1 + orderedImages.length) % orderedImages.length;
+            setImage(next);
         });
 
         document.querySelector('.image-nav.next')?.addEventListener('click', function () {
-            console.log('Next image');
+            const next = (currentIndex + 1) % orderedImages.length;
+            setImage(next);
+        });
+
+        thumbs.forEach((thumb, idx) => {
+            thumb.addEventListener('click', function () {
+                setImage(idx);
+            });
         });
 
         // Booking modal logic
@@ -246,3 +287,5 @@
         });
     </script>
 }
+
+<link rel="stylesheet" href="~/css/vehicle.css" />
