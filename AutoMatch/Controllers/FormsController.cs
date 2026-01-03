@@ -25,7 +25,7 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Block if already a seller
+            // Bloqueia se ja for vendedor
             var isAlreadySeller = _db.Vendedores.Any(v => v.Id_User == userId);
             if (isAlreadySeller)
             {
@@ -33,7 +33,7 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("MyListings", "Listings");
             }
 
-            // Block if there is already a pending application
+            // Bloqueia se tiver uma formulario pendente
             var existingApplication = _db.SellerApplications
                 .FirstOrDefault(sa => sa.UserId == userId.Value && sa.Status == "Pending");
             if (existingApplication != null)
@@ -58,7 +58,7 @@ namespace AutoMatch.Controllers
 
             LoadPostalCodeOptions();
 
-            // Block multiple pending applications
+            // Bloquear multiplas aplicaçoes pendentes
             var existingApplication = _db.SellerApplications
                 .FirstOrDefault(sa => sa.UserId == userId.Value && sa.Status == "Pending");
             if (existingApplication != null)
@@ -67,7 +67,7 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("SellerForms");
             }
 
-            // Block if already a seller
+            // Bloquear se ja for vendedor
             var isAlreadySeller = _db.Vendedores.Any(v => v.Id_User == userId.Value);
             if (isAlreadySeller)
             {
@@ -75,7 +75,7 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("SellerForms");
             }
 
-            // Validate terms acceptance
+            // Validar termos
             if (!model.AcceptTerms)
             {
                 ModelState.AddModelError(nameof(model.AcceptTerms), "You must accept the Seller Terms & Conditions.");
@@ -90,7 +90,7 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
-            // Create new seller application (PENDING)
+            // Criar nova aplicaçao de vendedor
             var application = new SellerApplication
             {
                 UserId = userId.Value,
@@ -102,14 +102,13 @@ namespace AutoMatch.Controllers
                 AcceptTerms = model.AcceptTerms,
                 SubmissionDate = DateTime.UtcNow,
                 Status = "Pending",
-                RejectionReason = string.Empty // Empty string for pending applications, will be set if rejected
+                RejectionReason = string.Empty
             };
 
             _db.SellerApplications.Add(application);
             _db.SaveChanges();
 
             TempData["SellerFormSubmitted"] = "Your seller application has been successfully submitted and is now under review. You will be notified within 24-48 hours.";
-            // Return to the same page to show the popup
             var baseModel = BuildSellerFormViewModel(userId.Value);
             model.FullName = baseModel.FullName;
             model.Email = baseModel.Email;

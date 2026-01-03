@@ -45,7 +45,6 @@ namespace AutoMatch.Controllers
             }
             else
             {
-                // Get all anuncios IDs that have been purchased (have a Compra record)
                 var compradosIds = _db.Compras
                     .Where(c => c.Estado == true)
                     .Select(c => c.Id_Anuncio)
@@ -72,7 +71,7 @@ namespace AutoMatch.Controllers
 
             // Marcas únicas com opção vazia no início
             var marcas = _db.Modelos.Select(m => m.Marca).Distinct().ToList();
-            var marcasList = new List<string> { "" }; // Opção vazia no início
+            var marcasList = new List<string> { "" };
             marcasList.AddRange(marcas);
             ViewBag.Marcas = new SelectList(marcasList);
 
@@ -167,7 +166,7 @@ namespace AutoMatch.Controllers
 
             try
             {
-                _db.SaveChanges(); // Gera o ID do anúncio
+                _db.SaveChanges();
 
                 // Criar estrutura de pastas
                 string basePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Anuncios", $"Anuncio{anuncio.Id_Anuncio}");
@@ -212,7 +211,6 @@ namespace AutoMatch.Controllers
                             await doc.CopyToAsync(stream);
                         }
 
-                        // Determinar o tipo do documento baseado na extensão
                         string tipo = Path.GetExtension(doc.FileName).ToLower() switch
                         {
                             ".pdf" => "PDF",
@@ -238,7 +236,6 @@ namespace AutoMatch.Controllers
             }
             catch (Exception ex)
             {
-                // Se houver erro, apagar o anúncio criado
                 _db.Anuncios.Remove(anuncio);
                 _db.SaveChanges();
 
@@ -252,7 +249,7 @@ namespace AutoMatch.Controllers
         private void ReloadViewBag()
         {
             var marcas = _db.Modelos.Select(m => m.Marca).Distinct().ToList();
-            var marcasList = new List<string> { "" }; // Opção vazia no início
+            var marcasList = new List<string> { "" };
             marcasList.AddRange(marcas);
             ViewBag.Marcas = new SelectList(marcasList);
 

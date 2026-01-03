@@ -28,7 +28,7 @@ namespace AutoMatch.Controllers
             return View();
         }
 
-        // ===== POST LOGIN =====
+        // POST LOGIN
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
@@ -80,7 +80,7 @@ namespace AutoMatch.Controllers
 
 
 
-        // ===== POST REGISTER =====
+        // POST REGISTER
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -159,7 +159,7 @@ namespace AutoMatch.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ===== LOGOUT =====
+        // LOGOUT 
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
@@ -174,7 +174,7 @@ namespace AutoMatch.Controllers
             return Convert.ToBase64String(hashed);
         }
 
-        // PROFILE PAGE
+        // Perfil
         public async Task<IActionResult> Profile()
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
@@ -201,13 +201,12 @@ namespace AutoMatch.Controllers
                 IsSeller = isSeller,
                 IsBuyer = isBuyer,
 
-                // From comprador table
                 Address = comprador?.Rua ?? "Not defined",
                 PostalCode = comprador?.Codigo_Postal ?? "0000-000",
                 Phone = comprador?.Contactos ?? "Not defined"
             };
 
-            // Buscar compras (Orders) do comprador (apenas compras de anúncios de outros vendedores)
+            // Buscar compras do comprador
             if (comprador != null)
             {
                 var compras = await _db.Compras
@@ -250,7 +249,7 @@ namespace AutoMatch.Controllers
                 }
             }
 
-            // Buscar listings (Anuncios) do vendedor (apenas os que não foram comprados)
+            // Buscar listings do vendedor
             if (isSeller)
             {
                 // Buscar IDs de anúncios que foram comprados
@@ -345,7 +344,7 @@ namespace AutoMatch.Controllers
             if (user == null) return RedirectToAction("Login");
 
 
-            // -------- VALIDAR USERNAME --------
+            // VALIDAR USERNAME 
             if (!string.IsNullOrWhiteSpace(model.UserName) && model.UserName != user.UserName)
             {
                 bool usernameExists = await _db.Utilizadores
@@ -361,7 +360,7 @@ namespace AutoMatch.Controllers
             }
 
 
-            // -------- VALIDAR PASSWORD --------
+            // VALIDAR PASSWORD 
             if (!string.IsNullOrWhiteSpace(model.Password))
             {
                 if (model.Password.Length < 6 || model.Password.Length > 12)
@@ -374,7 +373,7 @@ namespace AutoMatch.Controllers
             }
 
 
-            // -------- ATUALIZAR COMPRADOR --------
+            // ATUALIZAR COMPRADOR 
             if (comprador != null)
             {
                 comprador.Contactos = model.Phone ?? comprador.Contactos;
@@ -382,7 +381,7 @@ namespace AutoMatch.Controllers
                 comprador.Codigo_Postal = model.SelectedCodigoPostal;
             }
 
-            // -------- VALIDAR TELEFONE --------
+            // VALIDAR TELEFONE 
             if (!string.IsNullOrWhiteSpace(model.Phone))
             {
                 if (model.Phone.Length != 9 || !model.Phone.All(char.IsDigit))
@@ -394,10 +393,10 @@ namespace AutoMatch.Controllers
                 comprador.Contactos = model.Phone;
             }
 
-            // -------- ATUALIZAR FOTO DE PERFIL --------
+            // ATUALIZAR FOTO DE PERFIL
             if (model.Photo != null && model.Photo.Length > 0)
             {
-                // Apagar imagem antiga se existir e estiver na pasta UserProfiles
+                // Apagar imagem antiga se existir
                 if (!string.IsNullOrEmpty(user.ProfileImageUrl) &&
                     user.ProfileImageUrl.StartsWith("/images/UserProfiles/", StringComparison.OrdinalIgnoreCase))
                 {

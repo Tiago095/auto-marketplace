@@ -6,11 +6,9 @@
     var initial = Context.Session.GetString("UserInitial");
     var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
 
-    // lista de imagens em ordem (1_,2_,3_,4_,5_) vinda do controller via ViewBag
     var orderedImages = ViewBag.OrderedImages as List<string> ?? new List<string>();
     if (orderedImages.Count < 5)
     {
-        // garantir sempre 5 posições para o JS
         while (orderedImages.Count < 5)
         {
             orderedImages.Add(string.Empty);
@@ -22,7 +20,7 @@
 <link rel="stylesheet" href="~/css/footer.css" />
 <link rel="stylesheet" href="~/css/user-dropdown.css" />
 
-<!-- Floating Header (same as other pages) -->
+<!-- Floating Header -->
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
@@ -60,10 +58,10 @@
     </div>
 </div>
 
-<!-- Vehicle Details Section -->
+<!-- Detalhes de veiculo -->
 <section class="details-section">
     <div class="details-container">
-        <!-- Left Column - Info & Description -->
+        <!-- Coluna da esquerda - Info e Descrição -->
         <div class="details-left">
             <h1 class="details-title">@Model.Brand @Model.Model</h1>
             <p class="details-year">@Model.Year</p>
@@ -88,13 +86,13 @@
                 </div>
             </div>
 
-            <!-- Description -->
+            <!-- Descrição -->
             <div class="description-section">
                 <h3>Description</h3>
                 <p>@Model.Description</p>
             </div>
 
-            <!-- Action Buttons -->
+            <!-- Butões de ação -->
             <div class="action-buttons">
                 <a class="btn-contact" href="@Url.Action("Messages", "Dashboard", new { vendedorId = Model.SellerId })">Contact Seller</a>
                 <button class="btn-test-drive" id="openBookingModal">Book Test Drive</button>
@@ -105,18 +103,17 @@
             </div>
         </div>
 
-        <!-- Right Column - Image Gallery -->
+        <!-- coluna da direita - galeria -->
         <div class="details-right">
             <div class="main-image-container">
                 <button class="image-nav prev" type="button">‹</button>
                 <div class="main-image-placeholder">
-                    @* Mantemos o tamanho via CSS; aqui só pomos a imagem *@
                     <img id="mainImage" src="@(string.IsNullOrEmpty(orderedImages[0]) ? Url.Content("~/images/eletric.png") : orderedImages[0])" alt="@Model.Brand @Model.Model" />
                 </div>
                 <button class="image-nav next" type="button">›</button>
             </div>
 
-            <!-- Thumbnail Gallery -->
+            <!-- Thumbnail -->
             <div class="thumbnail-gallery" id="thumbGallery">
                 @for (int i = 0; i < 5; i++)
                 {
@@ -221,7 +218,6 @@
 
 @section Scripts {
     <script>
-        // USER DROPDOWN TOGGLE
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");
@@ -236,7 +232,6 @@
             }
         });
 
-        // Image navigation + thumbnails usando as imagens ordenadas vindas do ViewBag
         const orderedImages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(orderedImages));
         const mainImage = document.getElementById('mainImage');
         const thumbs = Array.from(document.querySelectorAll('#thumbGallery .thumbnail-item'));
@@ -270,7 +265,6 @@
             });
         });
 
-        // Booking modal logic
         const anuncioId = @Model.Id;
         let bookedSlots = [];
 

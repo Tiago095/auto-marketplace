@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="~/css/footer.css" />
 <link rel="stylesheet" href="~/css/user-dropdown.css" />
 
-<!-- Floating Header -->
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
@@ -328,7 +327,6 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // user dropdown
             document.addEventListener("click", function (e) {
                 const btn = document.getElementById("userMenuBtn");
                 const dropdown = document.getElementById("userDropdown");
@@ -350,7 +348,6 @@
                 }
             });
 
-            // sidebar + transicao
             document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var url = this.getAttribute('data-target');

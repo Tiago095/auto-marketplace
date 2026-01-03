@@ -229,10 +229,8 @@
 
 @section Scripts {
     <script>
-        // 1. Vari�vel Global (Corrigida para evitar erros se for null)
         const vendedorAtualId = parseInt("@(Model.VendedorAtualId ?? 0)");
 
-        // 2. Fun��o de Enviar Mensagem (Fica fora do DOMContentLoaded para n�o partir o c�digo)
         function sendMessage() {
             const input = document.getElementById('messageInput');
             if (!input) return;
@@ -246,7 +244,6 @@
                 return;
             }
 
-            // URL com Query String (M�todo que funciona sem criar classes C# extra)
             const url = `/Dashboard/SendMessage?vendedorId=${vendedorAtualId}&mensagem=${encodeURIComponent(mensagem)}`;
 
             fetch(url, {
@@ -261,7 +258,6 @@
                 if (data.success) {
                     const chatBody = document.getElementById('chatBody');
 
-                    // Remove o texto "Start a conversation" se existir
                     if (chatBody.innerText.includes("Start a conversation")) {
                         chatBody.innerHTML = '';
                     }
@@ -285,10 +281,8 @@
             });
         }
 
-        // 3. Carregamento da P�gina (Aqui est�o os teus scripts originais)
         document.addEventListener('DOMContentLoaded', function () {
 
-            // --- L�gica do User Dropdown (Mantida) ---
             document.addEventListener("click", function (e) {
                 const btn = document.getElementById("userMenuBtn");
                 const dropdown = document.getElementById("userDropdown");
@@ -309,7 +303,6 @@
                 }
             });
 
-            // --- L�gica da Sidebar (Mantida) ---
             document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var url = this.getAttribute('data-target');
@@ -327,7 +320,6 @@
                 });
             });
 
-            // --- L�gica de Trocar de Conversa (Mantida) ---
             document.querySelectorAll('.conv-item').forEach(item => {
                 item.addEventListener('click', function() {
                     const participantId = this.dataset.participantId;
@@ -335,7 +327,6 @@
                 });
             });
 
-            // --- L�gica dos Bot�es do Chat (Corrigida) ---
             const sendBtn = document.getElementById('sendBtn');
             const messageInput = document.getElementById('messageInput');
 
@@ -350,12 +341,11 @@
                     }
                 });
 
-                // Auto-scroll para o fundo do chat
                 const chatBody = document.getElementById('chatBody');
                 if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
             }
 
-            // --- Funcionalidade de Search nas Conversas ---
+            // Funcionalidade de Search nas Conversas
             const searchConv = document.getElementById('searchConv');
             const convList = document.getElementById('convList');
             

@@ -22,7 +22,7 @@ namespace AutoMatch.Controllers
 
         private async Task<int> GetUnreadMessagesCount(int userId)
         {
-            // Contar mensagens não lidas: mensagens onde o outro participante enviou (não o usuário atual) e Estado = false
+            // Contar mensagens não lidas
             return await _context.Notificacoes
                 .CountAsync(n => n.Tipo == "Mensagem" && 
                                 !n.Estado && 
@@ -45,7 +45,7 @@ namespace AutoMatch.Controllers
             // Verificar se é vendedor
             var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
 
-            // Quick stats - ajustar para vendedor ou comprador
+            // Quick stats
             int pendingBookings;
             if (isVendedor)
             {
@@ -64,14 +64,14 @@ namespace AutoMatch.Controllers
                 .CountAsync(r => r.Id_Comprador == userId && !r.Estado);
             }
 
-            // Contar mensagens não lidas: mensagens onde o outro participante enviou e Estado = false
+            // Contar mensagens não lidas
             var unreadMessages = await _context.Notificacoes
                 .CountAsync(n => n.Tipo == "Mensagem" && 
                                 !n.Estado && 
                                 ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
                                  (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
 
-            // Notificações não lidas - ajustar para vendedor ou comprador
+            // Notificações não lidas
             int newNotifications;
             if (isVendedor)
             {
@@ -425,7 +425,7 @@ namespace AutoMatch.Controllers
                         DataFim = r.Data_Fim,
                         Status = statusValue,
                         IsVendedor = true,
-                        CanAccept = !r.Estado // Pode aceitar se ainda estiver pendente
+                        CanAccept = !r.Estado
                     });
                 }
 
@@ -436,7 +436,6 @@ namespace AutoMatch.Controllers
                 ViewBag.DateFrom = dateFrom;
                 ViewBag.DateTo = dateTo;
             }
-            // Se não for vendedor, não carregar reservas (mostrar apenas mensagem para se tornar vendedor)
 
             return View(vm);
         }
@@ -496,7 +495,7 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Não autorizado" });
             }
 
-            // Rejeitar a reserva (apagar)
+            // Rejeitar a reserva
             _context.Reservas.Remove(reserva);
             await _context.SaveChangesAsync();
 
@@ -516,7 +515,7 @@ namespace AutoMatch.Controllers
 
             ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
 
-            // Verificar se o usuário é vendedor ou comprador
+            // Verificar se o utilizador é vendedor ou comprador
             var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
             var isComprador = await _context.Compradores.AnyAsync(c => c.Id_User == userId);
 
@@ -525,7 +524,7 @@ namespace AutoMatch.Controllers
                 UserName = userName
             };
 
-            // Buscar todas as mensagens onde o usuário participa (como comprador OU como vendedor)
+            // Buscar todas as mensagens onde o utilizador participa
             var todasNotificacoes = await _context.Notificacoes
                 .Where(n => n.Tipo == "Mensagem" &&
                            ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId)))
@@ -583,7 +582,7 @@ namespace AutoMatch.Controllers
                 var userNameOutro = outroParticipante?.UserName ?? $"User{outroId}";
                 var profileImageUrlOutro = outroParticipante?.ProfileImageUrl;
 
-                // Contar mensagens não lidas: mensagens enviadas pelo outro participante que ainda não foram lidas (Estado = false)
+                // Contar mensagens não lidas
                 var mensagensNaoLidas = mensagens.Count(m =>
                     ((m.Id_Comprador == outroId && m.Id_Vendedor == userId) ||
                      (m.Id_Vendedor == outroId && m.Id_Comprador == userId)) &&
@@ -602,7 +601,6 @@ namespace AutoMatch.Controllers
                 });
             }
 
-            // Ordenar conversas por data da última mensagem
             vm.Conversas = vm.Conversas.OrderByDescending(c => c.DataUltima).ToList();
 
             // Determinar qual conversa carregar
@@ -653,8 +651,6 @@ namespace AutoMatch.Controllers
 
                 foreach (var n in mensagensConversa)
                 {
-                    // IsOutgoing = true se a mensagem foi enviada pelo utilizador atual
-                    // Como Id_Comprador é sempre o remetente, verificar se é o userId
                     vm.Mensagens.Add(new MessageBubbleViewModel
                     {
                         IsOutgoing = n.Id_Comprador == userId,
@@ -699,7 +695,7 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Message cannot be empty" });
             }
 
-            // Determinar o destinatário (aceita vendedorId ou compradorId, ambos tratados como qualquer utilizador)
+            // Determinar o destinatário
             int? recipientId = vendedorId ?? compradorId;
 
             if (!recipientId.HasValue || recipientId.Value == userId)
@@ -709,10 +705,6 @@ namespace AutoMatch.Controllers
 
             try
             {
-                // Para a tabela Notificacoes, precisamos de:
-                // - Id_Comprador: sempre o remetente (userId)
-                // - Id_Vendedor: sempre o destinatário (recipientId)
-                // Isto é apenas uma convenção da estrutura da tabela, não uma limitação real
 
                 int idComprador = userId.Value;
                 int idVendedor = recipientId.Value;
@@ -732,7 +724,7 @@ namespace AutoMatch.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // Garantir que o destinatário existe como vendedor (criar se necessário)
+                // Garantir que o destinatário existe como vendedor
                 var vendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == idVendedor);
                 if (!vendedorExiste)
                 {
@@ -749,11 +741,11 @@ namespace AutoMatch.Controllers
                         await _context.SaveChangesAsync();
                     }
 
-                    // Criar registo temporário de vendedor para permitir mensagens entre qualquer utilizador
+                    // Criar registro temporário de vendedor para permitir mensagens entre qualquer utilizador
                     var novoVendedor = new Vendedor
                     {
                         Id_User = idVendedor,
-                        Tipo = false, // false = pessoa física
+                        Tipo = false,
                         Contactos = "N/A",
                         Rua = "Desconhecida",
                         Codigo_Postal = "0000-000"
@@ -769,7 +761,7 @@ namespace AutoMatch.Controllers
                     Tipo = "Mensagem",
                     Mensagem = mensagem,
                     Data_Envio = DateTime.Now,
-                    Estado = false // Não lida pelo destinatário
+                    Estado = false
                 };
 
                 _context.Notificacoes.Add(notificacao);
@@ -847,16 +839,12 @@ namespace AutoMatch.Controllers
                 UserName = userName
             };
 
-            // Buscar apenas notificações recebidas pelo utilizador (não as que ele enviou)
-            // Para mensagens: mostrar apenas quando Id_Vendedor == userId (destinatário)
-            // Para bookings: mostrar apenas quando Id_Vendedor == userId (vendedor recebe a notificação)
-            // Para outras notificações: mostrar quando o utilizador é destinatário
             var list = await _context.Notificacoes
                 .Where(n => n.Tipo == "Mensagem" 
-                    ? (n.Id_Vendedor == userId) // Apenas mensagens recebidas
+                    ? (n.Id_Vendedor == userId)
                     : n.Tipo == "Booking"
-                    ? (n.Id_Vendedor == userId) // Apenas bookings recebidos pelo vendedor
-                    : ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId))) // Outras notificações
+                    ? (n.Id_Vendedor == userId)
+                    : ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId)))
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
@@ -866,7 +854,7 @@ namespace AutoMatch.Controllers
             {
                 foreach (var notificacao in notificacoesNaoLidas)
                 {
-                    notificacao.Estado = true; // Marcar como lida
+                    notificacao.Estado = true;
                 }
                 await _context.SaveChangesAsync();
             }
@@ -874,7 +862,7 @@ namespace AutoMatch.Controllers
             // Buscar informações dos remetentes para melhorar os títulos
             var remetentesIds = list
                 .Where(n => n.Tipo == "Mensagem" || n.Tipo == "Booking")
-                .Select(n => n.Id_Comprador) // Remetente da mensagem/booking
+                .Select(n => n.Id_Comprador)
                 .Distinct()
                 .ToList();
 
@@ -899,7 +887,7 @@ namespace AutoMatch.Controllers
                 }
                 else if (n.Tipo == "Booking")
                 {
-                    // Para bookings, o remetente é sempre Id_Comprador (quem fez a reserva)
+                    // Para bookings, o remetente é sempre Id_Comprador
                     outroParticipanteId = n.Id_Comprador;
                     var remetenteNome = remetentes.ContainsKey(n.Id_Comprador) 
                         ? remetentes[n.Id_Comprador] 
@@ -1101,7 +1089,7 @@ namespace AutoMatch.Controllers
             if (documento == null || documento.Anuncio.Id_Vendedor != userId)
                 return NotFound();
 
-            // Delete file
+            // Apagar ficheiro
             var filePath = Path.Combine(_env.WebRootPath, documento.CaminhoDocumento.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString()));
             if (System.IO.File.Exists(filePath))
             {
@@ -1269,12 +1257,12 @@ namespace AutoMatch.Controllers
             if (userId == null)
                 return RedirectToAction("Login", "Account");
 
-            // check if admin
+            //  verificar admin
             bool isAdmin = await _context.Administradores
                 .AnyAsync(a => a.Id_User == userId);
 
             if (!isAdmin)
-                return RedirectToAction("Index"); // Normal user dashboard
+                return RedirectToAction("Index");
 
             // Admin encontrado — redireciona para o controlador Admin
             return RedirectToAction("DashAdmin", "Admin");

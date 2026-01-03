@@ -15,10 +15,10 @@ namespace AutoMatch.Models
 
         [Required]
         [MaxLength(50)]
-        public string SellingType { get; set; } // "Individual" or "Professional"
+        public string SellingType { get; set; } 
 
         [MaxLength(20)]
-        public string DocumentNumber { get; set; } // NIF
+        public string DocumentNumber { get; set; } 
 
         [Required]
         [MaxLength(20)]
@@ -40,7 +40,7 @@ namespace AutoMatch.Models
 
         [Required]
         [MaxLength(20)]
-        public string Status { get; set; } // "Pending", "Approved", "Rejected"
+        public string Status { get; set; }
 
         public DateTime? ReviewedDate { get; set; }
 
@@ -49,7 +49,6 @@ namespace AutoMatch.Models
         [MaxLength(500)]
         public string RejectionReason { get; set; }
 
-        // Navigation properties
         [ForeignKey("UserId")]
         public virtual Utilizador User { get; set; }
 

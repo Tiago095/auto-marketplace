@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="~/css/footer.css" />
 <link rel="stylesheet" href="~/css/user-dropdown.css" />
 
-<!-- Floating Header -->
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
@@ -252,7 +251,6 @@
 
 @section Scripts {
     <script>
-        // user dropdown
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");
@@ -274,7 +272,6 @@
             }
         });
 
-        // Accept/Reject booking functions
         function acceptBooking(reservaId) {
             if (!confirm('Tem certeza que deseja aceitar esta reserva?')) return;
 
@@ -319,7 +316,6 @@
             });
         }
 
-        // sidebar + transicao
         document.querySelectorAll('.sidebar-btn[data-target]').forEach(btn => {
             btn.addEventListener('click', function () {
                 const url = this.getAttribute('data-target');

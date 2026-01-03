@@ -50,7 +50,7 @@
     </div>
 </div>
 
-<!-- Results Section -->
+<!-- Resultados -->
 <section class="results-section">
     <div class="results-container">
         <h1 class="results-title">Vehicle Results</h1>
@@ -130,7 +130,7 @@
 
         </form> 
 
-        <!-- Vehicle Grid -->
+        <!-- Grid do veículo -->
         <div class="vehicle-grid">
             @if (Model.Vehicles != null && Model.Vehicles.Any())
             {
@@ -174,7 +174,6 @@
 
 @section Scripts {
     <script>
-        // USER DROPDOWN TOGGLE
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");
@@ -196,7 +195,6 @@
             }
         });
 
-        // Brand-Model dependency (loaded from database)
         const models = @Html.Raw(JsonSerializer.Serialize(Model.BrandModels));
 
         const brandFilter = document.getElementById("brandFilter");
@@ -219,7 +217,6 @@
             }
         });
 
-        // Auto-submit apenas no sort
         document.querySelector('.sort-select')?.addEventListener('change', function() {
             document.getElementById('filterForm').submit();
         });

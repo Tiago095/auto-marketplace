@@ -22,13 +22,10 @@ namespace AutoMatch.Models.ViewModels
 
         public IList<SaleRowViewModel> RecentSales { get; set; } = new List<SaleRowViewModel>();
 
-        // Filtro selecionado: "7d", "1m", "1y"
         public string SelectedRange { get; set; } = "7d";
 
-        // Pontos simples para o gráfico (já normalizados para 0-10 por ex.)
         public IList<int> ChartPoints { get; set; } = new List<int>();
 
-        // String pronta para o polyline do SVG ("x,y x,y ...")
         public string ChartPointsSvg { get; set; } = string.Empty;
     }
 }

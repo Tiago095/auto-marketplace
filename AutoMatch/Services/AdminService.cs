@@ -26,9 +26,6 @@ namespace AutoMatch.Services
             _context = context;
         }
 
-        /// <summary>
-        /// Obtém as estatísticas principais do dashboard
-        /// </summary>
         public async Task<AdminDashboardStats> GetDashboardStatsAsync()
         {
             var totalUsers = await _context.Utilizadores.CountAsync();
@@ -54,9 +51,6 @@ namespace AutoMatch.Services
             };
         }
 
-        /// <summary>
-        /// Obtém os anúncios reportados recentemente
-        /// </summary>
         public async Task<List<RecentReportDto>> GetRecentReportsAsync(int take = 5)
         {
             var reports = await _context.Notificacoes
@@ -78,14 +72,10 @@ namespace AutoMatch.Services
             return reports;
         }
 
-        /// <summary>
-        /// Obtém atividade recente do sistema
-        /// </summary>
         public async Task<List<RecentActivityDto>> GetRecentActivityAsync(int take = 5)
         {
             var activities = new List<RecentActivityDto>();
 
-            // Novos anúncios criados
             var newListings = await _context.Anuncios
                 .OrderByDescending(a => a.Ano)
                 .Take(take)
@@ -99,7 +89,6 @@ namespace AutoMatch.Services
 
             activities.AddRange(newListings);
 
-            // Novas reservas
             var newReservas = await _context.Reservas
                 .OrderByDescending(r => r.Data_Inicio)
                 .Take(take)
@@ -113,7 +102,6 @@ namespace AutoMatch.Services
 
             activities.AddRange(newReservas);
 
-            // Notificações/Denúncias
             var notifications = await _context.Notificacoes
                 .Where(n => n.Tipo == "Report" || n.Tipo == "Denúncia")
                 .OrderByDescending(n => n.Data_Envio)
@@ -131,9 +119,6 @@ namespace AutoMatch.Services
             return activities.OrderByDescending(a => a.Timestamp).Take(take).ToList();
         }
 
-        /// <summary>
-        /// Obtém contagem de anúncios por categoria
-        /// </summary>
         public async Task<List<ListingsByTypeDto>> GetListingsByTypeAsync()
         {
             var listingsByType = await _context.Anuncios
@@ -154,18 +139,13 @@ namespace AutoMatch.Services
             return listingsByType;
         }
 
-        /// <summary>
-        /// Obtém crescimento de utilizadores (últimos 7 meses)
-        /// </summary>
         public async Task<List<UserGrowthDto>> GetUserGrowthAsync()
         {
             var userGrowth = new List<UserGrowthDto>();
 
-            // Como Utilizadores não tem DataCriacao, vamos retornar dados fixos baseados em contagens
             var months = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul" };
             var totalUsers = await _context.Utilizadores.CountAsync();
 
-            // Distribui os utilizadores ao longo dos meses
             int usersPerMonth = Math.Max(1, totalUsers / 7);
 
             for (int i = 0; i < 7; i++)
@@ -181,7 +161,6 @@ namespace AutoMatch.Services
         }
     }
 
-    // DTOs
     public class AdminDashboardStats
     {
         public int TotalUsers { get; set; }

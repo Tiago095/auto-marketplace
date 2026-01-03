@@ -222,7 +222,6 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // dropdown user
             document.addEventListener("click", function (e) {
                 const btn = document.getElementById("userMenuBtn");
                 const dropdown = document.getElementById("userDropdown");
@@ -244,7 +243,6 @@
                 }
             });
 
-            // sidebar + transition
             document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var url = this.getAttribute('data-target');

@@ -237,7 +237,6 @@
         const marca = marcaSelect.value;
         
         if (!marca) {
-            // Se não houver marca selecionada, desabilitar modelo e limpar campos (sempre bloqueados)
             modeloSelect.innerHTML = '<option value="">Select Model</option>';
             modeloSelect.disabled = true;
             categoriaSelect.value = '';
@@ -246,7 +245,6 @@
             return;
         }
 
-        // Habilitar modelo e preencher opções
         modeloSelect.innerHTML = '<option value="">Select Model</option>';
         modeloSelect.disabled = false;
 
@@ -259,7 +257,6 @@
                 modeloSelect.add(option);
             });
 
-        // Limpar campos quando a marca muda (sempre bloqueados)
         categoriaSelect.value = '';
         transmissaoSelect.value = '';
         combustivelSelect.value = '';
@@ -276,11 +273,9 @@
 
         const modelo = modelos.find(m => m.Id_Modelo === modeloId);
         if (modelo) {
-            // Preencher Categoria (Type) - sempre bloqueado
             const categoriaValue = (modelo.Categoria || '').trim();
             categoriaSelect.value = categoriaValue;
             
-            // Se a categoria não existir nas opções, criar dinamicamente
             const categoriaExists = Array.from(categoriaSelect.options).some(opt => opt.value === categoriaValue);
             if (!categoriaExists && categoriaValue) {
                 const newOption = document.createElement('option');
@@ -290,19 +285,13 @@
                 categoriaSelect.value = categoriaValue;
             }
 
-            // Preencher Transmissao (Transmission) - sempre bloqueado
-            // modelo.Transmissao é boolean: true = Automatic, false = Manual
             transmissaoSelect.value = modelo.Transmissao ? 'Automatic' : 'Manual';
 
-            // Preencher Combustivel (Fuel Type) - sempre bloqueado
-            // Remover espaços e garantir correspondência exata
             const combustivelValue = (modelo.Combustivel || '').trim();
             
-            // Verificar se a opção existe antes de definir o valor
             let combustivelExists = Array.from(combustivelSelect.options).some(opt => opt.value === combustivelValue);
             
             if (!combustivelExists && combustivelValue) {
-                // Criar a opção dinamicamente se não existir
                 const newOption = document.createElement('option');
                 newOption.value = combustivelValue;
                 newOption.text = combustivelValue;
@@ -310,7 +299,6 @@
                 combustivelExists = true;
             }
             
-            // Habilitar temporariamente para definir o valor, depois desabilitar novamente
             if (combustivelExists && combustivelValue) {
                 combustivelSelect.disabled = false;
                 combustivelSelect.value = combustivelValue;
@@ -319,16 +307,13 @@
         }
     });
 
-    // Inicializar estado: modelo e campos bloqueados no início
     modeloSelect.disabled = true;
     categoriaSelect.disabled = true;
     transmissaoSelect.disabled = true;
     combustivelSelect.disabled = true;
 
-    // Função para habilitar campos disabled antes do submit (para enviar os valores)
     function enableDisabledFields() {
         modeloSelect.disabled = false;
-        // Habilitar temporariamente apenas para enviar os valores, mas visualmente permanecem bloqueados
         categoriaSelect.disabled = false;
         transmissaoSelect.disabled = false;
         combustivelSelect.disabled = false;
@@ -423,7 +408,6 @@
 
     updateButtons();
 
-    // USER DROPDOWN TOGGLE
     document.addEventListener("click", function (e) {
         const btn = document.getElementById("userMenuBtn");
         const dropdown = document.getElementById("userDropdown");

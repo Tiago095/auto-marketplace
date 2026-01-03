@@ -13,7 +13,6 @@
 <link rel="stylesheet" href="~/css/admin.css">
 <link rel="stylesheet" href="~/css/user-dropdown.css">
 
-<!-- Floating Header -->
 <div class="floating-header">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
@@ -44,7 +43,7 @@
     </div>
 </div>
 
-<!-- Admin Page -->
+<!-- Pagina Admin -->
 <div class="admin-page">
     <div class="dashboard-layout">
 
@@ -72,10 +71,9 @@
             </div>
         </div>
 
-        <!-- Main Content -->
+        <!-- Conteudo principal -->
         <div class="dashboard-main">
 
-            <!-- Header with Back Button -->
             <div class="details-header">
                 <a href="@Url.Action("AdminForms", "Admin")" class="back-btn">
                     <i class="fa-solid fa-arrow-left"></i> Back to Forms
@@ -84,7 +82,6 @@
                 <p class="subtitle">Request ID: #@Model.ApplicationId</p>
             </div>
 
-            <!-- Application Details Card -->
             <div class="details-card">
                 <div class="details-section">
                     <h2>Applicant Information</h2>
@@ -159,7 +156,6 @@
     </div>
 </div>
 
-<!-- Reject Modal -->
 <div id="rejectModal" class="modal">
     <div class="modal-content">
         <h2>Reject Application</h2>
@@ -178,7 +174,6 @@
 </div>
 
 <script>
-    // USER DROPDOWN TOGGLE
     document.addEventListener("click", function (e) {
         const btn = document.getElementById("userMenuBtn");
         const dropdown = document.getElementById("userDropdown");
@@ -208,7 +203,6 @@
         document.getElementById('rejectModal').style.display = 'none';
     }
 
-    // Close modal when clicking outside
     window.onclick = function(event) {
         const modal = document.getElementById('rejectModal');
         if (event.target == modal) {

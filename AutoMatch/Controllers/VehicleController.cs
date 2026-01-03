@@ -21,15 +21,12 @@ namespace AutoMatch.Controllers
 
         public IActionResult Results(string? brand, string? model, int? year, decimal? maxPrice, int? maxMileage, string? fuelType, string? transmission, string? bodyType, string? sort)
         {
-            // Base query with active ads and their models + images
-            // Exclui anúncios que já foram comprados (têm registo em Compras com Estado = true)
             IQueryable<Anuncio> baseQuery = _db.Anuncios
                 .Include(a => a.Modelo)
                 .Include(a => a.Imagens)
                 .Where(a => a.Estado)
                 .Where(a => !_db.Compras.Any(c => c.Id_Anuncio == a.Id_Anuncio && c.Estado));
 
-            // Data for filters (all available brands/models on the site)
             var availableBrands = baseQuery
                 .Select(a => a.Modelo.Marca)
                 .Distinct()
@@ -46,7 +43,6 @@ namespace AutoMatch.Controllers
                           .ToList()
                 );
 
-            // Apply filters to a copy of the query
             IQueryable<Anuncio> query = baseQuery;
 
             if (!string.IsNullOrEmpty(brand))
@@ -76,7 +72,6 @@ namespace AutoMatch.Controllers
             if (!string.IsNullOrEmpty(bodyType))
                 query = query.Where(a => a.Modelo.Categoria == bodyType);
 
-            // Sorting
             query = sort switch
             {
                 "price-low-high" => query.OrderBy(a => a.Preco),
@@ -141,7 +136,6 @@ namespace AutoMatch.Controllers
                 return NotFound();
             }
 
-            // ordenar imagens 1..5 e enviar para a view
             var orderedImages = (anuncio.Imagens ?? new List<Imagens>())
                 .Where(i => !string.IsNullOrEmpty(i.CaminhoImagem))
                 .OrderBy(i =>
@@ -215,7 +209,6 @@ namespace AutoMatch.Controllers
                 SellerId = anuncio.Id_Vendedor
             };
 
-            // Exemplo simples de cálculo de impostos (7%)
             var tax = Math.Round(vehicle.Price * 0.07m, 2);
             var total = vehicle.Price + tax;
 
@@ -238,7 +231,7 @@ namespace AutoMatch.Controllers
             }
 
             decimal basePrice = anuncio.Preco;
-            decimal tax = Math.Round(basePrice * 0.07m, 2); // mesma regra da página
+            decimal tax = Math.Round(basePrice * 0.07m, 2);
             decimal deliveryFee = 250m;
             decimal insurance = 300m;
             decimal totalEstimate = basePrice + tax + deliveryFee + insurance;
@@ -291,7 +284,6 @@ namespace AutoMatch.Controllers
 
             _db.Compras.Add(compra);
 
-            // Marcar anúncio como inativo para deixar de aparecer em resultados / listagens
             anuncio.Estado = false;
 
             _db.SaveChanges();
@@ -324,7 +316,6 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Dados inválidos" });
             }
 
-            // Verificar se o anúncio existe e está ativo
             var anuncio = await _db.Anuncios
                 .FirstOrDefaultAsync(a => a.Id_Anuncio == request.anuncioId && a.Estado);
 
@@ -333,25 +324,22 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Anúncio não encontrado" });
             }
 
-            // Verificar se já existe uma reserva para este horário (pendente ou aceite)
             var reservaExistente = await _db.Reservas
                 .AnyAsync(r => r.Id_Anuncio == request.anuncioId &&
                               r.Data_Inicio <= request.dataFim &&
                               r.Data_Fim >= request.dataInicio &&
-                              (r.Estado == true || r.Estado == false)); // Pendente ou aceite
+                              (r.Estado == true || r.Estado == false));
 
             if (reservaExistente)
             {
                 return Json(new { success = false, message = "Este horário já está reservado" });
             }
 
-            // Verificar se o utilizador é comprador
             var comprador = await _db.Compradores
                 .FirstOrDefaultAsync(c => c.Id_User == userId);
 
             if (comprador == null)
             {
-                // Criar comprador se não existir
                 comprador = new Comprador
                 {
                     Id_User = userId.Value,
@@ -363,36 +351,28 @@ namespace AutoMatch.Controllers
                 await _db.SaveChangesAsync();
             }
 
-            // Criar a reserva (Estado = false significa pendente)
             var reserva = new Reserva
             {
                 Id_Anuncio = request.anuncioId,
                 Id_Comprador = comprador.Id_User,
                 Data_Inicio = request.dataInicio,
                 Data_Fim = request.dataFim,
-                Estado = false // Pendente - aguardando aprovação do vendedor
+                Estado = false
             };
 
             _db.Reservas.Add(reserva);
             await _db.SaveChangesAsync();
 
-            // Buscar informações do comprador para a notificação
             var compradorInfo = await _db.Utilizadores
                 .FirstOrDefaultAsync(u => u.Id_User == comprador.Id_User);
 
             var compradorNome = compradorInfo?.Nome ?? compradorInfo?.UserName ?? "Um comprador";
 
-            // Criar notificação para o vendedor
-            // Para notificações, Id_Comprador = remetente (sistema), Id_Vendedor = destinatário (vendedor)
-            // Mas como é uma notificação do sistema, vamos usar uma estrutura diferente
-            // Vamos criar uma notificação onde o vendedor é o destinatário
             var vendedorId = anuncio.Id_Vendedor;
             
-            // Garantir que o vendedor existe como vendedor na tabela
             var vendedorExiste = await _db.Vendedores.AnyAsync(v => v.Id_User == vendedorId);
             if (!vendedorExiste)
             {
-                // Criar registo temporário se necessário
                 var codigoPostalExiste = await _db.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
                 if (!codigoPostalExiste)
                 {
@@ -417,7 +397,6 @@ namespace AutoMatch.Controllers
                 await _db.SaveChangesAsync();
             }
 
-            // Criar notificação: Id_Comprador = comprador que fez a reserva, Id_Vendedor = vendedor do anúncio
             var notificacao = new Notificacoes
             {
                 Id_Comprador = comprador.Id_User,
@@ -425,7 +404,7 @@ namespace AutoMatch.Controllers
                 Tipo = "Booking",
                 Mensagem = $"Nova reserva de test drive de {compradorNome} para {anuncio.Titulo} em {request.dataInicio:dd/MM/yyyy} das {request.dataInicio:HH:mm} às {request.dataFim:HH:mm}",
                 Data_Envio = DateTime.Now,
-                Estado = false // Não lida
+                Estado = false
             };
 
             _db.Notificacoes.Add(notificacao);
@@ -437,10 +416,9 @@ namespace AutoMatch.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBookedSlots(int anuncioId)
         {
-            // Retornar todos os horários bloqueados (pendentes ou aceites) para este anúncio
             var reservas = await _db.Reservas
                 .Where(r => r.Id_Anuncio == anuncioId &&
-                           (r.Estado == true || r.Estado == false)) // Pendente ou aceite
+                           (r.Estado == true || r.Estado == false))
                 .Select(r => new
                 {
                     inicio = r.Data_Inicio,
@@ -451,7 +429,6 @@ namespace AutoMatch.Controllers
             return Json(reservas);
         }
 
-        // Método auxiliar para escolher a imagem de capa (menor número no nome do ficheiro)
         private static string GetCoverImagePath(IEnumerable<Imagens> imagens)
         {
             if (imagens == null)

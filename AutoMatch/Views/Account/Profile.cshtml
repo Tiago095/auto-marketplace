@@ -17,12 +17,11 @@
     </script>
 }
 
-<!-- PROFILE PAGE HTML -->
 <link rel="stylesheet" href="~/css/profile.css" />
 <link rel="stylesheet" href="~/css/footer.css" />
 <link rel="stylesheet" href="~/css/user-dropdown.css" />
 
-<!-- Floating Header (same position as Index) -->
+<!-- Floating Header -->
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
@@ -101,13 +100,10 @@
         </p>
 
 
-
-        <!-- BOTÃO EDIT EXISTENTE -->
         <button class="btn edit-btn" onclick="openEditModal()">
             <i class="fa fa-pencil"></i> Edit Profile
             </button>
 
-        <!-- MODAL -->
         <div id="editOverlay" class="overlay-hidden">
     <div class="edit-modal">
 
@@ -126,7 +122,6 @@
         <form asp-action="EditProfile" asp-controller="Account" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
-            <!-- CURRENT PROFILE PHOTO PREVIEW with hover-to-edit -->
             <div class="avatar-wrapper avatar-edit-wrapper" id="modalAvatarWrapper" style="margin-bottom:10px;">
                 @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
                 {
@@ -142,7 +137,6 @@
                 </div>
             </div>
 
-            <!-- Hidden file input triggered by clicking the avatar overlay -->
             <input id="photoInput" type="file" name="Photo" accept="image/*" class="photo-input hidden-file-input" onchange="previewProfilePhoto(this)" />
 
             <div class="edit-modal-grid">
@@ -167,7 +161,6 @@
                         <option value="">-- Escolhe localidade --</option>
                                 @foreach (var a in ViewBag.PostalList)
                                 {
-                                    // Usa o código postal já guardado para marcar a opção selecionada
                                     var isSelected = !string.IsNullOrEmpty(Model.PostalCode) && Model.PostalCode == a.Codigo_Postal;
 
                                     if (isSelected)
@@ -430,7 +423,6 @@ function previewProfilePhoto(input) {
 
 @section Scripts {
     <script>
-        // USER DROPDOWN TOGGLE
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");

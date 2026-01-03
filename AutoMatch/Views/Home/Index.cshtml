@@ -109,7 +109,6 @@
                 }
             });
 
-            // Enter key on inputs
             document.querySelectorAll('#brandSelect, #modelSelect, #yearSelect, #priceInput').forEach(input => {
                 input.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
@@ -134,7 +133,6 @@
             window.location.href = '/Vehicle/Results?' + params.toString();
         }
 
-        // DROPDOWN DO USER
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");

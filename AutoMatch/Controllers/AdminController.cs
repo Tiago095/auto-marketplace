@@ -48,7 +48,7 @@ namespace AutoMatch.Controllers
             if (userId == null)
                 return RedirectToAction("Login", "Account");
 
-            // Check if admin
+            // Verificar admin
             bool isAdmin = await _context.Administradores
                 .AnyAsync(a => a.Id_User == userId);
 
@@ -62,7 +62,7 @@ namespace AutoMatch.Controllers
 
             try
             {
-                // Fetch pending seller applications from database
+                // Buscar formularios pendentes da base de dados
                 var applications = await _context.SellerApplications
                     .Include(sa => sa.User)
                     .Where(sa => sa.Status == "Pending")
@@ -95,7 +95,7 @@ namespace AutoMatch.Controllers
             if (userId == null)
                 return RedirectToAction("Login", "Account");
 
-            // Check if admin
+            // Verificar admin
             bool isAdmin = await _context.Administradores
                 .AnyAsync(a => a.Id_User == userId);
 
@@ -134,7 +134,7 @@ namespace AutoMatch.Controllers
             if (userId == null)
                 return RedirectToAction("Login", "Account");
 
-            // Check if admin
+            // Verificar admin
             bool isAdmin = await _context.Administradores
                 .AnyAsync(a => a.Id_User == userId);
 
@@ -154,7 +154,7 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("AdminForms");
             }
 
-            // Check if user is already a seller
+            // Verificar se o utilizador é vendedor
             var existingSeller = await _context.Vendedores
                 .FirstOrDefaultAsync(v => v.Id_User == application.UserId);
 
@@ -164,7 +164,6 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("AdminForms");
             }
 
-            // Create new Vendedor record
             var vendedor = new Vendedor
             {
                 Id_User = application.UserId,
@@ -177,14 +176,14 @@ namespace AutoMatch.Controllers
 
             _context.Vendedores.Add(vendedor);
 
-            // Update application status
+            // Atualizar status do formulario
             application.Status = "Approved";
             application.ReviewedDate = DateTime.UtcNow;
             application.ReviewedByAdminId = userId;
 
             await _context.SaveChangesAsync();
 
-            // Create notification for the user
+            // criar notificaçao
             await CreateApplicationNotificationAsync(application.UserId, "Approved", "Your seller application has been approved! You can now create listings.");
 
             TempData["Success"] = $"Application for {application.User?.Nome} has been approved!";
@@ -199,7 +198,7 @@ namespace AutoMatch.Controllers
             if (userId == null)
                 return RedirectToAction("Login", "Account");
 
-            // Check if admin
+            // Verificar admin
             bool isAdmin = await _context.Administradores
                 .AnyAsync(a => a.Id_User == userId);
 
@@ -218,7 +217,7 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("AdminForms");
             }
 
-            // Update application status
+            // Atualizar status do formulario
             application.Status = "Rejected";
             application.ReviewedDate = DateTime.UtcNow;
             application.ReviewedByAdminId = userId;
@@ -232,11 +231,10 @@ namespace AutoMatch.Controllers
 
         private async Task CreateApplicationNotificationAsync(int userId, string status, string message)
         {
-            // Ensure user exists as Comprador
+            // confirmar que o utilizador existe como Comprador
             var compradorExiste = await _context.Compradores.AnyAsync(c => c.Id_User == userId);
             if (!compradorExiste)
             {
-                // Ensure default postal code exists
                 var codigoPostalExiste = await _context.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
                 if (!codigoPostalExiste)
                 {
@@ -260,11 +258,10 @@ namespace AutoMatch.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Ensure user exists as Vendedor (create temporary record if needed for notification structure)
+            // confirmar que o utilizador existe como Vendedor
             var vendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
             if (!vendedorExiste)
             {
-                // Ensure default postal code exists
                 var codigoPostalExiste = await _context.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
                 if (!codigoPostalExiste)
                 {
@@ -289,14 +286,12 @@ namespace AutoMatch.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Get Comprador and Vendedor IDs
+            // buscar ids do Comprador e Vendedor
             var comprador = await _context.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
             var vendedor = await _context.Vendedores.FirstOrDefaultAsync(v => v.Id_User == userId);
 
             if (comprador != null && vendedor != null)
             {
-                // Create notification: Id_Comprador = user (recipient), Id_Vendedor = user (recipient)
-                // This is a system notification, so we use the same user for both
                 var notificacao = new Notificacoes
                 {
                     Id_Comprador = comprador.Id_User,
@@ -304,7 +299,7 @@ namespace AutoMatch.Controllers
                     Tipo = "SellerApplication",
                     Mensagem = message,
                     Data_Envio = DateTime.Now,
-                    Estado = false // Not read
+                    Estado = false
                 };
 
                 _context.Notificacoes.Add(notificacao);

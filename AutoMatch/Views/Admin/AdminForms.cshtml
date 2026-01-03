@@ -21,7 +21,6 @@
         <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
         <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
 
-        <!-- USER BADGE + DROPDOWN -->
         <div class="user-menu-container">
             <div class="user-badge" id="userMenuBtn">
                 <span class="user-name">@username</span>
@@ -45,7 +44,7 @@
     </div>
 </div>
 
-<!-- Admin Page -->
+<!-- Pagina de Admin -->
 <div class="admin-page">
 
     <!-- Dashboard Layout -->
@@ -75,7 +74,7 @@
             </div>
         </div>
 
-        <!-- Main Content -->
+        <!-- Conteudo principal-->
         <div class="dashboard-main">
 
             <!-- Welcome Section -->
@@ -138,7 +137,6 @@
 </div>
 
 <script>
-    // USER DROPDOWN TOGGLE
     document.addEventListener("click", function (e) {
         const btn = document.getElementById("userMenuBtn");
         const dropdown = document.getElementById("userDropdown");

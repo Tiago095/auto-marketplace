@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="~/css/footer.css" />
 <link rel="stylesheet" href="~/css/user-dropdown.css" />
 
-<!-- Floating Header (same as Contact / Home) -->
+<!-- Floating Header -->
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
@@ -61,7 +61,7 @@
     </div>
 }
 
-<!-- My Listings main panel -->
+<!-- My Listings painel principal -->
 <div class="mylistings-wrapper">
     <div class="mylistings-panel">
         <div class="mylistings-header">
@@ -105,7 +105,6 @@
                     <div class="mylistings-card">
                         <div class="mylistings-image">
                             @{
-                                // ✅ Versão mais simples - ordenar pelo número no início do nome
                                 var firstImage = anuncio.Imagens?
                                 .Where(i => !string.IsNullOrEmpty(i.CaminhoImagem))
                                 .OrderBy(i =>
@@ -154,7 +153,6 @@
 
 @section Scripts {
     <script>
-        // Dropdown do utilizador (reutilizado)
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");
@@ -176,12 +174,10 @@
             }
         });
 
-        // Função para fechar popup e redirecionar
         function closeSuccessPopup() {
             const popup = document.getElementById("successPopup");
             if (popup) {
                 popup.style.display = "none";
-                // Já estamos em MyListings, então não precisa redirecionar
             }
         }
     </script>
