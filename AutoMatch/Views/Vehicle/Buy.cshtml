@@ -12,6 +12,7 @@
 
 <link rel="stylesheet" href="~/css/vehicle.css" />
 <link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
 
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
@@ -328,14 +329,21 @@
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
 
             if (!btn || !dropdown) return;
 
             if (btn.contains(e.target)) {
                 dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
             }
             else if (!dropdown.contains(e.target)) {
                 dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
             }
         });
     </script>

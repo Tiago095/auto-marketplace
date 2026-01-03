@@ -11,6 +11,7 @@
 }
 
 <link rel="stylesheet" href="~/css/admin.css">
+<link rel="stylesheet" href="~/css/user-dropdown.css">
 
 <!-- Floating Header -->
 <div class="floating-header">
@@ -188,14 +189,21 @@
     document.addEventListener("click", function (e) {
         const btn = document.getElementById("userMenuBtn");
         const dropdown = document.getElementById("userDropdown");
+        const container = btn?.closest('.user-menu-container');
 
         if (!btn || !dropdown) return;
 
         if (btn.contains(e.target)) {
             dropdown.classList.toggle("show");
+            if (container) {
+                container.classList.toggle("open");
+            }
         }
         else if (!dropdown.contains(e.target)) {
             dropdown.classList.remove("show");
+            if (container) {
+                container.classList.remove("open");
+            }
         }
     });
 

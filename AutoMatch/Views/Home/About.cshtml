@@ -8,6 +8,7 @@
 
 <link rel="stylesheet" href="~/css/style.css" />
 <link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
 
 
 <!-- Floating Header (same position as Index) -->
@@ -92,14 +93,21 @@
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
             const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
 
             if (!btn || !dropdown) return;
 
             if (btn.contains(e.target)) {
                 dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
             }
             else if (!dropdown.contains(e.target)) {
                 dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
             }
         });
     </script>
