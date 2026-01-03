@@ -401,14 +401,14 @@ namespace AutoMatch.Controllers
 
             // Buscar todas as mensagens onde o usuário participa (como comprador OU como vendedor)
             var todasNotificacoes = await _context.Notificacoes
-                .Where(n => n.Tipo == "Mensagem" && 
+                .Where(n => n.Tipo == "Mensagem" &&
                            ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId)))
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
             // Agrupar conversas: identificar o outro participante de cada conversa
             var conversasDict = new Dictionary<int, (List<Notificacoes> mensagens, DateTime ultimaData)>();
-            
+
             foreach (var n in todasNotificacoes)
             {
                 int outroParticipanteId;
@@ -425,7 +425,7 @@ namespace AutoMatch.Controllers
                 {
                     conversasDict[outroParticipanteId] = (new List<Notificacoes>(), n.Data_Envio);
                 }
-                
+
                 conversasDict[outroParticipanteId].mensagens.Add(n);
                 if (n.Data_Envio > conversasDict[outroParticipanteId].ultimaData)
                 {
@@ -448,19 +448,18 @@ namespace AutoMatch.Controllers
                 var outroId = kvp.Key;
                 var mensagens = kvp.Value.mensagens;
                 var ultimaMensagem = mensagens.OrderByDescending(m => m.Data_Envio).First();
-                var nomeOutro = outrosParticipantes.ContainsKey(outroId) ? outrosParticipantes[outroId] : $"User #{outroId}";
-                
-                var outroParticipante = outrosParticipantesDict.ContainsKey(outroId) 
-                    ? outrosParticipantesDict[outroId] 
+
+                var outroParticipante = outrosParticipantesDict.ContainsKey(outroId)
+                    ? outrosParticipantesDict[outroId]
                     : null;
-                
+
                 var nomeOutro = outroParticipante?.Nome ?? $"User #{outroId}";
                 var userNameOutro = outroParticipante?.UserName ?? $"User{outroId}";
                 var profileImageUrlOutro = outroParticipante?.ProfileImageUrl;
-                
+
                 // Contar mensagens não lidas: mensagens enviadas pelo outro participante que ainda não foram lidas (Estado = false)
-                var mensagensNaoLidas = mensagens.Count(m => 
-                    ((m.Id_Comprador == outroId && m.Id_Vendedor == userId) || 
+                var mensagensNaoLidas = mensagens.Count(m =>
+                    ((m.Id_Comprador == outroId && m.Id_Vendedor == userId) ||
                      (m.Id_Vendedor == outroId && m.Id_Comprador == userId)) &&
                     !m.Estado);
 
@@ -581,7 +580,7 @@ namespace AutoMatch.Controllers
             {
                 return Json(new { success = false, message = "Invalid recipient" });
             }
-            
+
             try
             {
                 // Para a tabela Notificacoes, precisamos de:
@@ -605,7 +604,7 @@ namespace AutoMatch.Controllers
                     };
                     _context.Compradores.Add(novoComprador);
                     await _context.SaveChangesAsync();
-            }
+                }
 
                 // Garantir que o destinatário existe como vendedor (criar se necessário)
                 var vendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == idVendedor);
@@ -616,17 +615,17 @@ namespace AutoMatch.Controllers
                     if (!codigoPostalExiste)
                     {
                         var novoCodigoPostal = new CodigoPostal
-            {
+                        {
                             Codigo_Postal = "0000-000",
                             Localidade = "Desconhecida"
                         };
                         _context.CodigoPostais.Add(novoCodigoPostal);
                         await _context.SaveChangesAsync();
-            }
+                    }
 
                     // Criar registo temporário de vendedor para permitir mensagens entre qualquer utilizador
                     var novoVendedor = new Vendedor
-            {
+                    {
                         Id_User = idVendedor,
                         Tipo = false, // false = pessoa física
                         Contactos = "N/A",
@@ -635,10 +634,8 @@ namespace AutoMatch.Controllers
                     };
                     _context.Vendedores.Add(novoVendedor);
                     await _context.SaveChangesAsync();
-            }
+                }
 
-            try
-            {
                 var notificacao = new Notificacoes
                 {
                     Id_Comprador = idComprador,

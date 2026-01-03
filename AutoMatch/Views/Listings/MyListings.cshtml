@@ -47,6 +47,17 @@
     </div>
 </div>
 
+@if (TempData["SellerFormSubmitted"] != null)
+{
+    <div class="success-popup" id="successPopup" style="display: flex;">
+        <div class="success-popup-content">
+            <i class="fa-solid fa-check-circle"></i>
+            <h3>Application Sent Successfully!</h3>
+            <p>@TempData["SellerFormSubmitted"]</p>
+            <button onclick="closeSuccessPopup()">OK</button>
+        </div>
+    </div>
+}
 
 <!-- My Listings main panel -->
 <div class="mylistings-wrapper">
@@ -153,5 +164,14 @@
                 dropdown.classList.remove("show");
             }
         });
+
+        // Função para fechar popup e redirecionar
+        function closeSuccessPopup() {
+            const popup = document.getElementById("successPopup");
+            if (popup) {
+                popup.style.display = "none";
+                // Já estamos em MyListings, então não precisa redirecionar
+            }
+        }
     </script>
 }

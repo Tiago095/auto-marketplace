@@ -206,9 +206,20 @@ namespace AutoMatch.Controllers
                             await doc.CopyToAsync(stream);
                         }
 
+                        // Determinar o tipo do documento baseado na extensão
+                        string tipo = Path.GetExtension(doc.FileName).ToLower() switch
+                        {
+                            ".pdf" => "PDF",
+                            ".png" => "Imagem",
+                            ".jpg" => "Imagem",
+                            ".jpeg" => "Imagem",
+                            _ => "Documento"
+                        };
+
                         _db.Documentos.Add(new Documento
                         {
                             Id_Anuncio = anuncio.Id_Anuncio,
+                            Tipo = tipo,
                             CaminhoDocumento = $"/Anuncios/Anuncio{anuncio.Id_Anuncio}/Docs/{fileName}"
                         });
                     }

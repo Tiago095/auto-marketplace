@@ -307,7 +307,7 @@ namespace AutoMatch.Controllers
             await _emailService.SendPurchaseConfirmationAsync(user.Email, subject, body);
 
             TempData["Success"] = "Purchase completed successfully. A confirmation email was sent.";
-            return RedirectToAction("Details", new { id = anuncio.Id_Anuncio });
+            return RedirectToAction("Results");
         }
 
         [HttpPost]

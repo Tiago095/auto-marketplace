@@ -25,19 +25,20 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Optional: show a message if there is already a pending application
-            var existingApplication = _db.SellerApplications
-                .FirstOrDefault(sa => sa.UserId == userId.Value && sa.Status == "Pending");
-            if (existingApplication != null)
-            {
-                TempData["Info"] = "You already have a pending application under review.";
-            }
-
-            // If already a seller, don’t let them apply again
+            // Block if already a seller
             var isAlreadySeller = _db.Vendedores.Any(v => v.Id_User == userId);
             if (isAlreadySeller)
             {
                 TempData["Info"] = "You are already registered as a seller.";
+                return RedirectToAction("MyListings", "Listings");
+            }
+
+            // Block if there is already a pending application
+            var existingApplication = _db.SellerApplications
+                .FirstOrDefault(sa => sa.UserId == userId.Value && sa.Status == "Pending");
+            if (existingApplication != null)
+            {
+                TempData["Error"] = "You already have a pending application under review. Please wait for it to be approved or rejected before submitting a new one.";
                 return RedirectToAction("MyListings", "Listings");
             }
 
@@ -82,10 +83,10 @@ namespace AutoMatch.Controllers
 
             if (!ModelState.IsValid)
             {
-                var baseModel = BuildSellerFormViewModel(userId.Value);
-                model.FullName = baseModel.FullName;
-                model.Email = baseModel.Email;
-                model.UserName = baseModel.UserName;
+                var sellerFormBaseModel = BuildSellerFormViewModel(userId.Value);
+                model.FullName = sellerFormBaseModel.FullName;
+                model.Email = sellerFormBaseModel.Email;
+                model.UserName = sellerFormBaseModel.UserName;
                 return View(model);
             }
 
@@ -94,21 +95,26 @@ namespace AutoMatch.Controllers
             {
                 UserId = userId.Value,
                 SellingType = model.SellingType,
-                DocumentNumber = model.DocumentNumber,
+                DocumentNumber = model.DocumentNumber ?? string.Empty,
                 PhoneNumber = model.PhoneNumber,
                 PostalCode = model.PostalCode,
                 PreferredContactMethod = model.PreferredContactMethod,
                 AcceptTerms = model.AcceptTerms,
                 SubmissionDate = DateTime.UtcNow,
                 Status = "Pending",
-                RejectionReason = ""
+                RejectionReason = string.Empty // Empty string for pending applications, will be set if rejected
             };
 
             _db.SellerApplications.Add(application);
             _db.SaveChanges();
 
-            TempData["SellerFormSubmitted"] = "Your application has been sent for review. You will be notified within 24-48 hours.";
-            return RedirectToAction("SellerForms");
+            TempData["SellerFormSubmitted"] = "Your seller application has been successfully submitted and is now under review. You will be notified within 24-48 hours.";
+            // Return to the same page to show the popup
+            var baseModel = BuildSellerFormViewModel(userId.Value);
+            model.FullName = baseModel.FullName;
+            model.Email = baseModel.Email;
+            model.UserName = baseModel.UserName;
+            return View(model);
         }
 
         private SellerFormViewModel BuildSellerFormViewModel(int userId)

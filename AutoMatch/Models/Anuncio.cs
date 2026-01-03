@@ -44,5 +44,6 @@ namespace AutoMatch.Models
         public Modelo Modelo { get; set; }
 
         public ICollection<Imagens> Imagens { get; set; } = new List<Imagens>();
+        public ICollection<Documento> Documentos { get; set; } = new List<Documento>();
     }
 }

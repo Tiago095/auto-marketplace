@@ -42,6 +42,13 @@ namespace AutoMatch.Data
                 .WithMany(v => v.Anuncios)
                 .HasForeignKey(a => a.Id_Vendedor)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Anuncio (1) -> (Muitos) Documentos
+            modelBuilder.Entity<Documento>()
+                .HasOne(d => d.Anuncio)
+                .WithMany(a => a.Documentos)
+                .HasForeignKey(d => d.Id_Anuncio)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
