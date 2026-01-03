@@ -154,28 +154,48 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("AdminForms");
             }
 
-            // Check if user is already a seller
+            // Check if user is already a seller (not a temporary one from rejection notification)
             var existingSeller = await _context.Vendedores
                 .FirstOrDefaultAsync(v => v.Id_User == application.UserId);
 
             if (existingSeller != null)
             {
-                TempData["Error"] = "User is already a seller.";
-                return RedirectToAction("AdminForms");
+                // Check if it's a temporary seller (created for notification purposes)
+                bool isTemporary = existingSeller.Contactos == "N/A" && 
+                                   existingSeller.Rua == "Desconhecida" && 
+                                   existingSeller.Codigo_Postal == "0000-000";
+
+                if (isTemporary)
+                {
+                    // Update temporary seller with real data
+                    existingSeller.NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber);
+                    existingSeller.Tipo = application.SellingType == "Professional";
+                    existingSeller.Contactos = application.PhoneNumber;
+                    existingSeller.Codigo_Postal = application.PostalCode;
+                    existingSeller.Rua = application.PostalCode;
+                    _context.Vendedores.Update(existingSeller);
+                }
+                else
+                {
+                    TempData["Error"] = "User is already a seller.";
+                    return RedirectToAction("AdminForms");
+                }
             }
-
-            // Create new Vendedor record
-            var vendedor = new Vendedor
+            else
             {
-                Id_User = application.UserId,
-                NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber),
-                Tipo = application.SellingType == "Professional",
-                Contactos = application.PhoneNumber,
-                Codigo_Postal = application.PostalCode,
-                Rua = application.PostalCode
-            };
+                // Create new Vendedor record
+                var vendedor = new Vendedor
+                {
+                    Id_User = application.UserId,
+                    NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber),
+                    Tipo = application.SellingType == "Professional",
+                    Contactos = application.PhoneNumber,
+                    Codigo_Postal = application.PostalCode,
+                    Rua = application.PostalCode
+                };
 
-            _context.Vendedores.Add(vendedor);
+                _context.Vendedores.Add(vendedor);
+            }
 
             // Update application status
             application.Status = "Approved";
@@ -183,6 +203,9 @@ namespace AutoMatch.Controllers
             application.ReviewedByAdminId = userId;
 
             await _context.SaveChangesAsync();
+
+            // Create notification for the user
+            await CreateApplicationNotificationAsync(application.UserId, "Approved", "Your seller application has been approved! You can now create listings.");
 
             TempData["Success"] = $"Application for {application.User?.Nome} has been approved!";
             return RedirectToAction("AdminForms");
@@ -223,8 +246,96 @@ namespace AutoMatch.Controllers
 
             await _context.SaveChangesAsync();
 
+            // Create notification for the user
+            var rejectionMessage = string.IsNullOrWhiteSpace(reason) 
+                ? "Your seller application has been rejected." 
+                : $"Your seller application has been rejected. Reason: {reason}";
+            await CreateApplicationNotificationAsync(application.UserId, "Rejected", rejectionMessage);
+
             TempData["Success"] = "Application has been rejected.";
             return RedirectToAction("AdminForms");
+        }
+
+        private async Task CreateApplicationNotificationAsync(int userId, string status, string message)
+        {
+            // Ensure user exists as Comprador
+            var compradorExiste = await _context.Compradores.AnyAsync(c => c.Id_User == userId);
+            if (!compradorExiste)
+            {
+                // Ensure default postal code exists
+                var codigoPostalExiste = await _context.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
+                if (!codigoPostalExiste)
+                {
+                    var novoCodigoPostal = new CodigoPostal
+                    {
+                        Codigo_Postal = "0000-000",
+                        Localidade = "Desconhecida"
+                    };
+                    _context.CodigoPostais.Add(novoCodigoPostal);
+                    await _context.SaveChangesAsync();
+                }
+
+                var novoComprador = new Comprador
+                {
+                    Id_User = userId,
+                    Contactos = "N/A",
+                    Rua = "Desconhecida",
+                    Codigo_Postal = "0000-000"
+                };
+                _context.Compradores.Add(novoComprador);
+                await _context.SaveChangesAsync();
+            }
+
+            // Ensure user exists as Vendedor (create temporary record if needed for notification structure)
+            var vendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            if (!vendedorExiste)
+            {
+                // Ensure default postal code exists
+                var codigoPostalExiste = await _context.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
+                if (!codigoPostalExiste)
+                {
+                    var novoCodigoPostal = new CodigoPostal
+                    {
+                        Codigo_Postal = "0000-000",
+                        Localidade = "Desconhecida"
+                    };
+                    _context.CodigoPostais.Add(novoCodigoPostal);
+                    await _context.SaveChangesAsync();
+                }
+
+                var novoVendedor = new Vendedor
+                {
+                    Id_User = userId,
+                    Tipo = false,
+                    Contactos = "N/A",
+                    Rua = "Desconhecida",
+                    Codigo_Postal = "0000-000"
+                };
+                _context.Vendedores.Add(novoVendedor);
+                await _context.SaveChangesAsync();
+            }
+
+            // Get Comprador and Vendedor IDs
+            var comprador = await _context.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
+            var vendedor = await _context.Vendedores.FirstOrDefaultAsync(v => v.Id_User == userId);
+
+            if (comprador != null && vendedor != null)
+            {
+                // Create notification: Id_Comprador = user (recipient), Id_Vendedor = user (recipient)
+                // This is a system notification, so we use the same user for both
+                var notificacao = new Notificacoes
+                {
+                    Id_Comprador = comprador.Id_User,
+                    Id_Vendedor = vendedor.Id_User,
+                    Tipo = "SellerApplication",
+                    Mensagem = message,
+                    Data_Envio = DateTime.Now,
+                    Estado = false // Not read
+                };
+
+                _context.Notificacoes.Add(notificacao);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

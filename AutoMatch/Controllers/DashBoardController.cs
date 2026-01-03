@@ -769,6 +769,22 @@ namespace AutoMatch.Controllers
                         : $"User #{n.Id_Comprador}";
                     titulo = $"Nova reserva de test drive de {remetenteNome}";
                 }
+                else if (n.Tipo == "SellerApplication")
+                {
+                    // Para notificações de aplicação de vendedor, usar título amigável
+                    if (n.Mensagem.Contains("approved"))
+                    {
+                        titulo = "Seller Application Approved";
+                    }
+                    else if (n.Mensagem.Contains("rejected"))
+                    {
+                        titulo = "Seller Application Rejected";
+                    }
+                    else
+                    {
+                        titulo = "Seller Application Update";
+                    }
+                }
                 else
                 {
                     // Para outras notificações, determinar o outro participante
