@@ -504,7 +504,7 @@ body {
 
 .floating-header-dark .logo-text {
     color: #000 !important;
-    text-shadow: none !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4) !important;
 }
 
 .floating-header-dark .nav-btn {
