@@ -47,5 +47,12 @@ namespace AutoMatch.Models.ViewModels
         public List<DashboardMessageInfo> RecentMessages { get; set; } = new();
 
         public List<DashboardNotificationInfo> Notifications { get; set; } = new();
+
+        // Sales data
+        public int TotalVendasConcluidas { get; set; }
+        public string TopModel { get; set; }
+        public int TopModelUnidades { get; set; }
+        public string ChartPointsSvg { get; set; } = string.Empty;
+        public List<SaleRowViewModel> RecentSales { get; set; } = new();
     }
 }

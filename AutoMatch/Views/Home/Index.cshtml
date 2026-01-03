@@ -162,27 +162,31 @@
 <section class="featured text-center">
     <h3>Featured Cars</h3>
     <div class="featured-cars">
-        <div class="car-card" onclick="window.location.href='/Vehicle/Results?fuelType=Electric'">
-            <img src="~/images/eletric.png" alt="Electric Car">
-            <div class="car-info">
-                <p>Electric</p>
-                <span>30,000 €</span>
-            </div>
-        </div>
-        <div class="car-card" onclick="window.location.href='/Vehicle/Results?bodyType=SUV'">
-            <img src="~/images/SUV_e.png" alt="SUV">
-            <div class="car-info">
-                <p>SUV</p>
-                <span>50,000 €</span>
-            </div>
-        </div>
-        <div class="car-card" onclick="window.location.href='/Vehicle/Results?maxPrice=80000'">
-            <img src="~/images/sports.png" alt="Sports">
-            <div class="car-info">
-                <p>Sports</p>
-                <span>80,000 €</span>
-            </div>
-        </div>
+        @if (ViewBag.FeaturedCars != null)
+        {
+            var cars = ViewBag.FeaturedCars as List<AutoMatch.Models.ViewModels.FeaturedCarViewModel>;
+            @if (cars != null && cars.Any())
+            {
+                @foreach (var car in cars)
+                {
+                    <div class="car-card" onclick="window.location.href='/Vehicle/Details/@car.Id'">
+                        <img src="@car.ImageUrl" alt="@car.Titulo">
+                        <div class="car-info">
+                            <p>@car.Titulo</p>
+                            <span>@car.Preco.ToString("N0") €</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No featured cars available at the moment.</p>
+            }
+        }
+        else
+        {
+            <p>No featured cars available at the moment.</p>
+        }
     </div>
 </section>
 

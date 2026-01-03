@@ -309,7 +309,7 @@ function previewProfilePhoto(input) {
         <button class="tab-btn" id="tabListings" type="button">My Listings</button>
     </div>
 
-    <div class="car-list" id="ordersList">
+    <div class="car-list" id="ordersList" style="display:flex;">
         @if (Model.Orders != null && Model.Orders.Any())
         {
             @foreach (var order in Model.Orders)
@@ -338,7 +338,7 @@ function previewProfilePhoto(input) {
                     <div class="car-box">
                         <img src="@listing.ImageUrl" alt="@listing.Name" />
                         <strong>@listing.Name</strong><br>
-                        <small>Created: @listing.CreatedAt</small><br>
+                        <small>@listing.CreatedAt</small><br>
                         <span class="status">@listing.State</span>
                     </div>
                 }
@@ -394,7 +394,7 @@ function previewProfilePhoto(input) {
         tabOrders.addEventListener('click', function () {
             tabOrders.classList.add('active');
             tabListings.classList.remove('active');
-            ordersList.style.display = 'block';
+            ordersList.style.display = 'flex';
             listingsList.style.display = 'none';
         });
 
@@ -409,7 +409,7 @@ function previewProfilePhoto(input) {
             tabListings.classList.add('active');
             tabOrders.classList.remove('active');
             ordersList.style.display = 'none';
-            listingsList.style.display = 'block';
+            listingsList.style.display = 'flex';
         });
 
         if (closeSellerOverlay && sellerOverlay) {

@@ -67,32 +67,33 @@
                 <div class="checkout-card">
                     <h2>Payment Method</h2>
 
-                    <div class="payment-options">
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="creditcard" checked />
-                            <span>Credit Card</span>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="paypal" />
-                            <span>Paypal</span>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="googlepay" />
-                            <span>Google Pay</span>
-                        </label>
-                        <label class="payment-option">
-                            <input type="radio" name="payment" value="applepay" />
-                            <span>Apple Pay</span>
-                        </label>
+                    <div class="payment-buttons">
+                        <button type="button" class="payment-btn active" data-payment="creditcard">
+                            <i class="fa fa-credit-card"></i> Credit Card
+                        </button>
+                        <button type="button" class="payment-btn" data-payment="paypal">
+                            <i class="fa fa-paypal"></i> PayPal
+                        </button>
                     </div>
+                    <input type="hidden" name="payment" id="paymentMethod" value="creditcard" />
 
-                    <div class="payment-fields">
-                        <input type="text" placeholder="Card number" />
+                    <!-- Credit Card Fields -->
+                    <div class="payment-fields" id="creditCardFields">
+                        <input type="text" name="cardNumber" placeholder="Card number" />
                         <div class="payment-row">
-                            <input type="text" placeholder="Expiration Date" />
-                            <input type="text" placeholder="CVV" />
+                            <input type="text" name="expirationDate" placeholder="Expiration Date (MM/YY)" />
+                            <input type="text" name="cvv" placeholder="CVV" />
                         </div>
                     </div>
+
+                    <!-- PayPal Fields -->
+                    <div class="payment-fields" id="paypalFields" style="display: none;">
+                        <input type="email" name="paypalEmail" placeholder="PayPal Email" />
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                            You will be redirected to PayPal to complete your payment.
+                        </p>
+                    </div>
+
                 </div>
 
                 <!-- Billing Address -->
@@ -325,6 +326,35 @@
         hiddenSelect.addEventListener('change', runSimulation);
         confirmSimBtn?.addEventListener('click', closeSimModal);
 
+        // Payment Method Selection
+        const paymentButtons = document.querySelectorAll('.payment-btn');
+                const paymentMethodInput = document.getElementById('paymentMethod');
+                const creditCardFields = document.getElementById('creditCardFields');
+                const paypalFields = document.getElementById('paypalFields');
+
+                paymentButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // Remove active class from all buttons
+                        paymentButtons.forEach(b => b.classList.remove('active'));
+                        // Add active class to clicked button
+                        this.classList.add('active');
+                        
+                        const paymentType = this.getAttribute('data-payment');
+                        paymentMethodInput.value = paymentType;
+
+                        // Hide all fields
+                        creditCardFields.style.display = 'none';
+                        paypalFields.style.display = 'none';
+
+                        // Show relevant fields based on selection
+                        if (paymentType === 'creditcard') {
+                            creditCardFields.style.display = 'flex';
+                        } else if (paymentType === 'paypal') {
+                            paypalFields.style.display = 'flex';
+                        }
+                    });
+                });
+
         // USER DROPDOWN TOGGLE
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
@@ -348,3 +378,4 @@
         });
     </script>
 }
+

@@ -43,4 +43,12 @@ namespace AutoMatch.Models.ViewModels
         public string CreatedAt { get; set; }
         public string State { get; set; }
     }
+
+    public class FeaturedCarViewModel
+    {
+        public int Id { get; set; }
+        public string Titulo { get; set; }
+        public int Preco { get; set; }
+        public string ImageUrl { get; set; }
+    }
 }

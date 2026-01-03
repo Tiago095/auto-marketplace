@@ -243,6 +243,79 @@ namespace AutoMatch.Controllers
                 };
             }).ToList();
 
+            // Sales data (apenas para vendedores)
+            int totalVendasConcluidas = 0;
+            string topModel = null;
+            int topModelUnidades = 0;
+            string chartPointsSvg = "0,35 100,35";
+            var recentSales = new List<SaleRowViewModel>();
+
+            if (isVendedor)
+            {
+                var vendedor = await _context.Vendedores.FirstOrDefaultAsync(v => v.Id_User == userId);
+                if (vendedor != null)
+                {
+                    var now = DateTime.UtcNow;
+                    var fromDate = now.AddDays(-7);
+
+                    var vendas = await _context.Compras
+                        .Include(c => c.Anuncio)
+                        .Include(c => c.Comprador).ThenInclude(b => b.Utilizador)
+                        .Where(c => c.Anuncio.Id_Vendedor == vendedor.Id_User && c.Data_Compra >= fromDate)
+                        .OrderByDescending(c => c.Data_Compra)
+                        .ToListAsync();
+
+                    totalVendasConcluidas = vendas.Count(c => c.Estado);
+
+                    var topGroup = vendas
+                        .GroupBy(c => c.Anuncio.Titulo)
+                        .OrderByDescending(g => g.Count())
+                        .FirstOrDefault();
+
+                    if (topGroup != null)
+                    {
+                        topModel = topGroup.Key;
+                        topModelUnidades = topGroup.Count();
+                    }
+
+                    foreach (var c in vendas.Take(5))
+                    {
+                        recentSales.Add(new SaleRowViewModel
+                        {
+                            Data = c.Data_Compra,
+                            Cliente = c.Comprador?.Utilizador?.Nome ?? "",
+                            Veiculo = c.Anuncio?.Titulo ?? "",
+                            Valor = c.Anuncio?.Preco ?? 0,
+                            Estado = c.Estado ? "Payed" : "Pending"
+                        });
+                    }
+
+                    // Gerar pontos do gráfico
+                    var buckets = vendas
+                        .GroupBy(c => c.Data_Compra.Date)
+                        .OrderBy(g => g.Key)
+                        .Select(g => g.Count())
+                        .Take(8)
+                        .ToList();
+
+                    if (buckets.Count > 0)
+                    {
+                        var max = buckets.Max();
+                        var chartPoints = buckets.Select(b => max == 0 ? 0 : (int)Math.Round((double)b / max * 10)).ToList();
+
+                        var svgPoints = new List<string>();
+                        var step = 100.0 / Math.Max(chartPoints.Count - 1, 1);
+                        for (int i = 0; i < chartPoints.Count; i++)
+                        {
+                            var x = step * i;
+                            var y = 35 - chartPoints[i] * 3;
+                            svgPoints.Add($"{x},{y}");
+                        }
+                        chartPointsSvg = string.Join(" ", svgPoints);
+                    }
+                }
+            }
+
             var vm = new DashboardViewModel
             {
                 UserName = userName,
@@ -252,12 +325,17 @@ namespace AutoMatch.Controllers
                 FiltersSaved = filtersSaved,
                 LatestBooking = latestBookingVm,
                 RecentMessages = recentMessages,
-                Notifications = notifications
+                Notifications = notifications,
+                TotalVendasConcluidas = totalVendasConcluidas,
+                TopModel = topModel,
+                TopModelUnidades = topModelUnidades,
+                ChartPointsSvg = chartPointsSvg,
+                RecentSales = recentSales
             };
 
             return View(vm);
         }
-        public async Task<IActionResult> Bookings()
+        public async Task<IActionResult> Bookings(string status, string vehicle, string buyer, DateTime? dateFrom, DateTime? dateTo)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             var userName = HttpContext.Session.GetString("UserName") ?? "Utilizador";
@@ -286,17 +364,58 @@ namespace AutoMatch.Controllers
                     .Select(a => a.Id_Anuncio)
                     .ToListAsync();
 
-                var reservas = await _context.Reservas
+                var reservasQuery = _context.Reservas
                     .Include(r => r.Anuncio)
                     .Include(r => r.Comprador)
                         .ThenInclude(c => c.Utilizador)
-                    .Where(r => anunciosIds.Contains(r.Id_Anuncio))
+                    .Where(r => anunciosIds.Contains(r.Id_Anuncio));
+
+                // Aplicar filtros
+                if (!string.IsNullOrEmpty(status))
+                {
+                    bool statusBool = status.ToLower() == "accepted";
+                    reservasQuery = reservasQuery.Where(r => r.Estado == statusBool);
+                }
+
+                if (!string.IsNullOrEmpty(vehicle))
+                {
+                    reservasQuery = reservasQuery.Where(r => r.Anuncio.Titulo.Contains(vehicle));
+                }
+
+                if (!string.IsNullOrEmpty(buyer))
+                {
+                    reservasQuery = reservasQuery.Where(r => 
+                        (r.Comprador != null && r.Comprador.Utilizador != null && 
+                         ((r.Comprador.Utilizador.Nome != null && r.Comprador.Utilizador.Nome.Contains(buyer)) ||
+                          (r.Comprador.Utilizador.UserName != null && r.Comprador.Utilizador.UserName.Contains(buyer)))));
+                }
+
+                if (dateFrom.HasValue)
+                {
+                    reservasQuery = reservasQuery.Where(r => r.Data_Inicio >= dateFrom.Value);
+                }
+
+                if (dateTo.HasValue)
+                {
+                    reservasQuery = reservasQuery.Where(r => r.Data_Inicio <= dateTo.Value);
+                }
+
+                var reservas = await reservasQuery
                     .OrderByDescending(r => r.Data_Inicio)
                     .ToListAsync();
 
+                // Popular ViewBag com dados para os dropdowns
+                var allAnuncios = await _context.Anuncios
+                    .Where(a => a.Id_Vendedor == userId)
+                    .Select(a => a.Titulo)
+                    .Distinct()
+                    .OrderBy(t => t)
+                    .ToListAsync();
+                ViewBag.Vehicles = allAnuncios;
+
                 foreach (var r in reservas)
                 {
-                    var status = r.Estado ? "Accepted" : "Pending";
+                    var statusValue = r.Estado ? "Accepted" : "Pending";
                     vm.Bookings.Add(new BookingRowViewModel
                     {
                         ReservaId = r.Id_Reserva,
@@ -304,11 +423,18 @@ namespace AutoMatch.Controllers
                         Buyer = r.Comprador?.Utilizador?.Nome ?? r.Comprador?.Utilizador?.UserName ?? "Unknown",
                         Date = r.Data_Inicio,
                         DataFim = r.Data_Fim,
-                        Status = status,
+                        Status = statusValue,
                         IsVendedor = true,
                         CanAccept = !r.Estado // Pode aceitar se ainda estiver pendente
                     });
                 }
+
+                // Manter valores dos filtros na ViewBag para manter o estado
+                ViewBag.SelectedStatus = status ?? "";
+                ViewBag.SelectedVehicle = vehicle ?? "";
+                ViewBag.SelectedBuyer = buyer ?? "";
+                ViewBag.DateFrom = dateFrom;
+                ViewBag.DateTo = dateTo;
             }
             // Se não for vendedor, não carregar reservas (mostrar apenas mensagem para se tornar vendedor)
 
@@ -734,6 +860,17 @@ namespace AutoMatch.Controllers
                 .OrderByDescending(n => n.Data_Envio)
                 .ToListAsync();
 
+            // Marcar todas as notificações não lidas como lidas quando a aba é aberta
+            var notificacoesNaoLidas = list.Where(n => !n.Estado).ToList();
+            if (notificacoesNaoLidas.Any())
+            {
+                foreach (var notificacao in notificacoesNaoLidas)
+                {
+                    notificacao.Estado = true; // Marcar como lida
+                }
+                await _context.SaveChangesAsync();
+            }
+
             // Buscar informações dos remetentes para melhorar os títulos
             var remetentesIds = list
                 .Where(n => n.Tipo == "Mensagem" || n.Tipo == "Booking")
@@ -835,6 +972,7 @@ namespace AutoMatch.Controllers
             {
                 var listings = await _context.Anuncios
                     .Where(a => a.Id_Vendedor == vendedor.Id_User && a.Estado)
+                    .Where(a => !_context.Compras.Any(c => c.Id_Anuncio == a.Id_Anuncio && c.Estado))
                     .ToListAsync();
 
                 var listingIds = listings.Select(l => l.Id_Anuncio).ToList();

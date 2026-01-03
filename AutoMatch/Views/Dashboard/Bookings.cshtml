@@ -132,32 +132,69 @@
 
                 @if (ViewBag.IsVendedor == true)
                 {
-                <div class="booking-filters">
-                    <div class="filter-group">
-                        <label>Status</label>
-                        <select class="filter-input">
-                            <option value="">All</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Vehicle</label>
-                        <select class="filter-input">
-                            <option value="">All</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Date Range</label>
-                        <input class="filter-input" type="text" placeholder="Select" />
-                    </div>
-                    <div class="filter-group">
-                        <label>Buyer</label>
-                        <input class="filter-input" type="text" placeholder="Name" />
-                    </div>
+                <form method="get" action="@Url.Action("Bookings", "DashBoard")" id="bookingFiltersForm">
+                    <div class="booking-filters">
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select name="status" class="filter-input">
+                                <option value="">All</option>
+                                @if (ViewBag.SelectedStatus == "Pending")
+                                {
+                                    <option value="Pending" selected>Pending</option>
+                                }
+                                else
+                                {
+                                    <option value="Pending">Pending</option>
+                                }
+                                @if (ViewBag.SelectedStatus == "Accepted")
+                                {
+                                    <option value="Accepted" selected>Accepted</option>
+                                }
+                                else
+                                {
+                                    <option value="Accepted">Accepted</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Vehicle</label>
+                            <select name="vehicle" class="filter-input">
+                                <option value="">All</option>
+                                @if (ViewBag.Vehicles != null)
+                                {
+                                    foreach (var vehicle in ViewBag.Vehicles)
+                                    {
+                                        @if (ViewBag.SelectedVehicle == vehicle)
+                                        {
+                                            <option value="@vehicle" selected>@vehicle</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@vehicle">@vehicle</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Date From</label>
+                            <input name="dateFrom" class="filter-input" type="date" value="@(ViewBag.DateFrom?.ToString("yyyy-MM-dd") ?? "")" />
+                        </div>
+                        <div class="filter-group">
+                            <label>Date To</label>
+                            <input name="dateTo" class="filter-input" type="date" value="@(ViewBag.DateTo?.ToString("yyyy-MM-dd") ?? "")" />
+                        </div>
+                        <div class="filter-group">
+                            <label>Buyer</label>
+                            <input name="buyer" class="filter-input" type="text" placeholder="Name" value="@(ViewBag.SelectedBuyer ?? "")" />
+                        </div>
 
-                    <div class="filter-actions">
-                        <button class="btn-apply">Apply</button>
+                        <div class="filter-actions">
+                            <button type="submit" class="btn-apply">Apply</button>
+                            <a href="@Url.Action("Bookings", "DashBoard")" class="btn-reset" style="margin-left: 10px; padding: 8px 16px; background: #444; color: #fff; border: none; border-radius: 6px; text-decoration: none; display: inline-block; cursor: pointer;">Reset</a>
+                        </div>
                     </div>
-                </div>
+                </form>
 
                 <div class="booking-table-card">
                     <table class="booking-table">

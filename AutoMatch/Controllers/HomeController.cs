@@ -2,7 +2,9 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using AutoMatch.Data;
 using AutoMatch.Models;
+using AutoMatch.Models.ViewModels;
 using AutoMatch.Services;
+using Microsoft.EntityFrameworkCore;
 
 
 public class HomeController : Controller
@@ -19,7 +21,7 @@ public class HomeController : Controller
     }
    
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             if (HttpContext.Session.GetInt32("UserId") == null &&
                 Request.Cookies.ContainsKey("AutoMatch_UserId"))
@@ -35,6 +37,44 @@ public class HomeController : Controller
                     HttpContext.Session.SetString("UserProfileImageUrl", user.ProfileImageUrl ?? string.Empty);
                 }
             }
+
+            // Buscar 3 anúncios aleatórios que estão ativos e não foram comprados
+            var anunciosCompradosIds = await _db.Compras
+                .Where(c => c.Estado)
+                .Select(c => c.Id_Anuncio)
+                .ToListAsync();
+
+            var anunciosAleatorios = await _db.Anuncios
+                .Include(a => a.Imagens)
+                .Include(a => a.Modelo)
+                .Where(a => a.Estado && !anunciosCompradosIds.Contains(a.Id_Anuncio))
+                .OrderBy(x => Guid.NewGuid())
+                .Take(3)
+                .ToListAsync();
+
+            // Buscar imagens dos anúncios
+            var anuncioIds = anunciosAleatorios.Select(a => a.Id_Anuncio).ToList();
+            var todasImagens = await _db.Imagens
+                .Where(i => anuncioIds.Contains(i.Id_Anuncio))
+                .OrderBy(i => i.Id_Anuncio)
+                .ThenBy(i => i.Id_Imagem)
+                .ToListAsync();
+
+            var primeiraImagemPorAnuncio = todasImagens
+                .GroupBy(i => i.Id_Anuncio)
+                .ToDictionary(g => g.Key, g => g.First().CaminhoImagem);
+
+            var featuredCars = anunciosAleatorios.Select(a => new FeaturedCarViewModel
+            {
+                Id = a.Id_Anuncio,
+                Titulo = a.Titulo,
+                Preco = a.Preco,
+                ImageUrl = primeiraImagemPorAnuncio.ContainsKey(a.Id_Anuncio)
+                    ? primeiraImagemPorAnuncio[a.Id_Anuncio]
+                    : "/images/placeholder-car.jpg"
+            }).ToList();
+
+            ViewBag.FeaturedCars = featuredCars;
 
             return View();
         }

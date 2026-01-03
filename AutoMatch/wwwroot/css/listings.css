@@ -1,6 +1,20 @@
 ﻿body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background-color: #f3f3f3;
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+html {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+main.content {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 /* --- Floating Header (Logo + Buttons) --- */
@@ -14,7 +28,9 @@
     align-items: center;
     padding: 0 60px;
     z-index: 100;
-    max-width: 100%;
+    max-width: 100vw;
+    width: 100%;
+    box-sizing: border-box;
     margin: 0 auto;
 }
 
@@ -79,14 +95,44 @@
     .user-badge {
         padding: 6px;
     }
+
+    .floating-header {
+        padding: 0 20px;
+    }
+
+    .mylistings-panel {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .mylistings-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mylistings-main {
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .mylistings-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
 }
 
 .mylistings-wrapper {
     width: 100%;
+    max-width: 100vw;
     display: flex;
     justify-content: center;
     margin-top: 140px; 
     margin-bottom: 50px;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .mylistings-panel {
@@ -97,6 +143,8 @@
     border-radius: 14px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.35);
     color: #fff;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .mylistings-header {
@@ -146,11 +194,19 @@
     padding: 18px;
     align-items: center;
     box-shadow: 0 5px 15px rgba(0,0,0,0.18);
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.mylistings-image {
+    flex-shrink: 0;
 }
 
 .mylistings-image img {
     width: 150px;
     height: 95px;
+    max-width: 100%;
     object-fit: cover;
     border-radius: 10px;
 }
@@ -158,8 +214,11 @@
 .mylistings-main {
     margin-left: 20px;
     width: 100%;
+    max-width: 100%;
     display: flex;
     justify-content: space-between;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .mylistings-info {

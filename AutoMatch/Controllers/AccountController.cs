@@ -207,12 +207,14 @@ namespace AutoMatch.Controllers
                 Phone = comprador?.Contactos ?? "Not defined"
             };
 
-            // Buscar compras (Orders) do comprador
+            // Buscar compras (Orders) do comprador (apenas compras de anúncios de outros vendedores)
             if (comprador != null)
             {
                 var compras = await _db.Compras
                     .Include(c => c.Anuncio)
-                    .Where(c => c.Id_Comprador == comprador.Id_User)
+                    .Where(c => c.Id_Comprador == comprador.Id_User && 
+                                c.Anuncio != null && 
+                                c.Anuncio.Id_Vendedor != comprador.Id_User)
                     .OrderByDescending(c => c.Data_Compra)
                     .ToListAsync();
 
@@ -248,11 +250,17 @@ namespace AutoMatch.Controllers
                 }
             }
 
-            // Buscar listings (Anuncios) do vendedor
+            // Buscar listings (Anuncios) do vendedor (apenas os que não foram comprados)
             if (isSeller)
             {
+                // Buscar IDs de anúncios que foram comprados
+                var anunciosCompradosIds = await _db.Compras
+                    .Where(c => c.Estado)
+                    .Select(c => c.Id_Anuncio)
+                    .ToListAsync();
+
                 var anuncios = await _db.Anuncios
-                    .Where(a => a.Id_Vendedor == userId)
+                    .Where(a => a.Id_Vendedor == userId && !anunciosCompradosIds.Contains(a.Id_Anuncio))
                     .OrderByDescending(a => a.Ano)
                     .ToListAsync();
 
@@ -281,7 +289,7 @@ namespace AutoMatch.Controllers
                         {
                             Name = anuncio.Titulo,
                             ImageUrl = imageUrl,
-                            CreatedAt = anuncio.Ano.ToString("dd/MM/yyyy"),
+                            CreatedAt = anuncio.Ano.Year.ToString(),
                             State = anuncio.Estado ? "Ativo" : "Inativo"
                         });
                     }

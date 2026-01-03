@@ -4,6 +4,7 @@
 
     var username = Context.Session.GetString("UserName");
     var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
 
     // lista de imagens em ordem (1_,2_,3_,4_,5_) vinda do controller via ViewBag
     var orderedImages = ViewBag.OrderedImages as List<string> ?? new List<string>();
@@ -18,6 +19,7 @@
 }
 
 <link rel="stylesheet" href="~/css/vehicle.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 <link rel="stylesheet" href="~/css/user-dropdown.css" />
 
 <!-- Floating Header (same as other pages) -->
@@ -37,7 +39,14 @@
             <div class="user-menu-container">
                 <div class="user-badge" id="userMenuBtn">
                     <span class="user-name">@username</span>
-                    <div class="user-avatar">@initial</div>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
                 </div>
 
                 <div class="user-dropdown" id="userDropdown">
