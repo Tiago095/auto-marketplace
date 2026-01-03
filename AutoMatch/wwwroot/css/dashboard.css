@@ -915,14 +915,6 @@ body {
     transition: background 0.2s ease;
 }
 
-.notif-item.notif-clickable {
-    cursor: pointer;
-}
-
-.notif-item.notif-clickable:hover {
-    background: #f0f4ff;
-}
-
 .notif-item.unread {
     background: #f0f4ff;
 }

@@ -154,48 +154,28 @@ namespace AutoMatch.Controllers
                 return RedirectToAction("AdminForms");
             }
 
-            // Check if user is already a seller (not a temporary one from rejection notification)
+            // Check if user is already a seller
             var existingSeller = await _context.Vendedores
                 .FirstOrDefaultAsync(v => v.Id_User == application.UserId);
 
             if (existingSeller != null)
             {
-                // Check if it's a temporary seller (created for notification purposes)
-                bool isTemporary = existingSeller.Contactos == "N/A" && 
-                                   existingSeller.Rua == "Desconhecida" && 
-                                   existingSeller.Codigo_Postal == "0000-000";
-
-                if (isTemporary)
-                {
-                    // Update temporary seller with real data
-                    existingSeller.NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber);
-                    existingSeller.Tipo = application.SellingType == "Professional";
-                    existingSeller.Contactos = application.PhoneNumber;
-                    existingSeller.Codigo_Postal = application.PostalCode;
-                    existingSeller.Rua = application.PostalCode;
-                    _context.Vendedores.Update(existingSeller);
-                }
-                else
-                {
-                    TempData["Error"] = "User is already a seller.";
-                    return RedirectToAction("AdminForms");
-                }
+                TempData["Error"] = "User is already a seller.";
+                return RedirectToAction("AdminForms");
             }
-            else
+
+            // Create new Vendedor record
+            var vendedor = new Vendedor
             {
-                // Create new Vendedor record
-                var vendedor = new Vendedor
-                {
-                    Id_User = application.UserId,
-                    NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber),
-                    Tipo = application.SellingType == "Professional",
-                    Contactos = application.PhoneNumber,
-                    Codigo_Postal = application.PostalCode,
-                    Rua = application.PostalCode
-                };
+                Id_User = application.UserId,
+                NIF = string.IsNullOrEmpty(application.DocumentNumber) ? 0 : int.Parse(application.DocumentNumber),
+                Tipo = application.SellingType == "Professional",
+                Contactos = application.PhoneNumber,
+                Codigo_Postal = application.PostalCode,
+                Rua = application.PostalCode
+            };
 
-                _context.Vendedores.Add(vendedor);
-            }
+            _context.Vendedores.Add(vendedor);
 
             // Update application status
             application.Status = "Approved";
@@ -245,12 +225,6 @@ namespace AutoMatch.Controllers
             application.RejectionReason = reason ?? "Not specified";
 
             await _context.SaveChangesAsync();
-
-            // Create notification for the user
-            var rejectionMessage = string.IsNullOrWhiteSpace(reason) 
-                ? "Your seller application has been rejected." 
-                : $"Your seller application has been rejected. Reason: {reason}";
-            await CreateApplicationNotificationAsync(application.UserId, "Rejected", rejectionMessage);
 
             TempData["Success"] = "Application has been rejected.";
             return RedirectToAction("AdminForms");

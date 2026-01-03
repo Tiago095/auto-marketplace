@@ -19,7 +19,6 @@ namespace AutoMatch.Services
 
     public class AdminService : IAdminService
     {
-        // SUBSTITUI "YourDbContext" PELO NOME REAL DO TEU DBCONTEXT
         private readonly AutoMatchContext _context;
 
         public AdminService(AutoMatchContext context)

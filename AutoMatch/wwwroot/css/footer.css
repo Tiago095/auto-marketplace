@@ -19,6 +19,7 @@
 .social-icons {
     display: flex;
     gap: 15px;
+    justify-content: center;
 }
 
 .social-icon {

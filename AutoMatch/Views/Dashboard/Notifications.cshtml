@@ -123,22 +123,7 @@
                     {
                         foreach (var n in Model.Items)
                         {
-                            var isMessage = n.Titulo.Contains("mensagem", StringComparison.OrdinalIgnoreCase);
-                            var isBooking = n.Titulo.Contains("reserva", StringComparison.OrdinalIgnoreCase);
-                            var isClickable = isMessage || isBooking;
-                            
-                            string linkUrl = "#";
-                            if (isMessage && n.OutroParticipanteId.HasValue)
-                            {
-                                linkUrl = $"/Dashboard/Messages?vendedorId={n.OutroParticipanteId.Value}";
-                            }
-                            else if (isBooking)
-                            {
-                                linkUrl = "/Dashboard/Bookings";
-                            }
-                            
-                            <div class="notif-item @(n.Lida ? "read" : "unread") @(isClickable ? "notif-clickable" : "")" 
-                                 @(isClickable ? $"data-link=\"{linkUrl}\"" : "")>
+                            <div class="notif-item @(n.Lida ? "read" : "unread")">
                                 <div class="notif-dot"></div>
                                 <div class="notif-info">
                                     <div class="notif-title">@n.Titulo</div>
@@ -198,16 +183,6 @@
                         }, 220);
                     } else {
                         window.location.href = url;
-                    }
-                });
-            });
-
-            // Click em notificações de mensagem para abrir conversa
-            document.querySelectorAll('.notif-item.notif-clickable').forEach(function (item) {
-                item.addEventListener('click', function () {
-                    var link = this.getAttribute('data-link');
-                    if (link && link !== '#') {
-                        window.location.href = link;
                     }
                 });
             });
