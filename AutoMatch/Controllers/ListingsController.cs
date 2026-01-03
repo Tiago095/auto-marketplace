@@ -45,9 +45,15 @@ namespace AutoMatch.Controllers
             }
             else
             {
+                // Get all anuncios IDs that have been purchased (have a Compra record)
+                var compradosIds = _db.Compras
+                    .Where(c => c.Estado == true)
+                    .Select(c => c.Id_Anuncio)
+                    .ToList();
+
                 anuncios = _db.Anuncios
                     .Include(a => a.Imagens)
-                    .Where(a => a.Id_Vendedor == vendedor.Id_User && a.Estado)
+                    .Where(a => a.Id_Vendedor == vendedor.Id_User && a.Estado && !compradosIds.Contains(a.Id_Anuncio))
                     .OrderByDescending(a => a.Id_Anuncio)
                     .ToList();
             }

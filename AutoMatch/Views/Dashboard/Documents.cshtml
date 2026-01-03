@@ -93,6 +93,29 @@
                         <span>Sales</span>
                     </button>
                 </li>
+                @{
+                    var userId = Context.Session.GetInt32("UserId");
+                    bool isAdmin = false;
+                }
+
+                @inject AutoMatch.Data.AutoMatchContext _context
+
+                @{
+                    if (userId != null)
+                    {
+                        isAdmin = _context.Administradores.Any(a => a.Id_User == userId);
+                    }
+                }
+
+                @if (isAdmin)
+                {
+                    <li>
+                        <div class="sidebar-bottom">
+                             <button class="sidebar-btn" type="button" data-target="/Admin/DashAdmin">
+                                 <i class="fa-solid fa-user-shield"></i> Admin Dashboard
+                        </div>
+                    </li>
+                }
             </ul>
         </aside>
 
