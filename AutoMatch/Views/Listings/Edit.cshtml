@@ -8,6 +8,7 @@
 }
 
 <link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
@@ -244,3 +245,5 @@
 
     updateButtons();
 </script>
+
+@await Html.PartialAsync("_Footer")

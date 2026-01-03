@@ -19,6 +19,7 @@
 
 <!-- PROFILE PAGE HTML -->
 <link rel="stylesheet" href="~/css/profile.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
 <!-- Floating Header (same position as Index) -->
 <div class="floating-header floating-header-dark">
@@ -445,4 +446,4 @@ function previewProfilePhoto(input) {
     </script>
 }
 
-<link rel="stylesheet" href="~/css/profile.css" />.
+@await Html.PartialAsync("_Footer")

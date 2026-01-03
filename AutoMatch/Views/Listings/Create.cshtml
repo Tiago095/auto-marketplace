@@ -8,6 +8,7 @@
 }
 
 <link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
@@ -219,6 +220,8 @@
         </form>
     </div>
 </div>
+
+@await Html.PartialAsync("_Footer")
 
 <script>
     const modelos = JSON.parse('@Html.Raw(ViewBag.ModelosJson)');

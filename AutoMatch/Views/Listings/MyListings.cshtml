@@ -7,6 +7,7 @@
 }
 
 <link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
 <!-- Floating Header (same as Contact / Home) -->
 <div class="floating-header floating-header-dark">
@@ -147,6 +148,8 @@
         }
     </div>
 </div>
+
+@await Html.PartialAsync("_Footer")
 
 @section Scripts {
     <script>

@@ -11,6 +11,7 @@
 }
 
 <link rel="stylesheet" href="~/css/vehicle.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
 <div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
@@ -207,6 +208,8 @@
         </div>
     </div>
 </div>
+
+@await Html.PartialAsync("_Footer")
 
 @section Scripts {
     <script>

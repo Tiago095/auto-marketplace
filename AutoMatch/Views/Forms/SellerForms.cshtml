@@ -10,6 +10,7 @@
 
 <link rel="stylesheet" href="~/css/form.css" />
 <link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
 <!-- Floating Header (same as MyListings) -->
 <div class="floating-header floating-header-dark">
@@ -178,6 +179,8 @@
         </div>
     </div>
 </form>
+
+@await Html.PartialAsync("_Footer")
 
 @if (TempData["SellerFormSubmitted"] != null)
 {

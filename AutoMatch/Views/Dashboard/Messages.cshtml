@@ -4,24 +4,34 @@
 
     var username = Context.Session.GetString("UserName");
     var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
 }
 <link rel="stylesheet" href="~/css/dashboard.css" />
+<link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
-<div class="floating-header">
+<div class="floating-header floating-header-dark">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
-        <a href="/Home/Index" class="nav-btn">Home</a>
-        <a href="/Home/About" class="nav-btn">About</a>
-        <a href="/Home/Contact" class="nav-btn">Contact</a>
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
         <div class="user-menu-container">
             <div class="user-badge" id="userMenuBtn">
                 <span class="user-name">@username</span>
-                <div class="user-avatar">@initial</div>
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" />
+                }
+                else
+                {
+                    <div class="user-avatar">@initial</div>
+                }
             </div>
 
             <div class="user-dropdown" id="userDropdown">
                 <a href="/Account/Profile">Profile</a>
-                <a href="/Anuncios/Create">Create Ad</a>
+                <a href="/Listings/MyListings">My Listings</a>
                 <a href="/DashBoard/Index">Dashboard</a>
                 <a href="/Account/Logout" style="color: red;">Logout</a>
             </div>
@@ -191,6 +201,8 @@
         </main>
     </div>
 </div>
+
+@await Html.PartialAsync("_Footer")
 
 @section Scripts {
     <script>

@@ -7,6 +7,7 @@
 }
 
 <link rel="stylesheet" href="~/css/style.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
 
 
 <!-- Floating Header (same position as Index) -->
@@ -127,23 +128,9 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="contact-footer">
-        <div class="social-icons">
-            <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
-            <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
-            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
-        </div>
-        <div class="footer-text">
-            <span>© 2025 AutoMatch - All Rights Reserved</span>
-            <span class="footer-divider">|</span>
-            <a href="#">Privacy Policy</a>
-            <span class="footer-divider">|</span>
-            <a href="#">Terms of Use</a>
-        </div>
-    </footer>
 </section>
+
+@await Html.PartialAsync("_Footer")
 
 @section Scripts {
     <script src="~/js/site.js"></script>
