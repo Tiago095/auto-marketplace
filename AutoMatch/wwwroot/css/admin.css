@@ -88,7 +88,8 @@ body {
     height: 28px;
     border-radius: 999px;
     background: linear-gradient(135deg, #ffffff, #bbbbbb);
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .sidebar-menu {
@@ -96,7 +97,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    flex: 1;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
 }
 
     .sidebar-menu li {
@@ -146,13 +149,35 @@ body {
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    margin-top: auto;
     transition: color 0.3s ease;
 }
 
     .back-link:hover {
         color: #dcdcdc;
     }
+
+.sidebar-bottom {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-bottom .sidebar-btn {
+    width: 100%;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.sidebar-bottom .sidebar-btn.active {
+    font-weight: 600;
+    background: transparent !important;
+    color: #e0e0e0 !important;
+}
+
+.sidebar-bottom .sidebar-btn.active:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #e0e0e0 !important;
+}
 
 /* =============== MAIN CONTENT =============== */
 .dashboard-main {
@@ -414,11 +439,6 @@ body {
 /* =============== SIDEBAR IMPROVEMENTS =============== */
 .sidebar-btn {
     text-decoration: none;
-}
-
-.sidebar-bottom {
-    margin-top: auto;
-    padding-top: 20px;
 }
 
 /* =============== ALERTS =============== */
