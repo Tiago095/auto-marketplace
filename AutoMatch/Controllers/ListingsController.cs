@@ -143,7 +143,7 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
-            // Criar título automaticamente: Marca + Modelo + Ano
+            // Criar título automaticamente: Marca + Modelo
             string tituloAuto = $"{modeloInfo.Marca} {modeloInfo.NomeModelo}";
 
             // Criar o anúncio
@@ -159,7 +159,7 @@ namespace AutoMatch.Controllers
                 Matricula = model.Matricula,
                 Estado = true,
                 Id_Vendedor = vendedor.Id_User,
-                Id_Admin = 1
+                Id_Admin = 4
             };
 
             _db.Anuncios.Add(anuncio);

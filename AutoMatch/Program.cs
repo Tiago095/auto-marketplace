@@ -5,11 +5,11 @@ using AutoMatch.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar ligação à BD
+// Configurar ligaï¿½ï¿½o ï¿½ BD
 builder.Services.AddDbContext<AutoMatchContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ? Adicionar suporte a sessão
+// ? Adicionar suporte a sessï¿½o
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -17,11 +17,11 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 // Dependency Injection para AdminService
 builder.Services.AddScoped<IAdminService, AdminService>();
 
-// Se ainda não tens, adiciona também o DbContext:
+// Se ainda nï¿½o tens, adiciona tambï¿½m o DbContext:
 builder.Services.AddDbContext<AutoMatchContext>(options =>
      options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// E sessions se ainda não tens:
+// E sessions se ainda nï¿½o tens:
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(20);
@@ -36,10 +36,11 @@ app.UseSession();  // IMPORTANTE: isto deve estar ANTES de MapControllerRoute
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AutoMatchContext>();
-    db.Database.EnsureCreated(); // força inicialização no arranque
+    db.Database.EnsureCreated();
+    DbInitializer.Initialize(db); // forï¿½a inicializaï¿½ï¿½o no arranque
 }
 
-// Middleware padrão
+// Middleware padrï¿½o
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -51,7 +52,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// ? Usar sessão
+// ? Usar sessï¿½o
 app.UseSession();
 
 app.UseAuthorization();

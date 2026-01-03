@@ -1,4 +1,4 @@
-﻿/* =============== RESET =============== */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -10,7 +10,6 @@ body {
     background-color: #f3f3f3;
 }
 
-/* =============== FLOATING HEADER =============== */
 .floating-header {
     position: absolute;
     top: 25px;
@@ -57,9 +56,6 @@ body {
         color: #007bff;
     }
 
-/* User Dropdown Styles - Using common CSS */
-
-/* =============== ADMIN PAGE =============== */
 .admin-page {
     padding: 120px 40px 30px 40px;
 }
@@ -72,7 +68,6 @@ body {
     align-items: stretch;
 }
 
-/* =============== SIDEBAR =============== */
 .sidebar {
     background: #111111;
     border-radius: 20px;
@@ -140,7 +135,6 @@ body {
         font-size: 16px;
     }
 
-/* =============== BACK LINK =============== */
 .back-link {
     display: flex;
     align-items: center;
@@ -179,7 +173,6 @@ body {
     color: #e0e0e0 !important;
 }
 
-/* =============== MAIN CONTENT =============== */
 .dashboard-main {
     background: #FFF;
     border-radius: 20px;
@@ -207,7 +200,6 @@ body {
     margin-bottom: 25px;
 }
 
-/* =============== STATS GRID =============== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -237,7 +229,6 @@ body {
         font-weight: 700;
     }
 
-/* =============== GRID ROW =============== */
 .grid-row {
     display: grid;
     grid-template-columns: 1.3fr 1fr;
@@ -249,7 +240,6 @@ body {
         margin-bottom: 0;
     }
 
-/* =============== CHART CARD =============== */
 .chart-card {
     background: #fff;
     border-radius: 16px;
@@ -269,7 +259,6 @@ body {
         height: auto !important;
     }
 
-/* =============== TABLE CARD =============== */
 .table-card {
     background: #fff;
     border-radius: 16px;
@@ -311,7 +300,6 @@ body {
         background-color: #f9f9f9;
     }
 
-/* =============== ACTIVITY CARD =============== */
 .activity-card {
     background: #fff;
     border-radius: 16px;
@@ -345,13 +333,12 @@ body {
         }
 
         .activity-card li:before {
-            content: "•";
+            content: "�";
             color: #111;
             font-weight: bold;
             flex-shrink: 0;
         }
 
-/* =============== FORMS TABLE =============== */
 .forms-table-container {
     background: #fff;
     border-radius: 16px;
@@ -436,12 +423,10 @@ body {
     font-style: italic;
 }
 
-/* =============== SIDEBAR IMPROVEMENTS =============== */
 .sidebar-btn {
     text-decoration: none;
 }
 
-/* =============== ALERTS =============== */
 .alert {
     padding: 16px 20px;
     border-radius: 12px;
@@ -462,7 +447,6 @@ body {
     border: 1px solid #f5c6cb;
 }
 
-/* =============== FORM DETAILS PAGE =============== */
 .details-header {
     margin-bottom: 30px;
 }
@@ -592,7 +576,6 @@ body {
     color: #721c24;
 }
 
-/* =============== MODAL =============== */
 .modal {
     display: none;
     position: fixed;

@@ -1,4 +1,4 @@
-/* --- Floating Header (Logo + Buttons) --- */
+
 .floating-header {
     position: absolute;
     top: 25px;
@@ -29,7 +29,6 @@
         text-decoration: none;
     }
 
-/* Botões sem contorno */
 .nav-btn {
     padding: 8px 16px;
     border: none;
@@ -45,7 +44,6 @@
         color: #dcdcdc;
     }
 
-    /* Botão Sign In em destaque */
     .nav-btn.signin {
         background-color: white;
         color: #000;
@@ -58,7 +56,6 @@
             background-color: #ddd;
         }
 
-/* Quando passa para o fundo claro */
 body.light-bg .logo-text {
     color: #111;
     text-shadow: none;
@@ -77,7 +74,6 @@ body.light-bg .nav-btn {
             background-color: #444;
         }
 
-/* Reset básico */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -90,7 +86,6 @@ body {
     color: #111;
 }
 
-/* --- Custom Navbar --- */
 .custom-navbar {
     width: 100%;
     background-color: #fff;
@@ -146,7 +141,6 @@ body {
         background-color: #444;
     }
 
-/* --- Hero Section --- */
 .hero {
     position: relative;
     width: 100%;
@@ -161,7 +155,6 @@ body {
     display: block;
 }
 
-/* Degradê suave */
 .hero::after {
     content: "";
     position: absolute;
@@ -177,7 +170,6 @@ body {
     background-color: #F2F2F2;
 }
 
-/* --- Search Section --- */
 .search-section {
     text-align: center;
     margin-top: 100px;
@@ -197,7 +189,6 @@ body {
         margin-bottom: 35px;
     }
 
-/* --- Search Bar --- */
 .search-bar {
     display: flex;
     justify-content: center;
@@ -226,7 +217,6 @@ body {
             border-color: #000;
         }
 
-/* --- Price field with search icon --- */
 .price-wrapper {
     position: relative;
     width: 180px;
@@ -252,7 +242,6 @@ body {
         transform: translateY(-50%) scale(1.1);
     }
 
-/* --- Featured Cars --- */
 .featured {
     text-align: center;
     padding: 60px 60px;
@@ -309,7 +298,6 @@ body {
         color: #007bff;
     }
 
-/* --- Categories --- */
 .categories {
     text-align: center;
     padding: 60px 60px;
@@ -369,7 +357,6 @@ body {
             
     }
 
-/* --- Simple Header --- */
 .simple-header {
     background-color: #FAFAFA;
     padding: 15px 60px;
@@ -422,10 +409,6 @@ body {
     color: #fff;
 }
 
-
-/* User Dropdown Styles - Using common CSS */
-
-/* --- About Page Styles --- */
 .about-section {
     min-height: 100vh;
     background-color: #F2F2F2;
@@ -529,11 +512,9 @@ body {
     background: #C4C4C4;
 }
 
-/* --- Contact Page Styles --- */
 .contact-section {
     padding: 130px 60px 10px 60px;
 }
-
 
 .contact-container {
     max-width: 1200px;
@@ -570,7 +551,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* Contact Form */
 .contact-form {
     display: flex;
     flex-direction: column;
@@ -638,7 +618,6 @@ body {
     background-color: #333;
 }
 
-/* Contact Info */
 .contact-info-items {
     display: flex;
     flex-direction: column;
@@ -672,7 +651,6 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
-/* Footer */
 .contact-footer {
     position: absolute;
     bottom: 40px;

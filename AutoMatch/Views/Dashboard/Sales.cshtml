@@ -129,23 +129,18 @@
             <div class="sales-top-grid">
                 <div class="card sales-quick">
                     <h2>Quick Stats</h2>
-                    <p><strong>@Model.TotalVendasConcluidas</strong> Vendas Concluídas</p>
-                    @if (!string.IsNullOrEmpty(Model.TopModel))
-                    {
-                        <div class="top-model">
-                            <h3>Top Model Sold</h3>
-                            <p>@Model.TopModel</p>
-                            <span>@Model.TopModelUnidades unidades vendidas</span>
+                    <div style="display: flex; gap: 30px; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <p style="font-size: 1.2rem; margin: 15px 0;"><strong>@Model.TotalVendasConcluidas</strong> Vendas Concluídas</p>
                         </div>
-                    }
-                </div>
-
-                <div class="card sales-chart">
-                    <h2>Sales Performance</h2>
-                    <div class="chart-placeholder">
-                        <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="sales-chart-svg">
-                            <polyline points="@Model.ChartPointsSvg" />
-                        </svg>
+                        @if (!string.IsNullOrEmpty(Model.TopModel))
+                        {
+                            <div class="top-model" style="flex: 1;">
+                                <h3>Top Model Sold</h3>
+                                <p style="font-weight: 600; margin-bottom: 5px;">@Model.TopModel</p>
+                                <span>@Model.TopModelUnidades unidades vendidas</span>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>

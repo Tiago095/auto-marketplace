@@ -152,7 +152,6 @@ body {
     align-items: stretch;
 }
 
-/* Sidebar */
 .sidebar {
     background: #111111;
     border-radius: 20px;
@@ -259,16 +258,12 @@ body {
     text-align: center;
 }
 
-/* Removed duplicate sidebar definition */
-
-/* Add this new class for the admin button wrapper */
 .sidebar-bottom {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Main content */
 .dashboard-main {
     background: #FFF;
     border-radius: 20px;
@@ -314,7 +309,6 @@ body {
     margin-bottom: 12px;
 }
 
-/* Quick stats */
 .quick-stats {
     background: #111;
 }
@@ -371,9 +365,6 @@ body {
     align-items: center;
 }
 
-/* Removed old stat-text, stat-number, and stat-label styles - now using new structure */
-
-/* Messages */
 .messages {
     background: #111;
 }
@@ -415,7 +406,6 @@ body {
     font-size: 11px;
 }
 
-/* Latest booking */
 .latest-booking {
     background: #111;
 }
@@ -462,7 +452,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Notifications */
 .notifications {
     background: #111;
 }
@@ -489,7 +478,6 @@ body {
     color: #f5f5f5;
 }
 
-/* Bookings page */
 .bookings-section h1 {
     font-size: 26px;    
     margin-bottom: 4px;
@@ -643,7 +631,6 @@ body {
     background: #1d4ed8 !important;
 }
 
-/* Messages page */
 .messages-main {
     background: #f5f5f5;
 }
@@ -881,7 +868,6 @@ body {
     cursor: pointer;
 }
 
-/* Notifications page */
 .notifications-main {
     background: #f5f5f5;
 }
@@ -949,7 +935,6 @@ body {
     font-size: 11px;
 }
 
-/* Documents page */
 .documents-main {
     background: #f5f5f5;
 }
@@ -1073,7 +1058,6 @@ body {
     cursor: pointer;
 }
 
-/* Sales page */
 .sales-main {
     background: #f5f5f5;
 }
@@ -1113,8 +1097,7 @@ body {
 }
 
 .sales-top-grid {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
+    display: flex;
     gap: 16px;
     margin-bottom: 16px;
 }
@@ -1122,27 +1105,48 @@ body {
 .sales-quick {
     background: #111111;
     color: #ffffff;
+    flex: 1;
+    padding: 20px;
+    border-radius: 12px;
 }
 
 .sales-quick h2 {
-    margin-bottom: 8px;
+    margin-bottom: 16px;
+    color: #ffffff;
+    font-size: 1.2rem;
 }
 
 .sales-quick p {
-    font-size: 13px;
+    font-size: 1rem;
+    color: #ffffff;
+    margin: 0;
+}
+
+.sales-quick p strong {
+    font-size: 1.5rem;
+    color: #4ade80;
 }
 
 .top-model {
-    margin-top: 12px;
+    margin-top: 0;
 }
 
 .top-model h3 {
-    font-size: 14px;
-    margin-bottom: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    color: #d0d0d0;
+    font-weight: 500;
+}
+
+.top-model p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 5px;
 }
 
 .top-model span {
-    font-size: 12px;
+    font-size: 0.85rem;
     color: #d0d0d0;
 }
 
@@ -1170,33 +1174,58 @@ body {
 }
 
 .sales-table-card {
-    margin-top: 10px;
+    margin-top: 16px;
     background: #111111;
     color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.sales-table-card h2 {
+    color: #ffffff;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
 }
 
 .sales-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 14px;
     margin-top: 10px;
 }
 
 .sales-table th,
 .sales-table td {
-    padding: 8px 10px;
+    padding: 12px 15px;
     text-align: left;
+    border-bottom: 1px solid #2a2a2a;
 }
 
 .sales-table thead th {
     font-weight: 600;
+    color: #ffffff;
+    background: #1a1a1a;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.sales-table tbody td {
+    color: #d0d0d0;
+}
+
+.sales-table tbody tr:hover {
+    background: #1a1a1a;
+}
+
+.sales-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .sales-table tbody tr:nth-child(even) {
     background: #1f1f1f;
 }
 
-/* admin PAGE LAYOUT */
 .admin-layout {
     display: grid;
     grid-template-columns: 240px 1fr;
@@ -1204,7 +1233,6 @@ body {
     background: #f6f7f9;
 }
 
-/* ADMIN SIDEBAR */
 .admin-sidebar {
     background: #111;
     color: #fff;
@@ -1235,28 +1263,16 @@ body {
         color: #fff;
     }
 
-/*.admin-sidebar {
-    background: #111;
-    color: #fff;
-    padding: 30px 18px;*/ /* Changed from 25px 20px to match regular sidebar */
-    /*display: flex;
-    flex-direction: column;
-    justify-content: space-between;*/ /* Add this */
-/*}*/
-
-/* Add this for the back button at bottom */
 .admin-sidebar-bottom {
     margin-top: auto;
     padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* MAIN CONTENT */
 .admin-main {
     padding: 30px;
 }
 
-/* ADMIN TOPBAR */
 .admin-topbar {
     display: flex;
     justify-content: space-between;
@@ -1264,7 +1280,6 @@ body {
     margin-bottom: 35px;
 }
 
-/* admin CARD GRID */
 .admin-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -1291,7 +1306,6 @@ body {
     color: #222;
 }
 
-/* admin PANEL BLOCKS */
 .admin-panels {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1310,4 +1324,3 @@ body {
         font-size: 18px;
     }
 
-/* User Dropdown Styles - Using common CSS */

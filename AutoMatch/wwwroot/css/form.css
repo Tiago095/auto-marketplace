@@ -54,7 +54,6 @@ body {
         color: #dcdcdc;
     }
 
-    /* Botão Sign In em destaque */
     .nav-btn.signin {
         background-color: white;
         color: #000;
@@ -94,8 +93,6 @@ body {
         color: #555;
         font-size: 14px;
     }
-
-/* User Dropdown Styles - Using common CSS */
 
 .seller-cert-page {
     max-width: 1200px;
@@ -327,7 +324,6 @@ body {
     }
 }
 
-/* Success Popup */
 .success-popup {
     display: none;
     position: fixed;

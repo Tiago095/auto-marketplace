@@ -1,4 +1,4 @@
-﻿body {
+body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background-color: #f3f3f3;
 }
@@ -47,9 +47,6 @@
         color: #dcdcdc;
     }
 
-/* User Dropdown Styles - Using common CSS */
-
-/* MAIN GRID */
 .profile-container {
     display: flex;
     gap: 40px;
@@ -57,7 +54,6 @@
     margin-top: 80px;
 }
 
-/* LEFT CARD */
 .profile-card {
     background: radial-gradient(circle at center, #2a2a2a 30%, #111 100%);
     color: white;
@@ -73,7 +69,6 @@
     justify-content: center;
     margin-bottom: 20px;
 }
-
 
 .avatar-edit-wrapper {
     position: relative;
@@ -100,7 +95,6 @@
         border: 6px solid white;
     }
 
-/* Butao de editar a foto */
 .avatar-edit-overlay {
     position: absolute;
     top: 0;
@@ -123,7 +117,6 @@
     opacity: 1;
 }
 
-
 .hidden-file-input {
     display: none;
 }
@@ -139,7 +132,6 @@
     color: #ccc;
 }
 
-/* Buttons */
 .btn {
     width: 100%;
     padding: 13px;
@@ -157,7 +149,6 @@
     border: 1px solid #999;
 }
 
-/* RIGHT PANEL */
 .info-panel {
     flex: 1;
     background: white;
@@ -189,7 +180,6 @@
     gap: 6px;
 }
 
-/* CHECKBOX AREA */
 .check-item {
     font-size: 15px;
 }
@@ -199,7 +189,6 @@
     border-radius: 8px;
 }
 
-/* TABS */
 .tabs {
     margin-top: 15px;
 }
@@ -218,7 +207,6 @@
         color: white;
     }
 
-/* CAR LIST */
 .car-list {
     margin-top: 20px;
     gap: 20px;
@@ -228,7 +216,6 @@
     box-sizing: border-box;
 }
 
-/* Quando visível (tem display:flex ou não tem display:none), usar flex horizontal */
 .car-list[style*="display:flex"],
 .car-list[style*="display: flex"] {
     display: flex !important;
@@ -238,13 +225,11 @@
     overflow-y: hidden;
 }
 
-/* Quando escondido, garantir que fique escondido */
 .car-list[style*="display:none"],
 .car-list[style*="display: none"] {
     display: none !important;
 }
 
-/* Estado padrão para ordersList (quando não tem style definido) */
 #ordersList:not([style]) {
     display: flex;
     flex-direction: row;
@@ -304,7 +289,6 @@
     white-space: normal;
 }
 
-/* RESPONSIVE */
 @media (max-width: 900px) {
     .profile-container {
         flex-direction: column;
@@ -327,7 +311,6 @@
     margin-bottom: 12px;
 }
 
-/* Overlay bloqueia a página */
 #editOverlay {
     position: fixed;
     top: 0;
@@ -341,12 +324,10 @@
     z-index: 9999;
 }
 
-/* Hidden state */
 .overlay-hidden {
     display: none;
 }
 
-/* Modal central */
 .edit-modal {
     background: #fff;
     padding: 20px;
@@ -435,7 +416,6 @@
     font-weight: bold;
 }
 
-/* Overlay used when user is not a seller and clicks "My Listings" */
 #sellerOverlay {
     position: fixed;
     top: 0;

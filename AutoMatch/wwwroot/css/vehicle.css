@@ -1,10 +1,9 @@
-﻿body {
+body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background-color: #F5F5F5;
     color: #111;
 }
 
-/* Remover sublinhado de todos os botões */
 button,
 input[type="button"],
 input[type="submit"],
@@ -31,7 +30,6 @@ a.button:hover {
     text-decoration: none !important;
 }
 
-/* --- Floating Header (Logo + Buttons) --- */
 .floating-header {
     position: absolute;
     top: 25px;
@@ -62,7 +60,6 @@ a.button:hover {
         text-decoration: none;
     }
 
-/* Botões sem contorno */
 .nav-btn {
     padding: 8px 16px;
     border: none;
@@ -78,7 +75,6 @@ a.button:hover {
         color: #dcdcdc;
     }
 
-    /* Botão Sign In em destaque */
     .nav-btn.signin {
         background-color: white;
         color: #000;
@@ -91,8 +87,6 @@ a.button:hover {
             background-color: #ddd;
         }
 
-
-/* --- Custom Navbar --- */
 .custom-navbar {
     width: 100%;
     background-color: #000;
@@ -147,7 +141,7 @@ a.button:hover {
     .signin-btn:hover {
         background-color: #444;
     }
-/* User Dropdown Styles - Using common CSS */padding: 12px 18px;
+padding: 12px 18px;
         color: #333;
         text-decoration: none;
         font-size: 0.95rem;
@@ -202,7 +196,6 @@ a.button:hover {
     }
 }
 
-/* --- Results Page --- */
 .results-section {
     padding: 50px 60px;
     background-color: #FAFAFA;
@@ -230,7 +223,6 @@ a.button:hover {
     margin-bottom: 45px;
 }
 
-/* --- Filter Bar --- */
 .filters-wrapper {
     margin-bottom: 50px;
     padding: 0 20px;
@@ -281,7 +273,6 @@ a.button:hover {
         border-color: #000;
     }
 
-/* --- Input fields --- */
 .filter-input {
     background-color: #fff;
     border: 1px solid #ccc;
@@ -338,7 +329,6 @@ a.button:hover {
         background-color: #F5F5F5;
     }
 
-/* --- Search wrapper --- */
 .search-wrapper {
     position: relative;
     width: 140px;
@@ -361,7 +351,6 @@ a.button:hover {
     transition: transform 0.2s ease;
 }
 
-/* --- Vehicle Grid --- */
 .vehicle-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -472,7 +461,6 @@ a.button:hover {
     font-size: 18px;
 }
 
-/* -- Details Page -- */
 .details-section {
     padding: 40px 60px;
     margin-top: 130px;
@@ -488,7 +476,6 @@ a.button:hover {
     align-items: start;
 }
 
-/* Left Column */
 .details-left {
     padding-right: 20px;
 }
@@ -508,7 +495,6 @@ a.button:hover {
     font-weight: 400;
 }
 
-/* Specs Grid */
 .specs-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -536,7 +522,6 @@ a.button:hover {
     font-weight: 600;
 }
 
-/* Description */
 .description-section {
     margin-bottom: 40px;
 }
@@ -554,7 +539,6 @@ a.button:hover {
         line-height: 1.6;
     }
 
-/* Action Buttons */
 .action-buttons {
     display: flex;
     gap: 15px;
@@ -610,7 +594,6 @@ a.button:hover {
         color: #fff;
     }
 
-/* Right Column - Image Gallery */
 .details-right {
     position: sticky;
     top: 20px;
@@ -672,7 +655,6 @@ a.button:hover {
         right: 15px;
     }
 
-/* Thumbnail Gallery */
 .thumbnail-gallery {
     display: flex;
     gap: 10px;
@@ -722,7 +704,6 @@ a.button:hover {
     font-weight: 300;
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
     .details-container {
         grid-template-columns: 1fr;
@@ -739,7 +720,6 @@ a.button:hover {
     }
 }
 
-/* --- Booking Modal --- */
 body.modal-open {
     overflow: hidden;
 }
@@ -894,7 +874,6 @@ body.modal-open {
         background-color: #222;
     }
 
-/* Buy Now */
 .btn-buy-now {
     background: white;
     text-decoration: none;
@@ -923,10 +902,6 @@ body.modal-open {
         background: #333;
     }
 
-
-/* --- Buy Page --- */
-
-/* Simulated Checkout modal overrides */
 .simulated-modal {
     max-width: 800px;
     width: 90%;
@@ -1132,7 +1107,6 @@ body.modal-open {
     flex: 0 0 400px;
 }
 
-/* Cards */
 .checkout-card,
 .checkout-summary {
     background: white;
@@ -1149,7 +1123,6 @@ body.modal-open {
         color: #000;
     }
 
-/* Payment Buttons */
 .payment-buttons {
     display: flex;
     gap: 12px;
@@ -1245,7 +1218,6 @@ body.modal-open {
     cursor: pointer;
 }
 
-/* Summary Card */
 .summary-image {
     width: 100%;
     height: 200px;
@@ -1286,7 +1258,6 @@ body.modal-open {
     margin-top: 20px;
 }
 
-/* Buttons */
 .simulate-btn,
 .finish-btn {
     width: 100%;
