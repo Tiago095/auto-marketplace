@@ -164,14 +164,14 @@
                                                 </span>
                                             }
                                         </div>
-                                        <div class="message-content">
-                                            <div class="message-header">
-                                                <span class="name">@msg.NomeRemetente</span>
-                                                <span class="time">@msg.Data.ToString("g")</span>
-                                            </div>
-                                            <p class="message-preview">@msg.Texto</p>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="name">@msg.NomeRemetente</span>
+                                            <span class="time">@msg.Data.ToString("g")</span>
                                         </div>
+                                        <p class="message-preview">@msg.Texto</p>
                                     </div>
+                                </div>
                                 </a>
                             }
                         }
@@ -200,7 +200,7 @@
                                         </div>
                                     }
                                 </div>
-                                <div class="booking-info">
+                        <div class="booking-info">
                                     <h3>@Model.LatestBooking.CarTitle</h3>
                                     <p>Date: @Model.LatestBooking.DataInicio.ToString("dd MMMM yyyy")</p>
                                     <p>Time: @Model.LatestBooking.DataInicio.ToString("HH:mm") - @Model.LatestBooking.DataFim.ToString("HH:mm")</p>

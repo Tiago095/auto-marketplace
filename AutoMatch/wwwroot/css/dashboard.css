@@ -164,10 +164,12 @@ body {
     min-height: 520px; 
 }
 
-.sidebar-bottom {
-    margin-top: auto;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+.sidebar-logo-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffffff, #bbbbbb);
+    margin-bottom: 30px;
 }
 
     .sidebar-bottom .sidebar-btn {

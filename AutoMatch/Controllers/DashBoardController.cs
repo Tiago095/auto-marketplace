@@ -61,7 +61,7 @@ namespace AutoMatch.Controllers
             {
                 // Para comprador: contar suas reservas pendentes
                 pendingBookings = await _context.Reservas
-                    .CountAsync(r => r.Id_Comprador == userId && !r.Estado);
+                .CountAsync(r => r.Id_Comprador == userId && !r.Estado);
             }
 
             // Contar mensagens não lidas: mensagens onde o outro participante enviou e Estado = false
@@ -83,7 +83,7 @@ namespace AutoMatch.Controllers
             {
                 // Para comprador: notificações recebidas (Id_Comprador == userId)
                 newNotifications = await _context.Notificacoes
-                    .CountAsync(n => n.Id_Comprador == userId && !n.Estado);
+                .CountAsync(n => n.Id_Comprador == userId && !n.Estado);
             }
 
             var comprador = await _context.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
@@ -104,9 +104,9 @@ namespace AutoMatch.Controllers
                     .Select(a => a.Id_Anuncio)
                     .ToListAsync();
                 latestReserva = await _context.Reservas
-                    .Include(r => r.Anuncio)
+                .Include(r => r.Anuncio)
                         .ThenInclude(a => a.Imagens)
-                    .OrderByDescending(r => r.Data_Inicio)
+                .OrderByDescending(r => r.Data_Inicio)
                     .FirstOrDefaultAsync(r => anunciosIds.Contains(r.Id_Anuncio));
             }
             else
@@ -116,7 +116,7 @@ namespace AutoMatch.Controllers
                     .Include(r => r.Anuncio)
                         .ThenInclude(a => a.Imagens)
                     .OrderByDescending(r => r.Data_Inicio)
-                    .FirstOrDefaultAsync(r => r.Id_Comprador == userId);
+                .FirstOrDefaultAsync(r => r.Id_Comprador == userId);
             }
 
             DashboardBookingInfo latestBookingVm = null;
@@ -448,6 +448,7 @@ namespace AutoMatch.Controllers
                 var outroId = kvp.Key;
                 var mensagens = kvp.Value.mensagens;
                 var ultimaMensagem = mensagens.OrderByDescending(m => m.Data_Envio).First();
+                var nomeOutro = outrosParticipantes.ContainsKey(outroId) ? outrosParticipantes[outroId] : $"User #{outroId}";
                 
                 var outroParticipante = outrosParticipantesDict.ContainsKey(outroId) 
                     ? outrosParticipantesDict[outroId] 
@@ -580,7 +581,7 @@ namespace AutoMatch.Controllers
             {
                 return Json(new { success = false, message = "Invalid recipient" });
             }
-
+            
             try
             {
                 // Para a tabela Notificacoes, precisamos de:
@@ -604,7 +605,7 @@ namespace AutoMatch.Controllers
                     };
                     _context.Compradores.Add(novoComprador);
                     await _context.SaveChangesAsync();
-                }
+            }
 
                 // Garantir que o destinatário existe como vendedor (criar se necessário)
                 var vendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == idVendedor);
@@ -615,17 +616,17 @@ namespace AutoMatch.Controllers
                     if (!codigoPostalExiste)
                     {
                         var novoCodigoPostal = new CodigoPostal
-                        {
+            {
                             Codigo_Postal = "0000-000",
                             Localidade = "Desconhecida"
                         };
                         _context.CodigoPostais.Add(novoCodigoPostal);
                         await _context.SaveChangesAsync();
-                    }
+            }
 
                     // Criar registo temporário de vendedor para permitir mensagens entre qualquer utilizador
                     var novoVendedor = new Vendedor
-                    {
+            {
                         Id_User = idVendedor,
                         Tipo = false, // false = pessoa física
                         Contactos = "N/A",
@@ -634,8 +635,10 @@ namespace AutoMatch.Controllers
                     };
                     _context.Vendedores.Add(novoVendedor);
                     await _context.SaveChangesAsync();
-                }
+            }
 
+            try
+            {
                 var notificacao = new Notificacoes
                 {
                     Id_Comprador = idComprador,
