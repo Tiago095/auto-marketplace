@@ -286,7 +286,7 @@ namespace AutoMatch.Data
                     imagens.Add(new Imagens
                     {
                         Id_Anuncio = anuncio.Id_Anuncio,
-                        CaminhoImagem = $"/Anuncios/Anuncio{anuncio.Id_Anuncio}/Imagens/img{i}.png"
+                        CaminhoImagem = $"/Anuncios/Anuncio{anuncio.Id_Anuncio}/Imagens/{i}_img.png"
                     });
                 }
             }

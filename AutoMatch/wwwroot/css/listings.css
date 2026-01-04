@@ -973,3 +973,41 @@ h1 {
         .success-popup-content button:hover {
             background: #3a2ab4;
         }
+
+.image-warning {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    animation: slideIn 0.3s ease-out;
+    transition: opacity 0.3s ease;
+}
+
+    .image-warning svg {
+        flex-shrink: 0;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .image-warning span {
+        flex: 1;
+        font-size: 14px;
+    }
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}   
+

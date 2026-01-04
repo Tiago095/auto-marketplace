@@ -19,7 +19,8 @@
 <body>
     <a asp-controller="Home" asp-action="Index" class="brand">AutoMatch</a>
 
-    <div class="login-container @(TempData["ShowRegister"] as string == "true" ? "active" : "")" id="loginContainer">
+    <div class="login-container @(TempData["ShowRegister"] as string == "true" ? "active" : "") ✓" id="loginContainer">
+
         <!-- LOGIN FORM -->
         <section class="form-box login">
             <h1 class="welcome">Welcome Back!</h1>

@@ -90,6 +90,7 @@ namespace AutoMatch.Controllers
         }
 
         // POST: /Listings/Create
+        // POST: /Listings/Create
         [HttpPost]
         public async Task<IActionResult> Create(CreateListingViewModel model)
         {
@@ -115,10 +116,31 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
+            // Validação do Ano (entre 1990 e ano atual)
+            int anoAtual = DateTime.Now.Year;
+            if (model.Ano < 1990 || model.Ano > anoAtual)
+            {
+                ModelState.AddModelError("Ano", $"The year must be between 1990 and {anoAtual}.");
+                ReloadViewBag();
+                return View(model);
+            }
+
+            // Validação da Matrícula (formato europeu: XX-XX-XX)
+            var matriculaRegex = new System.Text.RegularExpressions.Regex(@"^[A-Z0-9]{2}-[A-Z0-9]{2}-[A-Z0-9]{2}$");
+            if (!matriculaRegex.IsMatch(model.Matricula.ToUpper()))
+            {
+                ModelState.AddModelError("Matricula", "The license plate must follow the European format: XX-XX-XX (e.g., AB-12-CD).");
+                ReloadViewBag();
+                return View(model);
+            }
+
+            // Normalizar matrícula para maiúsculas
+            model.Matricula = model.Matricula.ToUpper();
+
             // Validação: exatamente 5 imagens
             if (model.Imagens == null || model.Imagens.Count != 5)
             {
-                ModelState.AddModelError("", "You must upload exactly 5 images.");
+                ModelState.AddModelError("Imagens", "You must upload exactly 5 images.");
                 ReloadViewBag();
                 return View(model);
             }
@@ -128,7 +150,7 @@ namespace AutoMatch.Controllers
             {
                 if (img.Length == 0)
                 {
-                    ModelState.AddModelError("", "One or more images are empty.");
+                    ModelState.AddModelError("Imagens", "One or more images are empty.");
                     ReloadViewBag();
                     return View(model);
                 }
