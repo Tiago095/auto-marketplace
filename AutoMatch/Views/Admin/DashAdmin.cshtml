@@ -1,0 +1,289 @@
+﻿@using AutoMatch.ViewModels
+@model AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_Layout";
+
+    var username = Context.Session.GetString("UserName") ?? "Admin";
+    var initial = Context.Session.GetString("UserInitial") ?? "A";
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+
+<link rel="stylesheet" href="~/css/admin.css">
+<link rel="stylesheet" href="~/css/user-dropdown.css">
+
+<!-- Floating Header -->
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" alt="Profile" />
+                }
+                else
+                {
+                    <div class="user-avatar">@initial</div>
+                }
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Account/Listings">My Listings</a>
+                <a href="/Dashboard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: #ff4c4c; font-weight: 500;">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagina de Admin -->
+<div class="admin-page">
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="@Url.Action("DashAdmin", "Admin")" class="sidebar-btn active">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("AdminForms", "Admin")" class="sidebar-btn">
+                        <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
+                        <span>Form Submissions</span>
+                    </a>
+                </li>
+            </ul>
+            
+
+            <div class="sidebar-bottom">
+                <a href="@Url.Action("Index", "Dashboard")" class="sidebar-btn">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Conteudo principal -->
+        <div class="dashboard-main">
+
+            <div class="welcome-section">
+                <h1>Admin Dashboard</h1>
+                <p class="subtitle">Overview of system activity and key metrics</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span>Total Users</span>
+                    <strong>@Model.Stats.TotalUsers.ToString("N0")</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Active Listings</span>
+                    <strong>@Model.Stats.ActiveListings.ToString("N0")</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Pending Approvals</span>
+                    <strong>@Model.Stats.PendingApprovals.ToString("N0")</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Reported Listings</span>
+                    <strong>@Model.Stats.ReportedListings.ToString("N0")</strong>
+                </div>
+            </div>
+
+            <!-- Secçao graficos -->
+            <div class="grid-row">
+                <div class="chart-card">
+                    <h2>User Growth</h2>
+                    <canvas id="userGrowthChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h2>Listings Overview</h2>
+                    <canvas id="listingsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Secçao do fundo -->
+            <div class="grid-row">
+                <div class="table-card">
+                    <h2>Recent Reports</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reported By</th>
+                                <th>Listing ID</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RecentReports != null && Model.RecentReports.Count > 0)
+                            {
+                                @foreach (var report in Model.RecentReports)
+                                {
+                                    <tr>
+                                        <td>@report.ReportedBy</td>
+                                        <td>#@report.ListingId</td>
+                                        <td>@report.Date.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #999;">No recent reports</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="activity-card">
+                    <h2>Recent Activity</h2>
+                    <ul>
+                        @if (Model.RecentActivities != null && Model.RecentActivities.Count > 0)
+                        {
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                <li>@activity.Description</li>
+                            }
+                        }
+                        else
+                        {
+                            <li style="color: #999;">No recent activity</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Scripts para graficos -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+    document.addEventListener("click", function (e) {
+        const btn = document.getElementById("userMenuBtn");
+        const dropdown = document.getElementById("userDropdown");
+        const container = btn?.closest('.user-menu-container');
+
+        if (!btn || !dropdown) return;
+
+        if (btn.contains(e.target)) {
+            dropdown.classList.toggle("show");
+            if (container) {
+                container.classList.toggle("open");
+            }
+        }
+        else if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove("show");
+            if (container) {
+                container.classList.remove("open");
+            }
+        }
+    });
+
+    function navigateTo(section) {
+        const buttons = document.querySelectorAll('.sidebar-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.closest('.sidebar-btn').classList.add('active');
+        console.log('Navigating to:', section);
+    }
+
+    const userGrowthData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.UserGrowth));
+    const listingsByTypeData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ListingsByType));
+
+    const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+    new Chart(userGrowthCtx, {
+        type: 'line',
+        data: {
+            labels: userGrowthData.map(d => d.month),
+            datasets: [{
+                label: 'Users',
+                data: userGrowthData.map(d => d.count),
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#007bff',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f0f0f0'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    const listingsCtx = document.getElementById('listingsChart').getContext('2d');
+    const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545'];
+
+    new Chart(listingsCtx, {
+        type: 'bar',
+        data: {
+            labels: listingsByTypeData.map(d => d.type),
+            datasets: [{
+                label: 'Listings',
+                data: listingsByTypeData.map(d => d.count),
+                backgroundColor: colors.slice(0, listingsByTypeData.length),
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f0f0f0'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>

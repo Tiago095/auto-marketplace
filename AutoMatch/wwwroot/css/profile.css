@@ -1,0 +1,521 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f3f3f3;
+}
+
+.floating-header {
+    position: absolute;
+    top: 25px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 25px;
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+.logo-text {
+    font-size: 28px;
+    font-weight: bold;
+    color: #111;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.floating-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+    .floating-buttons a {
+        text-decoration: none;
+    }
+
+.nav-btn {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    color: #111;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+    .nav-btn:hover {
+        color: #dcdcdc;
+    }
+
+.profile-container {
+    display: flex;
+    gap: 40px;
+    padding: 40px 50px;
+    margin-top: 80px;
+}
+
+.profile-card {
+    background: radial-gradient(circle at center, #2a2a2a 30%, #111 100%);
+    color: white;
+    width: 320px;
+    border-radius: 35px;
+    padding: 35px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.avatar-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.avatar-edit-wrapper {
+    position: relative;
+    display: inline-flex;
+}
+
+.avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 6px solid white;
+    object-fit: cover;
+}
+
+    .avatar.placeholder {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: #444;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 55px;
+        border: 6px solid white;
+    }
+
+.avatar-edit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 32px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.avatar-edit-wrapper:hover .avatar-edit-overlay {
+    opacity: 1;
+}
+
+.hidden-file-input {
+    display: none;
+}
+
+.profile-card h2 {
+    font-size: 30px;
+    margin-top: 15px;
+    font-weight: 700;
+}
+
+.profile-card p {
+    margin: 6px 0;
+    color: #ccc;
+}
+
+.btn {
+    width: 100%;
+    padding: 13px;
+    margin-top: 20px;
+    font-size: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 1px solid #999; 
+    background: #222;
+    color: white;
+}
+
+.delete-btn {
+    background: none;
+    border: 1px solid #999;
+}
+
+.info-panel {
+    flex: 1;
+    background: white;
+    padding: 40px;
+    border-radius: 35px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: visible;
+    min-width: 0;
+}
+
+    .info-panel h2 {
+        margin-bottom: 15px;
+    }
+
+.section-title {
+    margin-top: 35px;
+}
+
+.info-row {
+    display: grid;
+    grid-template-columns: 160px auto;
+    padding: 7px 0;
+    font-size: 15px;
+}
+
+.password-row span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.check-item {
+    font-size: 15px;
+}
+
+.select-box {
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.tabs {
+    margin-top: 15px;
+}
+
+.tab-btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: white;
+    border: 1px solid #000;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+    .tab-btn.active {
+        background: #000;
+        color: white;
+    }
+
+.car-list {
+    margin-top: 20px;
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    padding-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.car-list[style*="display:flex"],
+.car-list[style*="display: flex"] {
+    display: flex !important;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.car-list[style*="display:none"],
+.car-list[style*="display: none"] {
+    display: none !important;
+}
+
+#ordersList:not([style]) {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.car-list::-webkit-scrollbar {
+    height: 8px;
+}
+
+.car-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.car-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.car-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.car-box {
+    width: 190px !important;
+    min-width: 190px !important;
+    max-width: 190px !important;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    padding: 12px;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    box-sizing: border-box;
+}
+
+    .car-box img {
+        width: 100%;
+        height: 110px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+
+.status {
+    color: gray;
+    font-size: 13px;
+}
+
+.profile-card h2 {
+    font-size: 30px;
+    margin-top: 15px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+@media (max-width: 900px) {
+    .profile-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .info-panel {
+        width: 100%;
+    }
+}
+
+.profile-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+#editOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.overlay-hidden {
+    display: none;
+}
+
+.edit-modal {
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    width: 640px;
+    max-width: 90vw;
+    box-sizing: border-box;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+}
+
+.photo-upload-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 5px 0 10px 0;
+}
+
+.photo-input {
+    width: auto;
+}
+
+.edit-modal-grid {
+    display: flex;
+    gap: 16px;
+    margin-top: 5px;
+}
+
+.edit-modal-col {
+    flex: 1;
+}
+
+    .edit-modal input,
+    .edit-modal select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background: #111;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+}
+
+.cancel-btn {
+    background: #c62828;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+}
+
+.overlay-hidden {
+    display: none !important;
+}
+
+#editOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.error-box {
+    background: #ffb3b3;
+    padding: 10px;
+    border-radius: 6px;
+    color: #700;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#sellerOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 998;
+}
+
+.seller-modal {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 16px;
+    width: 380px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+.success-box {
+    background: #b3ffcc;
+    padding: 10px;
+    border-radius: 6px;
+    color: #075;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.modal-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-label {
+    margin-top: 6px;
+    font-weight: 600;
+    color: #444;
+    display: block;
+}
+
+.profile-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.cancel-btn {
+    background-color: #d9534f;
+    color: white;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.seller-modal-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.seller-register-btn {
+    background: #666;
+    color: white;
+}
+
+.seller-register-btn:hover {
+    background: #555;
+}
+
+.seller-later-btn {
+    background: #e5e5e5;
+    color: #555;
+}
+
+.seller-later-btn:hover {
+    background: #d0d0d0;
+}

@@ -1,0 +1,160 @@
+﻿@using AutoMatch.Models.ViewModels
+@model AdminFormsViewModel
+
+@{
+    ViewData["Title"] = "Admin Forms";
+    Layout = "_Layout";
+
+    var username = Context.Session.GetString("UserName") ?? "Admin";
+    var initial = Context.Session.GetString("UserInitial") ?? "A";
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+
+<link rel="stylesheet" href="~/css/admin.css">
+<link rel="stylesheet" href="~/css/user-dropdown.css">
+
+<!-- Floating Header -->
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" alt="Profile" />
+                }
+                else
+                {
+                    <div class="user-avatar">@initial</div>
+                }
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Account/Listings">My Listings</a>
+                <a href="/Dashboard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: #ff4c4c; font-weight: 500;">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagina de Admin -->
+<div class="admin-page">
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="@Url.Action("DashAdmin", "Admin")" class="sidebar-btn">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("AdminForms", "Admin")" class="sidebar-btn active">
+                        <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
+                        <span>Form Submissions</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-bottom">
+                <a href="@Url.Action("Index", "Dashboard")" class="sidebar-btn active">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Conteudo principal-->
+        <div class="dashboard-main">
+
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h1>Form Submissions</h1>
+                <p class="subtitle">Review and manage user form submissions</p>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-error">@TempData["Error"]</div>
+            }
+
+            <!-- Forms Table -->
+            <div class="forms-table-container">
+                <table class="forms-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Username</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.FormSubmissions != null && Model.FormSubmissions.Count > 0)
+                        {
+                            @foreach (var submission in Model.FormSubmissions)
+                            {
+                                <tr>
+                                    <td>@submission.RequestId</td>
+                                    <td>@submission.Username</td>
+                                    <td>@submission.SubmissionDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <a href="@Url.Action("FormDetails", "Admin", new { id = submission.ApplicationId })" class="details-btn">
+                                            Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="no-data">No pending form submissions</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("click", function (e) {
+        const btn = document.getElementById("userMenuBtn");
+        const dropdown = document.getElementById("userDropdown");
+        const container = btn?.closest('.user-menu-container');
+
+        if (!btn || !dropdown) return;
+
+        if (btn.contains(e.target)) {
+            dropdown.classList.toggle("show");
+            if (container) {
+                container.classList.toggle("open");
+            }
+        }
+        else if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove("show");
+            if (container) {
+                container.classList.remove("open");
+            }
+        }
+    });
+</script>

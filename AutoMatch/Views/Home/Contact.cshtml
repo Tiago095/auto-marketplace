@@ -1,0 +1,160 @@
+@{
+    ViewData["Title"] = "Contact - AutoMatch";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+
+<link rel="stylesheet" href="~/css/style.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+
+<!-- Floating Header -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <!-- USER BADGE + DROPDOWN -->
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Contact Page -->
+<section class="contact-section">
+
+    <div class="contact-container">
+        <!-- Coluna da esquerda: Formulario de contacto -->
+        <div class="contact-form-column">
+            <h1>Need Help ?</h1>
+            <p class="contact-subtitle">Our team is available to answer your questions. Fill up the form or send us an email.</p>
+
+            <form class="contact-form" id="contactForm">
+                <div class="form-group">
+                    <label>Full name</label>
+                    <input type="text"
+                           class="form-input @(username != null ? "readonly-field" : "")"
+                           id="fullName"
+                           name="fullName"
+                           value="@(ViewBag.ContactFullName ?? "")"
+                           @(username != null ? "readonly" : "")
+                           required />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email"
+                               class="form-input @(username != null ? "readonly-field" : "")"
+                               id="email"
+                               name="email"
+                               value="@(ViewBag.ContactEmail ?? "")"
+                               @(username != null ? "readonly" : "")
+                               required />
+                    </div>
+                    <div class="form-group">
+                        <label>Topic</label>
+                        <input type="text" class="form-input" id="topic" name="topic" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Message</label>
+                    <textarea class="form-textarea" id="message" name="message" required></textarea>
+                </div>
+
+                <div id="formMessage" class="form-message" style="display: none; margin-bottom: 15px; padding: 10px; border-radius: 5px;"></div>
+
+                <button type="submit" class="send-btn" id="submitBtn">Send Message</button>
+            </form>
+        </div>
+
+        <!-- Coluna da direita: Informaçao adicional -->
+        <div class="contact-info-column">
+            <h1>Additional Information</h1>
+            <p class="contact-subtitle">Our customer support team is here to help you with any questions about listings, accounts, or partnerships. We usually reply within 24 business hours.</p>
+
+            <div class="contact-info-items">
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fa fa-envelope"></i>
+                    </div>
+                    <div class="info-text">suporte@automatch.com</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fa fa-phone"></i>
+                    </div>
+                    <div class="info-text">+351 912 345 678</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fa fa-map-marker-alt"></i>
+                    </div>
+                    <div class="info-text">Quinta de Prados, 5000-801</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script src="~/js/site.js"></script>
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
+            }
+        });
+    </script>
+}

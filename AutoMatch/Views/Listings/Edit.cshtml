@@ -1,0 +1,271 @@
+@using AutoMatch.ViewModels
+@model EditListingViewModel
+
+@{
+    ViewData["Title"] = "Edit Listing";
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+}
+
+<link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(Context.Session.GetString("UserProfileImageUrl")))
+                    {
+                        <img src="@Context.Session.GetString("UserProfileImageUrl")" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="page-wrapper">
+    <div class="listing-container">
+        <h1>Edit Car Listing</h1>
+
+        <form asp-action="Edit" asp-controller="Listings" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id_Anuncio" />
+
+            <div class="form-section">
+                <div class="left-panel">
+                    <h2>Car</h2>
+
+                    <div class="form-row">
+                        <label>Brand</label>
+                        <input asp-for="Marca" type="text" class="input-text" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                    </div>
+
+                    <div class="form-row">
+                        <label>Model</label>
+                        <input asp-for="NomeModelo" type="text" class="input-text" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                    </div>
+
+                    <div class="form-double-row">
+                        <div>
+                            <label>Type</label>
+                            <input asp-for="Categoria" type="text" class="input-text" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                        </div>
+                        <div>
+                            <label>Transmission</label>
+                            <input type="text" value="@(Model.Transmissao ? "Automatic" : "Manual")" class="input-text" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                        </div>
+                    </div>
+
+                    <div class="form-double-row">
+                        <div>
+                            <label>Price</label>
+                            <input asp-for="Preco" type="number" step="0.01" class="input-text" required />
+                        </div>
+                        <div>
+                            <label>Year</label>
+                            <input asp-for="Ano" type="number" class="input-text" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                        </div>
+                    </div>
+
+                    <div class="form-double-row">
+                        <div>
+                            <label>Kilometers</label>
+                            <input asp-for="Kilometros" type="number" class="input-text" required />
+                        </div>
+                        <div>
+                            <label>Plate</label>
+                            <input asp-for="Matricula" class="input-text" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Fuel Type</label>
+                        <input asp-for="Combustivel" type="text" class="input-text" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                    </div>
+
+                    <div class="form-row">
+                        <label>Description</label>
+                        <textarea asp-for="Descricao" class="input-textarea" required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Location</label>
+                        <input asp-for="Localizacao" class="input-text" required />
+                    </div>
+                </div>
+
+                <div class="right-panel">
+                    <div class="photos-box">
+                        <div class="photos-header">PHOTOS</div>
+
+                        <div class="photos-stack">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                var hasImage = Model.ImagensExistentes != null && i < Model.ImagensExistentes.Count && !string.IsNullOrEmpty(Model.ImagensExistentes[i]);
+
+                                <div class="photo-card card-@(i + 1) @(hasImage ? "has-image" : "")" onclick="selectCard(@i)">
+                                    <input type="file"
+                                           id="file-input-@i"
+                                           name="NovasImagens"
+                                           class="hidden"
+                                           accept="image/*"
+                                           onchange="handleImageSelect(@i, event)">
+
+                                    <div class="photo-placeholder" style="@(hasImage ? "display: none;" : "")">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                        </svg>
+                                        <span>@(i + 1)</span>
+                                    </div>
+
+                                    @if (hasImage)
+                                    {
+                                        <img src="@Model.ImagensExistentes[i]" alt="Image @(i + 1)" />
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <div class="photo-buttons">
+                            <button type="button" class="plus-btn" id="plusBtn">+</button>
+                            <button type="button" class="minus-btn" id="minusBtn">−</button>
+                        </div>
+
+                        <div class="upload-instructions">
+                            <p>Click on a photo to select it</p>
+                            <p>Then use + to change image</p>
+                        </div>
+                    </div>
+
+                    <div class="action-row">
+                        <button type="submit" class="save-btn">Save Changes</button>
+                        <a href="/Listings/MyListings" class="cancel-btn">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    var images = @Html.Raw(Json.Serialize(Model.ImagensExistentes ?? new List<string> { "", "", "", "", "" }));
+    var selectedIndex = null;
+
+    function selectCard(index) {
+        document.querySelectorAll('.photo-card').forEach(card => card.classList.remove('selected'));
+        document.querySelectorAll('.photo-card')[index].classList.add('selected');
+        selectedIndex = index;
+        updateButtons();
+    }
+
+    function updateButtons() {
+        const plusBtn = document.getElementById('plusBtn');
+        const minusBtn = document.getElementById('minusBtn');
+
+        if (selectedIndex === null) {
+            plusBtn.disabled = true;
+            minusBtn.disabled = true;
+        } else {
+            plusBtn.disabled = false;
+            minusBtn.disabled = !images[selectedIndex];
+        }
+    }
+
+    function addImageToSelected() {
+        if (selectedIndex !== null) {
+            document.getElementById('file-input-' + selectedIndex).click();
+        }
+    }
+
+    function handleImageSelect(index, event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                images[index] = reader.result;
+                updateCard(index);
+                updateButtons();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function updateCard(index) {
+        const card = document.querySelectorAll('.photo-card')[index];
+        const placeholder = card.querySelector('.photo-placeholder');
+
+        if (images[index]) {
+            let img = card.querySelector('img');
+            if (!img) {
+                img = document.createElement('img');
+                card.appendChild(img);
+            }
+            img.src = images[index];
+            placeholder.style.display = 'none';
+            card.classList.add('has-image');
+        } else {
+            const img = card.querySelector('img');
+            if (img) img.remove();
+            placeholder.style.display = 'flex';
+            card.classList.remove('has-image');
+        }
+    }
+
+    document.getElementById('plusBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        addImageToSelected();
+    });
+
+    document.getElementById('minusBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+    });
+
+    updateButtons();
+
+    document.addEventListener("click", function (e) {
+        const btn = document.getElementById("userMenuBtn");
+        const dropdown = document.getElementById("userDropdown");
+        const container = btn?.closest('.user-menu-container');
+
+        if (!btn || !dropdown) return;
+
+        if (btn.contains(e.target)) {
+            dropdown.classList.toggle("show");
+            if (container) {
+                container.classList.toggle("open");
+            }
+        }
+        else if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove("show");
+            if (container) {
+                container.classList.remove("open");
+            }
+        }
+    });
+</script>
+
+@await Html.PartialAsync("_Footer")

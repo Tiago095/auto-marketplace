@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "About Us - AutoMatch";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+
+<link rel="stylesheet" href="~/css/style.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+
+<!-- Floating Header -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <!-- USER BADGE + DROPDOWN -->
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- About Us Conteudo -->
+<section class="about-section">
+    <div class="about-container">
+        <h1 class="about-title">ABOUT US....</h1>
+        
+        <div class="about-intro">
+            <p>We connect people with the right cars.</p>
+            <p>At AutoMatch, we believe that buying or selling a car should be simple, fast and transparent.</p>
+        </div>
+
+        <div class="about-content">
+            <div class="about-column">
+                <h2>Who we are ?</h2>
+                <p>We're a team passionate about cars and technology. We created this marketplace to simplify the vehicle buying and selling process, offering a modern, secure, and efficient platform.</p>
+            </div>
+
+            <div class="about-column">
+                <h2>What we do?</h2>
+                <p>At AutoMatch, we simplify the automotive world.</p>
+                <p>We help you find verified cars in just a few clicks and sell your vehicle quickly and securely.</p>
+                <p>With a modern platform, intelligent search, and direct chat between buyer and seller, we offer complete transparency—no hassle, no hidden fees, just great opportunities.</p>
+            </div>
+        </div>
+
+        <div class="about-team">
+            <h2>Our Team</h2>
+            <ul>
+                <li>Tiago Ribeiro</li>
+                <li>Francisco Rodrigues</li>
+                <li>Pedro Vieira</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
+            }
+        });
+    </script>
+}

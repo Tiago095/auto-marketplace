@@ -1,0 +1,335 @@
+@model AutoMatch.Models.ViewModels.BookingsViewModel
+@{
+    ViewData["Title"] = "Bookings";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+<link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" />
+                }
+                else
+                {
+                    <div class="user-avatar">@initial</div>
+                }
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Listings/MyListings">My Listings</a>
+                <a href="/DashBoard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: red;">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn active" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
+                        <span>Messages</span>
+                        @if (ViewBag.UnreadMessagesCount != null && (int)ViewBag.UnreadMessagesCount > 0)
+                        {
+                            <span class="sidebar-badge">@ViewBag.UnreadMessagesCount</span>
+                        }
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+                @{
+                    var userId = Context.Session.GetInt32("UserId");
+                    bool isAdmin = false;
+                }
+
+                @inject AutoMatch.Data.AutoMatchContext _context
+
+                @{
+                    if (userId != null)
+                    {
+                        isAdmin = _context.Administradores.Any(a => a.Id_User == userId);
+                    }
+                }
+
+                @if (isAdmin)
+                {
+                    <li>
+                        <div class="sidebar-bottom">
+                             <button class="sidebar-btn" type="button" data-target="/Admin/DashAdmin">
+                                 <i class="fa-solid fa-user-shield"></i> Admin Dashboard
+                        </div>
+                    </li>
+                }
+            </ul>
+        </aside>
+
+        <main class="dashboard-main">
+            <section class="bookings-section">
+                <h1>Bookings</h1>
+                <p class="subtitle">Review and manage your appointments</p>
+
+                @if (ViewBag.IsVendedor == false)
+                {
+                    <div style="background: #e5e5e5; border: 1px solid #d0d0d0; border-radius: 10px; padding: 24px; text-align: center;">
+                        <h2 style="margin: 0 0 12px 0; color: #555; font-size: 20px;">Restricted Access</h2>
+                        <p style="margin: 0 0 20px 0; color: #666; font-size: 14px;">
+                            This feature is only available for sellers. Become a seller to manage bookings for your listings.
+                        </p>
+                        <a href="/Forms/SellerForms" class="become-seller-booking-btn" style="display: inline-block; padding: 12px 32px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; transition: background 0.2s;">
+                            Become a Seller
+                        </a>
+                    </div>
+                }
+
+                @if (ViewBag.IsVendedor == true)
+                {
+                <form method="get" action="@Url.Action("Bookings", "DashBoard")" id="bookingFiltersForm">
+                    <div class="booking-filters">
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select name="status" class="filter-input">
+                                <option value="">All</option>
+                                @if (ViewBag.SelectedStatus == "Pending")
+                                {
+                                    <option value="Pending" selected>Pending</option>
+                                }
+                                else
+                                {
+                                    <option value="Pending">Pending</option>
+                                }
+                                @if (ViewBag.SelectedStatus == "Accepted")
+                                {
+                                    <option value="Accepted" selected>Accepted</option>
+                                }
+                                else
+                                {
+                                    <option value="Accepted">Accepted</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Vehicle</label>
+                            <select name="vehicle" class="filter-input">
+                                <option value="">All</option>
+                                @if (ViewBag.Vehicles != null)
+                                {
+                                    foreach (var vehicle in ViewBag.Vehicles)
+                                    {
+                                        @if (ViewBag.SelectedVehicle == vehicle)
+                                        {
+                                            <option value="@vehicle" selected>@vehicle</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@vehicle">@vehicle</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Date From</label>
+                            <input name="dateFrom" class="filter-input" type="date" value="@(ViewBag.DateFrom?.ToString("yyyy-MM-dd") ?? "")" />
+                        </div>
+                        <div class="filter-group">
+                            <label>Date To</label>
+                            <input name="dateTo" class="filter-input" type="date" value="@(ViewBag.DateTo?.ToString("yyyy-MM-dd") ?? "")" />
+                        </div>
+                        <div class="filter-group">
+                            <label>Buyer</label>
+                            <input name="buyer" class="filter-input" type="text" placeholder="Name" value="@(ViewBag.SelectedBuyer ?? "")" />
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="submit" class="btn-apply">Apply</button>
+                            <a href="@Url.Action("Bookings", "DashBoard")" class="btn-reset" style="margin-left: 10px; padding: 8px 16px; background: #444; color: #fff; border: none; border-radius: 6px; text-decoration: none; display: inline-block; cursor: pointer;">Reset</a>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="booking-table-card">
+                    <table class="booking-table">
+                        <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Buyer</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Bookings != null && Model.Bookings.Any())
+                            {
+                                foreach (var b in Model.Bookings)
+                                {
+                                    <tr data-reserva-id="@b.ReservaId">
+                                        <td>@b.Vehicle</td>
+                                        <td>@b.Buyer</td>
+                                        <td>@b.Date.ToString("dd MMM yyyy HH:mm") - @b.DataFim.ToString("HH:mm")</td>
+                                        <td>
+                                            <span class="status-badge status-@b.Status.ToLower()">@b.Status</span>
+                                        </td>
+                                        <td>
+                                            @if (b.IsVendedor && b.CanAccept)
+                                            {
+                                                <button class="btn-accept" onclick="acceptBooking(@b.ReservaId)">Accept</button>
+                                                <button class="btn-reject" onclick="rejectBooking(@b.ReservaId)">Reject</button>
+                                            }
+                                            else
+                                            {
+                                                <span>-</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5">No bookings found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
+            </section>
+        </main>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
+            }
+        });
+
+        function acceptBooking(reservaId) {
+            if (!confirm('Are you sure you want to accept this booking?')) return;
+
+            fetch(`/Dashboard/AcceptBooking?reservaId=${reservaId}`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error accepting booking');
+            });
+        }
+
+        function rejectBooking(reservaId) {
+            if (!confirm('Are you sure you want to reject this booking?')) return;
+
+            fetch(`/Dashboard/RejectBooking?reservaId=${reservaId}`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error rejecting booking');
+            });
+        }
+
+        document.querySelectorAll('.sidebar-btn[data-target]').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const url = this.getAttribute('data-target');
+                const main = document.querySelector('.dashboard-main');
+                if (!url || !main) {
+                    window.location.href = url;
+                    return;
+                }
+                main.classList.add('page-transition-out');
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 220);
+            });
+        });
+    </script>
+}
+

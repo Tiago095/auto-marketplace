@@ -1,24 +1,59 @@
-﻿@{
+@using System.Text.Json
+@{
     ViewData["Title"] = "AutoMatch";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
 }
+
+<link rel="stylesheet" href="~/css/style.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
 
 <!-- Floating Header -->
 <div class="floating-header">
     <div class="logo-text">AutoMatch</div>
     <div class="floating-buttons">
-        <button class="nav-btn">Home</button>
-        <button class="nav-btn">About</button>
-        <button class="nav-btn">Contact</button>
-        <button class="nav-btn signin">Sign In</button>
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <!-- USER BADGE + DROPDOWN -->
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
     </div>
 </div>
-
 
 <!-- Hero Section -->
 <section class="hero">
     <img src="~/images/capa.png" alt="Car Image" class="hero-img">
 </section>
-
 
 <!-- Search Section -->
 <section class="search-section text-center">
@@ -28,9 +63,13 @@
     <div class="search-bar">
         <select id="brandSelect">
             <option value="">Brand</option>
-            <option value="tesla">Tesla</option>
-            <option value="bmw">BMW</option>
-            <option value="audi">Audi</option>
+            @if (ViewBag.AvailableBrands != null)
+            {
+                foreach (var brand in ViewBag.AvailableBrands)
+                {
+                    <option value="@brand">@brand</option>
+                }
+            }
         </select>
 
         <select id="modelSelect" disabled>
@@ -41,22 +80,20 @@
 
         <div class="price-wrapper">
             <input type="text" id="priceInput" placeholder="Max price (€)">
-            <i class="fa fa-search search-icon"></i>
+            <i class="fa fa-search search-icon" onclick="performSearch()"></i>
         </div>
     </div>
 </section>
 
 @section Scripts {
     <script>
+        // MODELOS
         document.addEventListener("DOMContentLoaded", function () {
             const brandSelect = document.getElementById("brandSelect");
             const modelSelect = document.getElementById("modelSelect");
 
-            const models = {
-                tesla: ["Model S", "Model 3", "Model X", "Model Y"],
-                bmw: ["Series 3", "Series 5", "X5", "X7"],
-                audi: ["A3", "A4", "Q5", "Q7"]
-            };
+            // Carregar modelos da base de dados via ViewBag
+            const models = @Html.Raw(JsonSerializer.Serialize(ViewBag.BrandModels ?? new Dictionary<string, List<string>>()));
 
             brandSelect.addEventListener("change", function () {
                 const selectedBrand = this.value;
@@ -73,36 +110,83 @@
                     modelSelect.disabled = true;
                 }
             });
+
+            document.querySelectorAll('#brandSelect, #modelSelect, #yearSelect, #priceInput').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            });
+        });
+
+        function performSearch() {
+            const brand = document.getElementById('brandSelect').value;
+            const model = document.getElementById('modelSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const price = document.getElementById('priceInput').value;
+
+            const params = new URLSearchParams();
+            if (brand) params.append('brand', brand);
+            if (model) params.append('model', model);
+            if (year) params.append('year', year);
+            if (price) params.append('maxPrice', price);
+
+            window.location.href = '/Vehicle/Results?' + params.toString();
+        }
+
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
+            }
         });
     </script>
 }
-
 
 <!-- Featured Cars -->
 <section class="featured text-center">
     <h3>Featured Cars</h3>
     <div class="featured-cars">
-        <div class="car-card">
-            <img src="~/images/eletric.png" alt="Electric Car">
-            <div class="car-info">
-                <p>Electric</p>
-                <span>30,000 €</span>
-            </div>
-        </div>
-        <div class="car-card">
-            <img src="~/images/SUV_e.png" alt="SUV">
-            <div class="car-info">
-                <p>SUV</p>
-                <span>50,000 €</span>
-            </div>
-        </div>
-        <div class="car-card">
-            <img src="~/images/sports.png" alt="Sports">
-            <div class="car-info">
-                <p>Sports</p>
-                <span>80,000 €</span>
-            </div>
-        </div>
+        @if (ViewBag.FeaturedCars != null)
+        {
+            var cars = ViewBag.FeaturedCars as List<AutoMatch.Models.ViewModels.FeaturedCarViewModel>;
+            @if (cars != null && cars.Any())
+            {
+                @foreach (var car in cars)
+                {
+                    <div class="car-card" onclick="window.location.href='/Vehicle/Details/@car.Id'">
+                        <img src="@car.ImageUrl" alt="@car.Titulo">
+                        <div class="car-info">
+                            <p>@car.Titulo</p>
+                            <span>@car.Preco.ToString("N0") €</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No featured cars available at the moment.</p>
+            }
+        }
+        else
+        {
+            <p>No featured cars available at the moment.</p>
+        }
     </div>
 </section>
 
@@ -110,10 +194,12 @@
 <section class="categories text-center">
     <h3>Browse by Category</h3>
     <div class="category-grid">
-        <div class="category-card"><img src="~/images/sedan.png"><p>SUV</p></div>
-        <div class="category-card"><img src="~/images/coupe.png"><p>Sedan</p></div>
-        <div class="category-card"><img src="~/images/SUV.png"><p>Coupe</p></div>
-        <div class="category-card"><img src="~/images/hatchback.png"><p>Hatchback</p></div>
-        <div class="category-arrow">➤</div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=SUV'"><img src="~/images/sedan.png"><p>SUV</p></div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=Sedan'"><img src="~/images/coupe.png"><p>Sedan</p></div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=Coupe'"><img src="~/images/SUV.png"><p>Coupe</p></div>
+        <div class="category-card" onclick="window.location.href='/Vehicle/Results?bodyType=Hatchback'"><img src="~/images/hatchback.png"><p>Hatchback</p></div>
+        <div class="category-arrow" onclick="window.location.href='/Vehicle/Results'">➤</div>
     </div>
 </section>
+
+@await Html.PartialAsync("_Footer")

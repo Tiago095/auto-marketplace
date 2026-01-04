@@ -1,0 +1,460 @@
+@model AutoMatch.Models.Vehicle
+@{
+    ViewData["Title"] = $"{Model.Brand} {Model.Model}";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+
+    var orderedImages = ViewBag.OrderedImages as List<string> ?? new List<string>();
+    if (orderedImages.Count < 5)
+    {
+        while (orderedImages.Count < 5)
+        {
+            orderedImages.Add(string.Empty);
+        }
+    }
+}
+
+<link rel="stylesheet" href="~/css/vehicle.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+<!-- Floating Header -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Detalhes de veiculo -->
+<section class="details-section">
+    <div class="details-container">
+        <!-- Coluna da esquerda - Info e Descrição -->
+        <div class="details-left">
+            <h1 class="details-title">@Model.Brand @Model.Model</h1>
+            <p class="details-year">@Model.Year</p>
+
+            <!-- Specs Grid -->
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-label">Year</div>
+                    <div class="spec-value">@Model.Year</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Brand</div>
+                    <div class="spec-value">@Model.Brand</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Model</div>
+                    <div class="spec-value">@Model.Model</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Type</div>
+                    <div class="spec-value">@Model.FuelType</div>
+                </div>
+            </div>
+
+            <!-- Descrição -->
+            <div class="description-section">
+                <h3>Description</h3>
+                <p>@Model.Description</p>
+            </div>
+
+            <!-- Butões de ação -->
+            <div class="action-buttons">
+                <a class="btn-contact" href="@Url.Action("Messages", "Dashboard", new { vendedorId = Model.SellerId })">Contact Seller</a>
+                <button class="btn-test-drive" id="openBookingModal">Book Test Drive</button>
+                <a class="btn-buy-now" href="@Url.Action("Buy", "Vehicle", new { id = Model.Id })">
+                    @Model.Price.ToString("N0")€ Buy Now
+                </a>
+
+            </div>
+        </div>
+
+        <!-- coluna da direita - galeria -->
+        <div class="details-right">
+            <div class="main-image-container">
+                <button class="image-nav prev" type="button">‹</button>
+                <div class="main-image-placeholder">
+                    <img id="mainImage" src="@(string.IsNullOrEmpty(orderedImages[0]) ? Url.Content("~/images/eletric.png") : orderedImages[0])" alt="@Model.Brand @Model.Model" />
+                </div>
+                <button class="image-nav next" type="button">›</button>
+            </div>
+
+            <!-- Thumbnail -->
+            <div class="thumbnail-gallery" id="thumbGallery">
+                @for (int i = 0; i < 5; i++)
+                {
+                    var img = orderedImages[i];
+                    var isActive = i == 0;
+                    <div class="thumbnail-item @(isActive ? "active" : "")" data-index="@i">
+                        <div class="thumbnail-placeholder">
+                            @if (!string.IsNullOrEmpty(img))
+                            {
+                                <img src="@img" alt="Thumb @(i + 1)" />
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Modal -->
+<div id="bookingOverlay" class="booking-overlay">
+    <div class="booking-modal">
+        <div class="booking-header">
+            <h2>Booking Reservation</h2>
+            <button type="button" class="booking-close" id="closeBookingModal">&times;</button>
+        </div>
+
+        <div class="booking-main-card">
+            <div class="booking-row">
+                <div class="booking-icon">
+                    <i class="fa-regular fa-calendar"></i>
+                </div>
+                <div class="booking-field-group">
+                    <label for="bookingDate">Date</label>
+                    <input type="date" id="bookingDate" class="booking-input" />
+                </div>
+            </div>
+
+            <div class="booking-row">
+                <div class="booking-icon">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div class="booking-field-group">
+                    <label for="bookingTime">Time</label>
+                    <select id="bookingTime" class="booking-input">
+                        <option>15:00 - 16:00</option>
+                        <option>10:00 - 11:00</option>
+                        <option>11:00 - 12:00</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="booking-row">
+                <div class="booking-icon">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <div class="booking-field-group">
+                    <label for="bookingLocation">Location</label>
+                    <select id="bookingLocation" class="booking-input">
+                        <option>Automatch Porto</option>
+                        <option>Automatch Lisboa</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="booking-comment-wrapper">
+            <textarea class="booking-comment" placeholder="Comment or Request (optional)"></textarea>
+        </div>
+
+        <div class="booking-summary-card">
+            <h3>Booking Summary</h3>
+            <p class="booking-summary-line">@Model.Brand @Model.Model</p>
+            <p class="booking-summary-line">Date: <span id="summaryDate">—</span> - <span id="summaryTime">—</span></p>
+            <p class="booking-summary-line">Location: <span id="summaryLocation">Automatch Porto</span></p>
+        </div>
+
+        @if (username == null)
+        {
+            <div style="padding: 16px; background: #fff3cd; border-radius: 8px; margin-bottom: 16px;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                    <strong>Nota:</strong> Precisa de estar autenticado como comprador para fazer uma reserva. 
+                    <a href="/Account/Login" style="color: #2563eb; text-decoration: underline;">Faça login</a> ou 
+                    <a href="/Forms/SellerForms" style="color: #2563eb; text-decoration: underline;">torne-se vendedor</a>.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div style="padding: 12px; background: #f0f4ff; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                <p style="margin: 0; color: #1e40af; font-size: 13px;">
+                    Quer vender o seu carro? <a href="/Forms/SellerForms" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Torne-se vendedor</a>
+                </p>
+            </div>
+        }
+
+        <button type="button" class="booking-confirm-btn" id="confirmBookingBtn">Confirm Booking</button>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+            }
+        });
+
+        const orderedImages = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(orderedImages));
+        const mainImage = document.getElementById('mainImage');
+        const thumbs = Array.from(document.querySelectorAll('#thumbGallery .thumbnail-item'));
+        let currentIndex = 0;
+
+        function setImage(index) {
+            if (index < 0 || index >= orderedImages.length) return;
+            const src = orderedImages[index] || '@Url.Content("~/images/eletric.png")';
+            mainImage.src = src;
+            currentIndex = index;
+
+            thumbs.forEach((t, i) => {
+                if (i === index) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+        }
+
+        document.querySelector('.image-nav.prev')?.addEventListener('click', function () {
+            const next = (currentIndex - 1 + orderedImages.length) % orderedImages.length;
+            setImage(next);
+        });
+
+        document.querySelector('.image-nav.next')?.addEventListener('click', function () {
+            const next = (currentIndex + 1) % orderedImages.length;
+            setImage(next);
+        });
+
+        thumbs.forEach((thumb, idx) => {
+            thumb.addEventListener('click', function () {
+                setImage(idx);
+            });
+        });
+
+        const anuncioId = @Model.Id;
+        let bookedSlots = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const openBtn = document.getElementById('openBookingModal');
+            const overlay = document.getElementById('bookingOverlay');
+            const closeBtn = document.getElementById('closeBookingModal');
+            const confirmBtn = document.querySelector('.booking-confirm-btn');
+            const body = document.body;
+
+            const dateInput = document.getElementById('bookingDate');
+            const timeInput = document.getElementById('bookingTime');
+            const locationInput = document.getElementById('bookingLocation');
+            const commentInput = document.querySelector('.booking-comment');
+
+            const summaryDate = document.getElementById('summaryDate');
+            const summaryTime = document.getElementById('summaryTime');
+            const summaryLocation = document.getElementById('summaryLocation');
+
+            if (!openBtn || !overlay) return;
+
+            // Carregar horários bloqueados
+            async function loadBookedSlots() {
+                try {
+                    const response = await fetch(`/Vehicle/GetBookedSlots?anuncioId=${anuncioId}`);
+                    bookedSlots = await response.json();
+                    updateTimeOptions();
+                } catch (error) {
+                    console.error('Erro ao carregar horários bloqueados:', error);
+                }
+            }
+
+            // Atualizar opções de horário baseado na data selecionada e horários bloqueados
+            function updateTimeOptions() {
+                if (!dateInput.value) return;
+
+                const selectedDate = new Date(dateInput.value);
+                const timeSlots = [
+                    { start: '10:00', end: '11:00' },
+                    { start: '11:00', end: '12:00' },
+                    { start: '15:00', end: '16:00' },
+                    { start: '16:00', end: '17:00' },
+                    { start: '17:00', end: '18:00' }
+                ];
+
+                timeInput.innerHTML = '';
+
+                timeSlots.forEach(slot => {
+                    const slotStart = new Date(selectedDate);
+                    const [hours, minutes] = slot.start.split(':');
+                    slotStart.setHours(parseInt(hours), parseInt(minutes), 0);
+
+                    const slotEnd = new Date(selectedDate);
+                    const [endHours, endMinutes] = slot.end.split(':');
+                    slotEnd.setHours(parseInt(endHours), parseInt(endMinutes), 0);
+
+                    // Verificar se o horário está bloqueado
+                    const isBlocked = bookedSlots.some(booked => {
+                        const bookedStart = new Date(booked.inicio);
+                        const bookedEnd = new Date(booked.fim);
+                        return (slotStart < bookedEnd && slotEnd > bookedStart);
+                    });
+
+                    const option = document.createElement('option');
+                    option.value = `${slot.start}-${slot.end}`;
+                    option.textContent = isBlocked ? `${slot.start} - ${slot.end} (Unavailable)` : `${slot.start} - ${slot.end}`;
+                    option.disabled = isBlocked;
+                    timeInput.appendChild(option);
+                });
+            }
+
+            function openModal() {
+                @if (username == null)
+                {
+                    <text>
+                    alert('Precisa de estar autenticado para fazer uma reserva. Por favor, faça login primeiro.');
+                    window.location.href = '/Account/Login';
+                    return;
+                    </text>
+                }
+                
+                overlay.classList.add('visible');
+                body.classList.add('modal-open');
+                loadBookedSlots();
+                // Definir data mínima como hoje
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.min = today;
+            }
+
+            function closeModal() {
+                overlay.classList.remove('visible');
+                body.classList.remove('modal-open');
+            }
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn?.addEventListener('click', closeModal);
+
+            overlay.addEventListener('click', function (e) {
+                if (e.target === overlay) {
+                    closeModal();
+                }
+            });
+
+            function updateSummary() {
+                summaryDate.textContent = dateInput.value || '—';
+                summaryTime.textContent = timeInput.value || '—';
+                summaryLocation.textContent = locationInput.value || '—';
+            }
+
+            dateInput?.addEventListener('change', async function() {
+                updateSummary();
+                await loadBookedSlots();
+                updateTimeOptions();
+            });
+            timeInput?.addEventListener('change', updateSummary);
+            locationInput?.addEventListener('change', updateSummary);
+
+            // Confirmar booking
+            const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+            (confirmBookingBtn || confirmBtn)?.addEventListener('click', async function() {
+                @if (username == null)
+                {
+                    <text>
+                    alert('Precisa de estar autenticado como comprador para fazer uma reserva.');
+                    window.location.href = '/Account/Login';
+                    return;
+                    </text>
+                }
+
+                if (!dateInput.value || !timeInput.value) {
+                    alert('Por favor, selecione data e horário');
+                    return;
+                }
+
+                const [startTime, endTime] = timeInput.value.split('-');
+                const selectedDate = new Date(dateInput.value);
+                const [startHours, startMinutes] = startTime.trim().split(':');
+                const [endHours, endMinutes] = endTime.trim().split(':');
+
+                const dataInicio = new Date(selectedDate);
+                dataInicio.setHours(parseInt(startHours), parseInt(startMinutes), 0);
+
+                const dataFim = new Date(selectedDate);
+                dataFim.setHours(parseInt(endHours), parseInt(endMinutes), 0);
+
+                // Verificar se o horário ainda está disponível
+                const isBlocked = bookedSlots.some(booked => {
+                    const bookedStart = new Date(booked.inicio);
+                    const bookedEnd = new Date(booked.fim);
+                    return (dataInicio < bookedEnd && dataFim > bookedStart);
+                });
+
+                if (isBlocked) {
+                    alert('Este horário já está reservado. Por favor, escolha outro.');
+                    await loadBookedSlots();
+                    updateTimeOptions();
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Vehicle/CreateBooking', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            anuncioId: anuncioId,
+                            dataInicio: dataInicio.toISOString(),
+                            dataFim: dataFim.toISOString(),
+                            comentario: commentInput?.value || null
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        alert(data.message);
+                        closeModal();
+                        // Recarregar horários bloqueados
+                        await loadBookedSlots();
+                    } else {
+                        alert('Erro: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao criar reserva');
+                }
+            });
+        });
+    </script>
+}
+
+<link rel="stylesheet" href="~/css/vehicle.css" />

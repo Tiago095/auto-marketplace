@@ -1,0 +1,226 @@
+@using System.Text.Json
+@model AutoMatch.Models.ViewModels.VehicleResultsViewModel
+@{
+    ViewData["Title"] = "Vehicle Results";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+
+<link rel="stylesheet" href="~/css/vehicle.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+<!-- Floating Header -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Resultados -->
+<section class="results-section">
+    <div class="results-container">
+        <h1 class="results-title">Vehicle Results</h1>
+        <p class="results-subtitle">Browse through the best cars in the market</p>
+
+        <form method="get" action="/Vehicle/Results" id="filterForm">
+
+            <!-- Primeira linha -->
+            <div class="filter-row">
+                <select name="brand" id="brandFilter" class="filter-select">
+                    <option value="">Brand</option>
+                    @foreach (var b in Model.AvailableBrands)
+                    {
+                        <option value="@b" selected="@(b == Model.SelectedBrand ? "selected" : null)">@b</option>
+                    }
+                </select>
+
+                <select name="model" id="modelFilter" class="filter-select">
+                    <option value="">Model</option>
+                    @if (!string.IsNullOrEmpty(Model.SelectedBrand) &&
+                                        Model.BrandModels.TryGetValue(Model.SelectedBrand, out var modelsForBrand))
+                    {
+                        foreach (var m in modelsForBrand)
+                        {
+                            <option value="@m" selected="@(m == Model.SelectedModel ? "selected" : null)">@m</option>
+                        }
+                    }
+                </select>
+
+                <input type="number" name="year" class="filter-input" placeholder="Year"
+                       value="@Model.SelectedYear" min="1990" max="2025" />
+
+                <input type="number" name="maxPrice" class="filter-input" placeholder="Price"
+                       value="@Model.SelectedMaxPrice" min="0" step="1000" />
+
+                <select name="sort" class="filter-select sort-select">
+                    <option value="price-low-high" selected="@(Model.SelectedSort == "price-low-high" || string.IsNullOrEmpty(Model.SelectedSort) ? "selected" : null)">Sort by: Price (Low-High)</option>
+                    <option value="price-high-low" selected="@(Model.SelectedSort == "price-high-low" ? "selected" : null)">Price (High-Low)</option>
+                    <option value="year-new-old" selected="@(Model.SelectedSort == "year-new-old" ? "selected" : null)">Year (New-Old)</option>
+                    <option value="year-old-new" selected="@(Model.SelectedSort == "year-old-new" ? "selected" : null)">Year (Old-New)</option>
+                    <option value="mileage-low-high" selected="@(Model.SelectedSort == "mileage-low-high" ? "selected" : null)">Mileage (Low-High)</option>
+                </select>
+            </div>
+
+            <!-- Segunda linha -->
+            <div class="filter-row">
+                <input type="number" name="maxMileage" class="filter-input" placeholder="Mileage"
+                       value="@Model.SelectedMaxMileage" min="0"/>
+
+                <select name="fuelType" class="filter-select">
+                    <option value="">Fuel Type</option>
+                    <option value="Electric" selected="@(Model.SelectedFuelType == "Electric" ? "selected" : null)">Electric</option>
+                    <option value="Petrol" selected="@(Model.SelectedFuelType == "Petrol" ? "selected" : null)">Petrol</option>
+                    <option value="Diesel" selected="@(Model.SelectedFuelType == "Diesel" ? "selected" : null)">Diesel</option>
+                    <option value="Hybrid" selected="@(Model.SelectedFuelType == "Hybrid" ? "selected" : null)">Hybrid</option>
+                </select>
+
+                <select name="transmission" class="filter-select">
+                    <option value="">Transmission</option>
+                    <option value="Automatic" selected="@(Model.SelectedTransmission == "Automatic" ? "selected" : null)">Automatic</option>
+                    <option value="Manual" selected="@(Model.SelectedTransmission == "Manual" ? "selected" : null)">Manual</option>
+                </select>
+
+                <select name="bodyType" class="filter-select">
+                    <option value="">Body Type</option>
+                    <option value="Sedan" selected="@(Model.SelectedBodyType == "Sedan" ? "selected" : null)">Sedan</option>
+                    <option value="SUV" selected="@(Model.SelectedBodyType == "SUV" ? "selected" : null)">SUV</option>
+                    <option value="Coupe" selected="@(Model.SelectedBodyType == "Coupe" ? "selected" : null)">Coupe</option>
+                    <option value="Hatchback" selected="@(Model.SelectedBodyType == "Hatchback" ? "selected" : null)">Hatchback</option>
+                </select>
+
+                <button type="submit" class="search-button">
+                    <span>Search</span>
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+
+        </form> 
+
+        <!-- Grid do veículo -->
+        <div class="vehicle-grid">
+            @if (Model.Vehicles != null && Model.Vehicles.Any())
+            {
+                @foreach (var vehicle in Model.Vehicles)
+                {
+                    <a href="@Url.Action("Details", "Vehicle", new { id = vehicle.Id })" class="vehicle-card-link">
+                        <div class="vehicle-card">
+                            <div class="vehicle-image-placeholder">
+                                @if (!string.IsNullOrEmpty(vehicle.ImageUrl))
+                                {
+                                    <img src="@vehicle.ImageUrl" alt="@($"{vehicle.Brand} {vehicle.Model}")" />
+                                }
+                                else
+                                {
+                                    <img src="@Url.Content("~/images/eletric.png")" alt="No image" />
+                                }
+                            </div>
+                            <div class="vehicle-info">
+                                <h3 class="vehicle-title">@vehicle.Brand @vehicle.Model</h3>
+                                <p class="vehicle-year">@vehicle.Year</p>
+                                <p class="vehicle-price">@vehicle.Price.ToString("N0")€</p>
+                                <div class="vehicle-badges">
+                                    <span class="badge">@vehicle.FuelType</span>
+                                    <span class="badge">@vehicle.Transmission</span>
+                                </div>
+                                <p class="vehicle-mileage">@vehicle.Mileage.ToString("N0")km</p>
+                            </div>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="no-results">
+                    <p>No vehicles found matching your criteria.</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
+            }
+        });
+
+        const models = @Html.Raw(JsonSerializer.Serialize(Model.BrandModels));
+
+        const brandFilter = document.getElementById("brandFilter");
+        const modelFilter = document.getElementById("modelFilter");
+
+        brandFilter.addEventListener("change", function () {
+            const selectedBrand = this.value;
+            modelFilter.innerHTML = '<option value="">Model</option>';
+            
+            if (selectedBrand && models[selectedBrand]) {
+                modelFilter.disabled = false;
+                models[selectedBrand].forEach(model => {
+                    const option = document.createElement("option");
+                    option.value = model;
+                    option.textContent = model;
+                    modelFilter.appendChild(option);
+                });
+            } else {
+                modelFilter.disabled = true;
+            }
+        });
+
+        document.querySelector('.sort-select')?.addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    </script>
+}
+
+@await Html.PartialAsync("_Footer")

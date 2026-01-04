@@ -1,0 +1,247 @@
+@model AutoMatch.Models.ViewModels.SalesViewModel
+@{
+    ViewData["Title"] = "Sales";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+<link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" />
+                }
+                else
+                {
+                    <div class="user-avatar">@initial</div>
+                }
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Listings/MyListings">My Listings</a>
+                <a href="/DashBoard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: red;">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
+                        <span>Messages</span>
+                        @if (ViewBag.UnreadMessagesCount != null && (int)ViewBag.UnreadMessagesCount > 0)
+                        {
+                            <span class="sidebar-badge">@ViewBag.UnreadMessagesCount</span>
+                        }
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn active" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+                @{
+                    var userId = Context.Session.GetInt32("UserId");
+                    bool isAdmin = false;
+                }
+
+                @inject AutoMatch.Data.AutoMatchContext _context
+
+                @{
+                    if (userId != null)
+                    {
+                        isAdmin = _context.Administradores.Any(a => a.Id_User == userId);
+                    }
+                }
+
+                @if (isAdmin)
+                {
+                    <li>
+                        <div class="sidebar-bottom">
+                             <button class="sidebar-btn" type="button" data-target="/Admin/DashAdmin">
+                                 <i class="fa-solid fa-user-shield"></i> Admin Dashboard
+                        </div>
+                    </li>
+                }
+            </ul>
+        </aside>
+
+        <main class="dashboard-main sales-main">
+            <div class="sales-wrapper-card">
+                <h1>Sales Overview</h1>
+                <p class="subtitle">Manage you sales, performance and revenue</p>
+
+                @if (ViewBag.IsVendedor == false)
+                {
+                    <div style="background: #e5e5e5; border: 1px solid #d0d0d0; border-radius: 10px; padding: 24px; text-align: center;">
+                        <h2 style="margin: 0 0 12px 0; color: #555; font-size: 20px;">Restricted Access</h2>
+                        <p style="margin: 0 0 20px 0; color: #666; font-size: 14px;">
+                            This feature is only available for sellers. Become a seller to manage your sales and revenue.
+                        </p>
+                        <a href="/Forms/SellerForms" class="become-seller-booking-btn" style="display: inline-block; padding: 12px 32px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; transition: background 0.2s;">
+                            Become a Seller
+                        </a>
+                    </div>
+                }
+
+                @if (ViewBag.IsVendedor == true)
+                {
+            <form asp-action="Sales" asp-controller="DashBoard" method="get" class="sales-header-actions">
+                <div class="sales-filter">
+                    <select class="sales-range-select" name="range" onchange="this.form.submit()">
+                        <option value="7d" selected="@(Model.SelectedRange == "7d")">Last 7 days</option>
+                        <option value="1m" selected="@(Model.SelectedRange == "1m")">Last month</option>
+                        <option value="1y" selected="@(Model.SelectedRange == "1y")">Last year</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="sales-top-grid">
+                <div class="card sales-quick">
+                    <h2>Quick Stats</h2>
+                    <div style="display: flex; gap: 30px; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <p style="font-size: 1.2rem; margin: 15px 0;"><strong>@Model.TotalVendasConcluidas</strong> Vendas Concluídas</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.TopModel))
+                        {
+                            <div class="top-model" style="flex: 1;">
+                                <h3>Top Model Sold</h3>
+                                <p style="font-weight: 600; margin-bottom: 5px;">@Model.TopModel</p>
+                                <span>@Model.TopModelUnidades unidades vendidas</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="card sales-table-card">
+                <h2>Recent Sales</h2>
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Vehicle</th>
+                            <th>Value</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentSales != null && Model.RecentSales.Any())
+                        {
+                            foreach (var s in Model.RecentSales)
+                            {
+                                <tr>
+                                    <td>@s.Data.ToString("dd/MM/yyyy")</td>
+                                    <td>@s.Cliente</td>
+                                    <td>@s.Veiculo</td>
+                                    <td>@s.Valor.ToString("N0") €</td>
+                                    <td>@s.Estado</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5">No sales yet.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+                }
+            </div>
+        </main>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener("click", function (e) {
+                const btn = document.getElementById("userMenuBtn");
+                const dropdown = document.getElementById("userDropdown");
+                const container = btn?.closest('.user-menu-container');
+
+                if (!btn || !dropdown) return;
+
+                if (btn.contains(e.target)) {
+                    dropdown.classList.toggle("show");
+                    if (container) {
+                        container.classList.toggle("open");
+                    }
+                }
+                else if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove("show");
+                    if (container) {
+                        container.classList.remove("open");
+                    }
+                }
+            });
+
+            document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var url = this.getAttribute('data-target');
+                    var main = document.querySelector('.dashboard-main');
+                    if (!url) return;
+                    if (main) {
+                        main.classList.add('page-transition-out');
+                        setTimeout(function () {
+                            window.location.href = url;
+                        }, 220);
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    </script>
+}

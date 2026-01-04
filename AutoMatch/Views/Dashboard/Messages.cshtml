@@ -1,0 +1,369 @@
+@model AutoMatch.Models.ViewModels.MessagesViewModel
+@{
+    ViewData["Title"] = "Messages";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+<link rel="stylesheet" href="~/css/dashboard.css" />
+<link rel="stylesheet" href="~/css/listings.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" />
+                }
+                else
+                {
+                    <div class="user-avatar">@initial</div>
+                }
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Listings/MyListings">My Listings</a>
+                <a href="/DashBoard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: red;">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-page">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo-dot"></div>
+            <ul class="sidebar-menu">
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Index">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Bookings">
+                        <span class="icon"><i class="fa-regular fa-calendar-check"></i></span>
+                        <span>Bookings</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn active" type="button" data-target="/DashBoard/Messages">
+                        <span class="icon"><i class="fa-regular fa-message"></i></span>
+                        <span>Messages</span>
+                        @if (ViewBag.UnreadMessagesCount != null && (int)ViewBag.UnreadMessagesCount > 0)
+                        {
+                            <span class="sidebar-badge">@ViewBag.UnreadMessagesCount</span>
+                        }
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Notifications">
+                        <span class="icon"><i class="fa-regular fa-bell"></i></span>
+                        <span>Notifications</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Documents">
+                        <span class="icon"><i class="fa-regular fa-folder-open"></i></span>
+                        <span>Documents</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="sidebar-btn" type="button" data-target="/DashBoard/Sales">
+                        <span class="icon"><i class="fa-solid fa-chart-column"></i></span>
+                        <span>Sales</span>
+                    </button>
+                </li>
+                @{
+                    var userId = Context.Session.GetInt32("UserId");
+                    bool isAdmin = false;
+                }
+
+                @inject AutoMatch.Data.AutoMatchContext _context
+
+                @{
+                    if (userId != null)
+                    {
+                        isAdmin = _context.Administradores.Any(a => a.Id_User == userId);
+                    }
+                }
+
+                @if (isAdmin)
+                {
+                    <li>
+                        <div class="sidebar-bottom">
+                             <button class="sidebar-btn" type="button" data-target="/Admin/DashAdmin">
+                                 <i class="fa-solid fa-user-shield"></i> Admin Dashboard
+                        </div>
+                    </li>
+                }
+            </ul>
+        </aside>
+
+        <main class="dashboard-main messages-main">
+            <div class="messages-layout">
+                <section class="conversations-list">
+                    <h1>Messaging</h1>
+
+                    <div class="conv-search">
+                        <input type="text" id="searchConv" placeholder="Search conversations..." />
+                    </div>
+
+                    <div class="conv-items" id="convList">
+                        @if (Model.Conversas != null && Model.Conversas.Any())
+                        {
+                            foreach (var c in Model.Conversas)
+                            {
+                                var isActive = c.Id == Model.VendedorAtualId;
+                                var hasUnread = c.MensagensNaoLidas > 0;
+                                <div class="conv-item @(isActive ? "active" : "") @(hasUnread ? "unread" : "")" data-participant-id="@c.Id">
+                                    <div class="conv-avatar @(c.Online ? "" : "muted")">
+                                        @if (!string.IsNullOrEmpty(c.ProfileImageUrl))
+                                        {
+                                            <img src="@c.ProfileImageUrl" alt="@c.Nome" />
+                                        }
+                                        else
+                                        {
+                                            @c.UserName.Substring(0, 1).ToUpper()
+                                        }
+                                    </div>
+                                    <div class="conv-info">
+                                        <div class="conv-name">@c.UserName</div>
+                                        <div class="conv-preview">@c.UltimaMensagem</div>
+                                        <div class="conv-meta">@c.DataUltima.ToString("g")</div>
+                                    </div>
+                                    @if (hasUnread)
+                                    {
+                                        <span class="conv-badge">@c.MensagensNaoLidas</span>
+                                    }
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p style="padding: 20px; color: #888; text-align: center;">No conversations yet.</p>
+                        }
+                    </div>
+                </section>
+
+                @if (Model.Mensagens != null && Model.Mensagens.Any() || Model.VendedorAtualId.HasValue)
+                {
+                    <section class="chat-view" id="chatView">
+                        <div class="chat-header">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="conv-avatar">
+                                    @{
+                                        var vendedorAtual = Model.Conversas.FirstOrDefault(c => c.Id == Model.VendedorAtualId);
+                                        var nomeVendedor = vendedorAtual?.UserName ?? "Seller";
+                                        var userNameVendedor = vendedorAtual?.UserName ?? "Seller";
+                                        var profileImageUrlVendedor = vendedorAtual?.ProfileImageUrl;
+                                    }
+                                    @if (!string.IsNullOrEmpty(profileImageUrlVendedor))
+                                    {
+                                        <img src="@profileImageUrlVendedor" alt="@nomeVendedor" />
+                                    }
+                                    else
+                                    {
+                                        @userNameVendedor.Substring(0, 1).ToUpper()
+                                    }
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 16px;">@nomeVendedor</div>
+                                    <div style="font-size: 12px; color: #888;">Active</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-body" id="chatBody">
+                            @if (Model.Mensagens != null && Model.Mensagens.Any())
+                            {
+                                foreach (var m in Model.Mensagens)
+                                {
+                                    <div class="chat-message-wrapper @(m.IsOutgoing ? "outgoing" : "incoming")">
+                                        <div class="chat-bubble">@m.Texto</div>
+                                        <div class="chat-time">@m.Data.ToString("HH:mm")</div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-size:14px;">
+                                    Start a conversation!
+                                </div>
+                            }
+                        </div>
+
+                        <div class="chat-input-area">
+                            <input type="text" id="messageInput" placeholder="Write a message..." />
+                            <button class="chat-send" id="sendBtn">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </section>
+                }
+                else
+                {
+                    <section class="chat-view chat-view-empty">
+                        <div class="chat-body" style="display:flex;align-items:center;justify-content:center;color:#888;font-size:14px;">
+                            Select a conversation to start chatting.
+                        </div>
+                    </section>
+                }
+            </div>
+        </main>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        const vendedorAtualId = parseInt("@(Model.VendedorAtualId ?? 0)");
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if (!input) return;
+
+            const mensagem = input.value.trim();
+
+            if (!mensagem) return;
+
+            if (vendedorAtualId === 0 || isNaN(vendedorAtualId)) {
+                alert("Selecione uma conversa para enviar mensagem.");
+                return;
+            }
+
+            const url = `/Dashboard/SendMessage?vendedorId=${vendedorAtualId}&mensagem=${encodeURIComponent(mensagem)}`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Erro HTTP: " + response.status);
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const chatBody = document.getElementById('chatBody');
+
+                    if (chatBody.innerText.includes("Start a conversation")) {
+                        chatBody.innerHTML = '';
+                    }
+
+                    const messageClass = data.data.isOutgoing ? "outgoing" : "incoming";
+                    const messageHtml = `
+                        <div class="chat-message-wrapper ${messageClass}">
+                            <div class="chat-bubble">${data.data.texto}</div>
+                            <div class="chat-time">${data.data.data}</div>
+                        </div>
+                    `;
+                    chatBody.insertAdjacentHTML('beforeend', messageHtml);
+                    input.value = '';
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                } else {
+                    alert("Erro: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+                alert("Erro ao enviar mensagem.");
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.addEventListener("click", function (e) {
+                const btn = document.getElementById("userMenuBtn");
+                const dropdown = document.getElementById("userDropdown");
+                const container = btn?.closest('.user-menu-container');
+
+                if (!btn || !dropdown) return;
+
+                if (btn.contains(e.target)) {
+                    dropdown.classList.toggle("show");
+                    if (container) {
+                        container.classList.toggle("open");
+                    }
+                } else if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove("show");
+                    if (container) {
+                        container.classList.remove("open");
+                    }
+                }
+            });
+
+            document.querySelectorAll('.sidebar-btn[data-target]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var url = this.getAttribute('data-target');
+                    var main = document.querySelector('.dashboard-main');
+                    if (!url) return;
+
+                    if (main) {
+                        main.classList.add('page-transition-out');
+                        setTimeout(function () {
+                            window.location.href = url;
+                        }, 220);
+                    } else {
+                        window.location.href = url;
+                    }
+                });
+            });
+
+            document.querySelectorAll('.conv-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const participantId = this.dataset.participantId;
+                    window.location.href = `/Dashboard/Messages?vendedorId=${participantId}`;
+                });
+            });
+
+            const sendBtn = document.getElementById('sendBtn');
+            const messageInput = document.getElementById('messageInput');
+
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendMessage);
+            }
+
+            if (messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                const chatBody = document.getElementById('chatBody');
+                if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            // Funcionalidade de Search nas Conversas
+            const searchConv = document.getElementById('searchConv');
+            const convList = document.getElementById('convList');
+            
+            if (searchConv && convList) {
+                searchConv.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    const convItems = convList.querySelectorAll('.conv-item');
+                    
+                    convItems.forEach(item => {
+                        const convName = item.querySelector('.conv-name')?.textContent.toLowerCase() || '';
+                        const convPreview = item.querySelector('.conv-preview')?.textContent.toLowerCase() || '';
+                        const matches = convName.includes(searchTerm) || convPreview.includes(searchTerm);
+                        
+                        item.style.display = matches ? '' : 'none';
+                    });
+                });
+            }
+        });
+    </script>
+}

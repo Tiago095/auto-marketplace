@@ -1,0 +1,448 @@
+﻿@model AutoMatch.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Profile - AutoMatch";
+
+    var username = Context.Session.GetString("UserName");
+    var initial = Context.Session.GetString("UserInitial");
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+
+@if (TempData["EditError"] != null)
+{
+    <script>
+        window.onload = function () {
+            openEditModal();
+        };
+    </script>
+}
+
+<link rel="stylesheet" href="~/css/profile.css" />
+<link rel="stylesheet" href="~/css/footer.css" />
+<link rel="stylesheet" href="~/css/user-dropdown.css" />
+
+<!-- Floating Header -->
+<div class="floating-header floating-header-dark">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        @if (username == null)
+        {
+            <a href="/Account/Login" class="nav-btn signin">Sign In</a>
+        }
+        else
+        {
+            <!-- USER BADGE + DROPDOWN -->
+            <div class="user-menu-container">
+                <div class="user-badge" id="userMenuBtn">
+                    <span class="user-name">@username</span>
+                    @if (!string.IsNullOrEmpty(profileImageUrl))
+                    {
+                        <img src="@profileImageUrl" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar">@initial</div>
+                    }
+                </div>
+
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="/Account/Profile">Profile</a>
+                    <a href="/Listings/MyListings">My Listings</a>
+                    <a href="/Dashboard/Index">Dashboard</a>
+                    <a href="/Account/Logout" style="color: red;">Logout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="profile-container">
+
+
+    <!-- LEFT PROFILE CARD -->
+    <div class="profile-card">
+        <div class="avatar-wrapper">
+            @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+            {
+                <img src="@Model.ProfileImageUrl" class="avatar" />
+            }
+            else
+            {
+                <div class="avatar placeholder">@Model.UserName.Substring(0, 1).ToUpper()</div>
+            }
+        </div>
+
+
+       <h2>@Model.UserName</h2>
+       <p>@Model.FullName</p>
+       <p>@Model.Email</p>
+        <p>
+            @if (Model.IsBuyer && Model.IsSeller)
+            {
+                @:Comprador e Vendedor
+            }
+            else if (Model.IsSeller)
+            {
+                @:Vendedor
+            }
+            else if (Model.IsBuyer)
+            {
+                @:Comprador
+            }
+            else
+            {
+                @:Utilizador
+            }
+        </p>
+
+
+        <button class="btn edit-btn" onclick="openEditModal()">
+            <i class="fa fa-pencil"></i> Edit Profile
+            </button>
+
+        <div id="editOverlay" class="overlay-hidden">
+    <div class="edit-modal">
+
+        <h2 class="modal-title">Editar Perfil</h2>
+
+        @if (TempData["EditError"] != null)
+        {
+            <div class="error-box">@TempData["EditError"]</div>
+        }
+
+        @if (TempData["EditSuccess"] != null)
+        {
+            <div class="success-box">@TempData["EditSuccess"]</div>
+        }
+
+        <form asp-action="EditProfile" asp-controller="Account" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="avatar-wrapper avatar-edit-wrapper" id="modalAvatarWrapper" style="margin-bottom:10px;">
+                @if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+                {
+                    <img id="modalProfilePreviewImg" src="@Model.ProfileImageUrl" class="avatar" />
+                }
+                else
+                {
+                    <div id="modalAvatarPlaceholder" class="avatar placeholder">@Model.UserName.Substring(0, 1).ToUpper()</div>
+                }
+
+                <div class="avatar-edit-overlay" onclick="document.getElementById('photoInput').click()">
+                            <i class="fa fa-pencil"></i>
+                </div>
+            </div>
+
+            <input id="photoInput" type="file" name="Photo" accept="image/*" class="photo-input hidden-file-input" onchange="previewProfilePhoto(this)" />
+
+            <div class="edit-modal-grid">
+                <div class="edit-modal-col">
+                    <!-- USERNAME -->
+                    <label class="form-label">Username</label>
+                    <input name="UserName" class="profile-input" value="@Model.UserName" required />
+
+                    <!-- TELEFONE -->
+                    <label class="form-label">Telefone</label>
+                    <input name="Phone" class="profile-input" maxlength="9" value="@Model.Phone" placeholder="9 dígitos" />
+
+                    <!-- PASSWORD -->
+                    <label class="form-label">New Password (opticional)</label>
+                    <input name="Password" type="password" class="profile-input" placeholder="6 a 12 caracteres" />
+                </div>
+
+                <div class="edit-modal-col">
+                    <!-- LOCALIDADE -->
+                    <label class="form-label">Localidade</label>
+                    <select id="postalSelect" name="SelectedCodigoPostal" class="profile-input" onchange="onPostalChange()" required>
+                        <option value="">-- Escolhe localidade --</option>
+                                @foreach (var a in ViewBag.PostalList)
+                                {
+                                    var isSelected = !string.IsNullOrEmpty(Model.PostalCode) && Model.PostalCode == a.Codigo_Postal;
+
+                                    if (isSelected)
+                                    {
+                                        <option value="@a.Codigo_Postal" data-localidade="@a.Codigo_Postal" selected>@a.Localidade</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@a.Codigo_Postal" data-localidade="@a.Codigo_Postal">@a.Localidade</option>
+                                    }
+                                }
+
+                    </select>
+
+                    <!-- CÓDIGO POSTAL -->
+                    <label class="form-label">Código Postal</label>
+                    <input id="postalCode" name="SelectedLocalidade" class="profile-input" 
+                           value="@Model.Address" readonly />
+                </div>
+            </div>
+
+            <!-- BOTÕES -->
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button type="submit" class="btn save-btn">Guardar</button>
+                <button type="button" class="btn cancel-btn" onclick="closeEditModal()">Cancelar</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<script>
+function openEditModal() {
+    var sel = document.getElementById("postalSelect");
+    if(sel && sel.selectedIndex>0){
+        var code = sel.options[sel.selectedIndex].value;
+        document.getElementById("postalCode").value = code;
+    }
+    document.getElementById("editOverlay").classList.remove("overlay-hidden");
+    document.body.style.overflow = "hidden";
+}
+
+function closeEditModal() {
+    document.getElementById("editOverlay").classList.add("overlay-hidden");
+    document.body.style.overflow = "";
+}
+
+function onPostalChange() {
+    var sel = document.getElementById("postalSelect");
+    var code = sel.options[sel.selectedIndex].value;
+    var local = sel.options[sel.selectedIndex].dataset.localidade;
+    document.getElementById("postalCode").value = local;
+}
+
+function previewProfilePhoto(input) {
+    if (!input.files || !input.files[0]) return;
+
+    var file = input.files[0];
+    var reader = new FileReader();
+
+    reader.onload = function (e) {
+        var img = document.getElementById("modalProfilePreviewImg");
+        var placeholder = document.getElementById("modalAvatarPlaceholder");
+        var wrapper = document.getElementById("modalAvatarWrapper");
+
+        if (!img) {
+            img = document.createElement("img");
+            img.id = "modalProfilePreviewImg";
+            img.className = "avatar";
+            if (wrapper) {
+                wrapper.appendChild(img);
+            }
+        }
+
+        if (placeholder) {
+            placeholder.style.display = "none";
+        }
+
+        img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+}
+</script>
+
+
+        <form asp-controller="Account" asp-action="DeleteAccount" method="post"
+              onsubmit="return confirm('Tens a certeza que queres apagar a tua conta? Esta ação é irreversível.');">
+            <button type="submit" class="btn delete-btn">
+                <i class="fa fa-trash"></i> Delete Account
+            </button>
+        </form>
+
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="info-panel">
+
+
+    <h2>Personal Information</h2>
+
+
+    <div class="info-row">
+        <strong>Address</strong>
+        <span>@Model.Address</span>
+    </div>
+
+
+    <div class="info-row">
+        <strong>Phone</strong>
+        <span>@Model.Phone</span>
+    </div>
+
+
+    <div class="info-row password-row">
+        <strong>Password</strong>
+        <span>************</span>
+    </div>
+
+
+    <h2 class="section-title">Notifications & Preferences</h2>
+
+    <label class="check-item"><input type="checkbox" /> Receive Notifications</label><br>
+    <label class="check-item"><input type="checkbox" /> Allow promotional emails</label><br><br>
+
+    <label class="form-label">Notification method</label>
+    <select class="select-box" id="notificationMethod">
+        <option value="">Choose notification preference...</option>
+        <option value="email">Email</option>
+        <option value="sms">SMS</option>
+    </select>
+
+    <h2 class="section-title">Purchase & Listing Summary</h2>
+
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tabOrders" type="button">My Orders</button>
+        <button class="tab-btn" id="tabListings" type="button">My Listings</button>
+    </div>
+
+    <div class="car-list" id="ordersList" style="display:flex;">
+        @if (Model.Orders != null && Model.Orders.Any())
+        {
+            @foreach (var order in Model.Orders)
+            {
+                <div class="car-box">
+                    <img src="@order.ImageUrl" alt="@order.Name" />
+                    <strong>@order.Name</strong><br>
+                    <small>@order.Date</small><br>
+                    <span class="status">@order.Status</span>
+                </div>
+            }
+        }
+        else
+        {
+            <p>You don't have any orders yet.</p>
+        }
+    </div>
+
+    <div class="car-list" id="listingsList" style="display:none;">
+        @if (Model.IsSeller)
+        {
+            @if (Model.Listings != null && Model.Listings.Any())
+            {
+                @foreach (var listing in Model.Listings)
+                {
+                    <div class="car-box">
+                        <img src="@listing.ImageUrl" alt="@listing.Name" />
+                        <strong>@listing.Name</strong><br>
+                        <small>@listing.CreatedAt</small><br>
+                        <span class="status">@listing.State</span>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>You don't have any listings yet.</p>
+            }
+        }
+        else
+        {
+            <p>
+                You are not a seller yet.
+                <a href="#" id="becomeSellerLink">Click here to become a seller.</a>
+            </p>
+        }
+    </div>
+
+</div>
+
+
+</div>
+
+@if (!Model.IsSeller)
+{
+    <div id="sellerOverlay" class="overlay-hidden">
+        <div class="seller-modal">
+            <h2 class="modal-title">Become a Seller</h2>
+            <p>
+                You are not a seller yet. To create and manage your own listings, you need to create a seller account.
+            </p>
+            <div class="modal-buttons">
+                <button type="button" id="goToSellerForm" class="seller-modal-btn seller-register-btn">Go to Seller Registration</button>
+                <button type="button" id="closeSellerOverlay" class="seller-modal-btn seller-later-btn">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    // Tabs behaviour for Orders / Listings + non-seller overlay
+    (function () {
+        const tabOrders = document.getElementById('tabOrders');
+        const tabListings = document.getElementById('tabListings');
+        const ordersList = document.getElementById('ordersList');
+        const listingsList = document.getElementById('listingsList');
+        const sellerOverlay = document.getElementById('sellerOverlay');
+        const closeSellerOverlay = document.getElementById('closeSellerOverlay');
+        const goToSellerForm = document.getElementById('goToSellerForm');
+
+        if (!tabOrders || !tabListings || !ordersList || !listingsList) return;
+
+        tabOrders.addEventListener('click', function () {
+            tabOrders.classList.add('active');
+            tabListings.classList.remove('active');
+            ordersList.style.display = 'flex';
+            listingsList.style.display = 'none';
+        });
+
+        tabListings.addEventListener('click', function () {
+            // If overlay exists, user is not a seller yet
+            if (sellerOverlay) {
+                sellerOverlay.classList.remove('overlay-hidden');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+
+            tabListings.classList.add('active');
+            tabOrders.classList.remove('active');
+            ordersList.style.display = 'none';
+            listingsList.style.display = 'flex';
+        });
+
+        if (closeSellerOverlay && sellerOverlay) {
+            closeSellerOverlay.addEventListener('click', function () {
+                sellerOverlay.classList.add('overlay-hidden');
+                document.body.style.overflow = '';
+            });
+        }
+
+        if (goToSellerForm) {
+            goToSellerForm.addEventListener('click', function () {
+                window.location.href = '/Forms/SellerForms';
+            });
+        }
+    })();
+</script>
+
+@section Scripts {
+    <script>
+        document.addEventListener("click", function (e) {
+            const btn = document.getElementById("userMenuBtn");
+            const dropdown = document.getElementById("userDropdown");
+            const container = btn?.closest('.user-menu-container');
+
+            if (!btn || !dropdown) return;
+
+            if (btn.contains(e.target)) {
+                dropdown.classList.toggle("show");
+                if (container) {
+                    container.classList.toggle("open");
+                }
+            }
+            else if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove("show");
+                if (container) {
+                    container.classList.remove("open");
+                }
+            }
+        });
+    </script>
+}
+
+@await Html.PartialAsync("_Footer")

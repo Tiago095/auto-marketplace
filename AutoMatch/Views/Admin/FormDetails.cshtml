@@ -1,0 +1,212 @@
+﻿@using AutoMatch.Models.ViewModels
+@model FormDetailsViewModel
+
+@{
+    ViewData["Title"] = "Form Details";
+    Layout = "_Layout";
+
+    var username = Context.Session.GetString("UserName") ?? "Admin";
+    var initial = Context.Session.GetString("UserInitial") ?? "A";
+    var profileImageUrl = Context.Session.GetString("UserProfileImageUrl");
+}
+
+<link rel="stylesheet" href="~/css/admin.css">
+<link rel="stylesheet" href="~/css/user-dropdown.css">
+
+<div class="floating-header">
+    <div class="logo-text">AutoMatch</div>
+    <div class="floating-buttons">
+        <a href="@Url.Action("Index", "Home")" class="nav-btn">Home</a>
+        <a href="@Url.Action("About", "Home")" class="nav-btn">About</a>
+        <a href="@Url.Action("Contact", "Home")" class="nav-btn">Contact</a>
+
+        <div class="user-menu-container">
+            <div class="user-badge" id="userMenuBtn">
+                <span class="user-name">@username</span>
+                @if (!string.IsNullOrEmpty(profileImageUrl))
+                {
+                    <img src="@profileImageUrl" class="user-avatar" alt="Profile" />
+                }
+                else
+                {
+                    <div class="user-avatar">@initial</div>
+                }
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <a href="/Account/Profile">Profile</a>
+                <a href="/Account/Listings">My Listings</a>
+                <a href="/Dashboard/Index">Dashboard</a>
+                <a href="/Account/Logout" style="color: #ff4c4c; font-weight: 500;">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pagina Admin -->
+<div class="admin-page">
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="@Url.Action("DashAdmin", "Admin")" class="sidebar-btn">
+                        <span class="icon"><i class="fa-solid fa-gauge"></i></span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("AdminForms", "Admin")" class="sidebar-btn active">
+                        <span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>
+                        <span>Form Submissions</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-bottom">
+                <a href="@Url.Action("Index", "Dashboard")" class="sidebar-btn active">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Conteudo principal -->
+        <div class="dashboard-main">
+
+            <div class="details-header">
+                <a href="@Url.Action("AdminForms", "Admin")" class="back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Forms
+                </a>
+                <h1>Seller Application Details</h1>
+                <p class="subtitle">Request ID: #@Model.ApplicationId</p>
+            </div>
+
+            <div class="details-card">
+                <div class="details-section">
+                    <h2>Applicant Information</h2>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Full Name</span>
+                            <span class="detail-value">@Model.Username</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value">@Model.Email</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Phone Number</span>
+                            <span class="detail-value">@Model.PhoneNumber</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Submission Date</span>
+                            <span class="detail-value">@Model.SubmissionDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h2>Seller Information</h2>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Selling Type</span>
+                            <span class="detail-value">@Model.SellingType</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Document Number (NIF)</span>
+                            <span class="detail-value">@Model.DocumentNumber</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Postal Code</span>
+                            <span class="detail-value">@Model.PostalCode</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Preferred Contact Method</span>
+                            <span class="detail-value">@Model.PreferredContactMethod</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                @if (Model.Status == "Pending")
+                {
+                    <div class="details-actions">
+                        <form asp-action="ApproveApplication" asp-controller="Admin" method="post" style="display: inline;">
+                            <input type="hidden" name="id" value="@Model.ApplicationId" />
+                            <button type="submit" class="approve-btn" onclick="return confirm('Are you sure you want to approve this application?');">
+                                <i class="fa-solid fa-check"></i> Approve Application
+                            </button>
+                        </form>
+
+                        <button type="button" class="reject-btn" onclick="showRejectModal()">
+                            <i class="fa-solid fa-times"></i> Reject Application
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="status-badge status-@Model.Status.ToLower()">
+                        Status: @Model.Status
+                    </div>
+                }
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<div id="rejectModal" class="modal">
+    <div class="modal-content">
+        <h2>Reject Application</h2>
+        <form asp-action="RejectApplication" asp-controller="Admin" method="post">
+            <input type="hidden" name="id" value="@Model.ApplicationId" />
+            <div class="form-group">
+                <label>Reason for Rejection</label>
+                <textarea name="reason" rows="4" placeholder="Enter reason for rejection..." required></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="cancel-btn" onclick="closeRejectModal()">Cancel</button>
+                <button type="submit" class="confirm-reject-btn">Confirm Rejection</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("click", function (e) {
+        const btn = document.getElementById("userMenuBtn");
+        const dropdown = document.getElementById("userDropdown");
+        const container = btn?.closest('.user-menu-container');
+
+        if (!btn || !dropdown) return;
+
+        if (btn.contains(e.target)) {
+            dropdown.classList.toggle("show");
+            if (container) {
+                container.classList.toggle("open");
+            }
+        }
+        else if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove("show");
+            if (container) {
+                container.classList.remove("open");
+            }
+        }
+    });
+
+    function showRejectModal() {
+        document.getElementById('rejectModal').style.display = 'flex';
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('rejectModal');
+        if (event.target == modal) {
+            closeRejectModal();
+        }
+    }
+</script>x 
