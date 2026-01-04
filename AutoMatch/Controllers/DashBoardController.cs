@@ -70,8 +70,8 @@ namespace AutoMatch.Controllers
             var unreadMessages = await _context.Notificacoes
                 .CountAsync(n => n.Tipo == "Mensagem" && 
                                 !n.Estado && 
-                                ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
-                                 (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
+                                ((isVendedor && n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                                 (!isVendedor && n.Id_Vendedor == userId && n.Id_Comprador != userId)));
 
             // Notificações não lidas
             int newNotifications;
@@ -79,7 +79,7 @@ namespace AutoMatch.Controllers
             {
                 newNotifications = await _context.Notificacoes
                     .CountAsync(n => n.Tipo == "Mensagem" 
-                        ? (n.Id_Vendedor == userId && n.Id_Comprador != userId && !n.Estado)
+                        ? (n.Id_Comprador == userId && n.Id_Vendedor != userId && !n.Estado)
                         : n.Tipo == "Booking"
                         ? (n.Id_Vendedor == userId && !n.Estado)
                         : (n.Id_Vendedor == userId && !n.Estado));
@@ -88,7 +88,7 @@ namespace AutoMatch.Controllers
             {
                 newNotifications = await _context.Notificacoes
                     .CountAsync(n => n.Tipo == "Mensagem"
-                        ? (n.Id_Comprador == userId && n.Id_Vendedor != userId && !n.Estado)
+                        ? (n.Id_Vendedor == userId && n.Id_Comprador != userId && !n.Estado)
                         : (n.Id_Comprador == userId && !n.Estado));
             }
 
@@ -166,8 +166,8 @@ namespace AutoMatch.Controllers
             // Recent messages - ajustar para vendedor ou comprador
             var recentMessagesQuery = _context.Notificacoes
                 .Where(n => n.Tipo == "Mensagem" &&
-                            ((isVendedor && n.Id_Vendedor == userId) || 
-                             (!isVendedor && n.Id_Comprador == userId)))
+                            ((isVendedor && n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                             (!isVendedor && n.Id_Vendedor == userId && n.Id_Comprador != userId)))
                 .OrderByDescending(n => n.Data_Envio)
                 .Take(2);
 
@@ -180,7 +180,7 @@ namespace AutoMatch.Controllers
 
             var recentMessages = recentMessagesList.Select(n =>
             {
-                // Determinar o outro participante
+                // Determinar o outro participante (remetente)
                 int? outroParticipanteId = null;
                 string nomeRemetente = "Unknown";
                 string? profileImageUrl = null;
@@ -188,18 +188,18 @@ namespace AutoMatch.Controllers
                 if (isVendedor)
                 {
                     // Vendedor recebe mensagem de comprador
-                    outroParticipanteId = n.Id_Comprador;
-                    var comprador = n.Comprador?.Utilizador;
-                    nomeRemetente = comprador?.Nome ?? comprador?.UserName ?? $"User #{n.Id_Comprador}";
-                    profileImageUrl = comprador?.ProfileImageUrl;
-                }
-                else
-                {
-                    // Comprador recebe mensagem de vendedor
                     outroParticipanteId = n.Id_Vendedor;
                     var vendedor = n.Vendedor?.Utilizador;
                     nomeRemetente = vendedor?.Nome ?? vendedor?.UserName ?? $"User #{n.Id_Vendedor}";
                     profileImageUrl = vendedor?.ProfileImageUrl;
+                }
+                else
+                {
+                    // Comprador recebe mensagem de vendedor
+                    outroParticipanteId = n.Id_Comprador;
+                    var comprador = n.Comprador?.Utilizador;
+                    nomeRemetente = comprador?.Nome ?? comprador?.UserName ?? $"User #{n.Id_Comprador}";
+                    profileImageUrl = comprador?.ProfileImageUrl;
                 }
 
                 return new DashboardMessageInfo
@@ -592,8 +592,8 @@ namespace AutoMatch.Controllers
 
                 // Contar mensagens não lidas
                 var mensagensNaoLidas = mensagens.Count(m =>
-                    ((m.Id_Comprador == outroId && m.Id_Vendedor == userId) ||
-                     (m.Id_Vendedor == outroId && m.Id_Comprador == userId)) &&
+                    ((isVendedor && m.Id_Comprador == userId && m.Id_Vendedor == outroId) ||
+                     (!isVendedor && m.Id_Vendedor == userId && m.Id_Comprador == outroId)) &&
                     !m.Estado);
 
                 vm.Conversas.Add(new ConversationItemViewModel
@@ -675,8 +675,8 @@ namespace AutoMatch.Controllers
 
                 // Marcar mensagens como lidas quando a conversa é aberta
                 var mensagensParaMarcar = mensagensConversa
-                    .Where(n => ((n.Id_Comprador == conversaId.Value && n.Id_Vendedor == userId) ||
-                                (n.Id_Vendedor == conversaId.Value && n.Id_Comprador == userId)) &&
+                    .Where(n => ((isVendedor && n.Id_Comprador == userId && n.Id_Vendedor == conversaId.Value) ||
+                                (!isVendedor && n.Id_Vendedor == userId && n.Id_Comprador == conversaId.Value)) &&
                                !n.Estado)
                     .ToList();
 
@@ -925,7 +925,7 @@ namespace AutoMatch.Controllers
             
             var list = await _context.Notificacoes
                 .Where(n => n.Tipo == "Mensagem" 
-                    ? (isVendedor ? (n.Id_Vendedor == userId && n.Id_Comprador != userId) : (n.Id_Comprador == userId && n.Id_Vendedor != userId))
+                    ? (isVendedor ? (n.Id_Comprador == userId && n.Id_Vendedor != userId) : (n.Id_Vendedor == userId && n.Id_Comprador != userId))
                     : n.Tipo == "Booking"
                     ? (n.Id_Vendedor == userId)
                     : ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId)))
