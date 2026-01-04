@@ -81,10 +81,10 @@
 
                     <!-- Parametros Cartão Crédito -->
                     <div class="payment-fields" id="creditCardFields">
-                        <input type="text" name="cardNumber" placeholder="Card number" />
+                        <input type="text" name="cardNumber" placeholder="Card number" required />
                         <div class="payment-row">
-                            <input type="text" name="expirationDate" placeholder="Expiration Date (MM/YY)" />
-                            <input type="text" name="cvv" placeholder="CVV" />
+                            <input type="text" name="expirationDate" placeholder="Expiration Date (MM/YY)" required />
+                            <input type="text" name="cvv" placeholder="CVV" required />
                         </div>
                     </div>
 
@@ -366,7 +366,72 @@
                     container.classList.remove("open");
                 }
             }
-        });
-    </script>
+           
+        // Validação do Número do Cartão
+        const cardNumberInput = document.querySelector('input[name="cardNumber"]');
+
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s/g, ''); 
+                let numericValue = value.replace(/\D/g, ''); 
+        
+                if (numericValue.length > 16) {
+                    numericValue = numericValue.substring(0, 16);
+                }
+        
+                let formattedValue = '';
+                for (let i = 0; i < numericValue.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += numericValue[i];
+                }
+        
+                e.target.value = formattedValue;
+            });
+        }
+
+        // Validação da Data de Expiração
+        const expirationInput = document.querySelector('input[name="expirationDate"]');
+
+        if (expirationInput) {
+            expirationInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); 
+        
+                if (value.length > 4) {
+                    value = value.substring(0, 4);
+                }
+        
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2);
+                }
+        
+                e.target.value = value;
+            });
+    
+            expirationInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && e.target.value.length === 3) {
+                    e.target.value = e.target.value.substring(0, 2);
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Validação do CVV 
+        const cvvInput = document.querySelector('input[name="cvv"]');
+
+        if (cvvInput) {
+            cvvInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); 
+        
+                if (value.length > 3) {
+                    value = value.substring(0, 3);
+                }
+        
+                e.target.value = value;
+            });
+        }
+     });
+     </script>
 }
 
