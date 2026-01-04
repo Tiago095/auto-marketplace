@@ -417,6 +417,6 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-# Pastas de build específicas do .NET 8
+# Pastas de build especÃ­ficas do .NET 8
 **/obj/Debug/net8.0/
 **/bin/Debug/net8.0/
