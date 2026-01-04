@@ -51,6 +51,19 @@
     <div class="listing-container">
         <h1>Edit Car Listing</h1>
 
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+                <h4 style="margin-top: 0;">Erro ao salvar:</h4>
+                <ul style="margin-bottom: 0;">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
         <form asp-action="Edit" asp-controller="Listings" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="Id_Anuncio" />
@@ -133,7 +146,12 @@
                                            name="NovasImagens"
                                            class="hidden"
                                            accept="image/*"
+                                           data-index="@i"
+                                           data-position="@i"
                                            onchange="handleImageSelect(@i, event)">
+
+                                    <input type="hidden" id="delete-flag-@i" name="ImagensParaDeletar[@i]" value="false" />
+                                    <input type="hidden" id="image-index-@i" name="ImageIndices[@i]" value="@i" />
 
                                     <div class="photo-placeholder" style="@(hasImage ? "display: none;" : "")">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +162,7 @@
 
                                     @if (hasImage)
                                     {
-                                        <img src="@Model.ImagensExistentes[i]" alt="Image @(i + 1)" />
+                                        <img src="@Model.ImagensExistentes[i]" alt="Image @(i + 1)" id="img-preview-@i" />
                                     }
                                 </div>
                             }
@@ -162,7 +180,7 @@
                     </div>
 
                     <div class="action-row">
-                        <button type="submit" class="save-btn">Save Changes</button>
+                        <button type="submit" class="save-btn" id="saveBtn">Save Changes</button>
                         <a href="/Listings/MyListings" class="cancel-btn">Cancel</a>
                     </div>
                 </div>
@@ -207,8 +225,15 @@
             const reader = new FileReader();
             reader.onloadend = function() {
                 images[index] = reader.result;
+                
+                const deleteFlag = document.getElementById('delete-flag-' + index);
+                if (deleteFlag) {
+                    deleteFlag.value = 'false';
+                }
+                
                 updateCard(index);
                 updateButtons();
+                validateImages();
             };
             reader.readAsDataURL(file);
         }
@@ -242,6 +267,86 @@
 
     document.getElementById('minusBtn').addEventListener('click', (e) => {
         e.preventDefault();
+        deleteSelectedImage();
+    });
+
+    function deleteSelectedImage() {
+        if (selectedIndex !== null) {
+            images[selectedIndex] = '';
+            
+            const deleteFlag = document.getElementById('delete-flag-' + selectedIndex);
+            if (deleteFlag) {
+                deleteFlag.value = 'true';
+            }
+            
+            const fileInput = document.getElementById('file-input-' + selectedIndex);
+            if (fileInput) {
+                fileInput.value = '';
+            }
+            
+            updateCard(selectedIndex);
+            updateButtons();
+            validateImages();
+        }
+    }
+
+    function validateImages() {
+        let imageCount = 0;
+        for (let i = 0; i < 5; i++) {
+            const deleteFlag = document.getElementById('delete-flag-' + i);
+            const fileInput = document.getElementById('file-input-' + i);
+            const hasExistingImage = images[i] && images[i] !== '';
+            const willBeDeleted = deleteFlag && deleteFlag.value === 'true';
+            const hasNewFile = fileInput && fileInput.files && fileInput.files.length > 0;
+            
+            if ((hasExistingImage && !willBeDeleted) || hasNewFile) {
+                imageCount++;
+            }
+        }
+        
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+            saveBtn.style.cursor = 'pointer';
+            if (imageCount < 5) {
+                saveBtn.title = 'Warning: You need 5 images to save';
+            } else {
+                saveBtn.title = '';
+            }
+        }
+    }
+
+    validateImages();
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let imageCount = 0;
+        for (let i = 0; i < 5; i++) {
+            const deleteFlag = document.getElementById('delete-flag-' + i);
+            const fileInput = document.getElementById('file-input-' + i);
+            const hasExistingImage = images[i] && images[i] !== '';
+            const willBeDeleted = deleteFlag && deleteFlag.value === 'true';
+            const hasNewFile = fileInput && fileInput.files && fileInput.files.length > 0;
+            
+            if ((hasExistingImage && !willBeDeleted) || hasNewFile) {
+                imageCount++;
+            }
+        }
+        
+        if (imageCount < 5) {
+            e.preventDefault();
+            alert(`You need exactly 5 images to save the listing.\n\nCurrently you have ${imageCount} image(s).\nPlease add ${5 - imageCount} more image(s).`);
+            return false;
+        }
+
+        for (let i = 0; i < 5; i++) {
+            const fileInput = document.getElementById('file-input-' + i);
+            if (fileInput) {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    fileInput.name = 'NovasImagens[' + i + ']';
+                }
+            }
+        }
     });
 
     updateButtons();

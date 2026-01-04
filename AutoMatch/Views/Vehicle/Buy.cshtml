@@ -81,16 +81,16 @@
 
                     <!-- Parametros Cartão Crédito -->
                     <div class="payment-fields" id="creditCardFields">
-                        <input type="text" name="cardNumber" placeholder="Card number" required />
+                        <input type="text" name="cardNumber" id="cardNumber" placeholder="Card number" maxlength="19" />
                         <div class="payment-row">
-                            <input type="text" name="expirationDate" placeholder="Expiration Date (MM/YY)" required />
-                            <input type="text" name="cvv" placeholder="CVV" required />
+                            <input type="text" name="expirationDate" id="expirationDate" placeholder="Expiration Date (MM/YY)" maxlength="5" />
+                            <input type="text" name="cvv" id="cvv" placeholder="CVV" maxlength="3" />
                         </div>
                     </div>
 
                     <!-- Parametros PayPal -->
                     <div class="payment-fields" id="paypalFields" style="display: none;">
-                        <input type="email" name="paypalEmail" placeholder="PayPal Email" />
+                        <input type="email" name="paypalEmail" id="paypalEmail" placeholder="PayPal Email" />
                         <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
                             You will be redirected to PayPal to complete your payment.
                         </p>
@@ -102,11 +102,11 @@
                 <div class="checkout-card address-card">
                     <h2>Billing Address</h2>
 
-                    <input type="text" name="FullName" placeholder="Full name" required />
-                    <input type="text" name="Address" placeholder="Address" required />
-                    <input type="text" name="City" placeholder="City" required />
+                    <input type="text" name="FullName" id="fullName" placeholder="Full name" required />
+                    <input type="text" name="Address" id="address" placeholder="Address" required />
+                    <input type="text" name="City" id="city" placeholder="City" required />
 
-                    <select name="Country" required>
+                    <select name="Country" id="country" required>
                         <option value="">Country</option>
                         <option value="Portugal">Portugal</option>
                         <option value="Spain">Spain</option>
@@ -257,6 +257,7 @@
 
         async function runSimulation() {
             const months = parseInt(hiddenSelect.value || '6');
+            const vehicleId = @Model.Id;
             
             if (planMonths) {
                 planMonths.textContent = `${months} Months`;
@@ -268,7 +269,7 @@
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
                     },
-                    body: `vehicleId=@Model.Id&months=${months}`
+                    body: 'vehicleId=' + vehicleId + '&months=' + months
                 });
 
                 if (!response.ok) {
@@ -324,28 +325,50 @@
 
         // Selecionar metodo de pagamento
         const paymentButtons = document.querySelectorAll('.payment-btn');
-                const paymentMethodInput = document.getElementById('paymentMethod');
-                const creditCardFields = document.getElementById('creditCardFields');
-                const paypalFields = document.getElementById('paypalFields');
+        const paymentMethodInput = document.getElementById('paymentMethod');
+        const creditCardFields = document.getElementById('creditCardFields');
+        const paypalFields = document.getElementById('paypalFields');
+        const cardNumberInput = document.getElementById('cardNumber');
+        const expirationInput = document.getElementById('expirationDate');
+        const cvvInput = document.getElementById('cvv');
+        const paypalEmailInput = document.getElementById('paypalEmail');
 
-                paymentButtons.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        paymentButtons.forEach(b => b.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        const paymentType = this.getAttribute('data-payment');
-                        paymentMethodInput.value = paymentType;
+        paymentButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                paymentButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const paymentType = this.getAttribute('data-payment');
+                paymentMethodInput.value = paymentType;
 
-                        creditCardFields.style.display = 'none';
-                        paypalFields.style.display = 'none';
+                creditCardFields.style.display = 'none';
+                paypalFields.style.display = 'none';
 
-                        if (paymentType === 'creditcard') {
-                            creditCardFields.style.display = 'flex';
-                        } else if (paymentType === 'paypal') {
-                            paypalFields.style.display = 'flex';
-                        }
-                    });
-                });
+                // Resetar validação visual dos campos
+                if (cardNumberInput) cardNumberInput.style.borderColor = '';
+                if (expirationInput) expirationInput.style.borderColor = '';
+                if (cvvInput) cvvInput.style.borderColor = '';
+                if (paypalEmailInput) paypalEmailInput.style.borderColor = '';
+
+                if (paymentType === 'creditcard') {
+                    creditCardFields.style.display = 'flex';
+                    if (cardNumberInput) cardNumberInput.setAttribute('required', 'required');
+                    if (expirationInput) expirationInput.setAttribute('required', 'required');
+                    if (cvvInput) cvvInput.setAttribute('required', 'required');
+                    if (paypalEmailInput) paypalEmailInput.removeAttribute('required');
+                } else if (paymentType === 'paypal') {
+                    paypalFields.style.display = 'flex';
+                    if (cardNumberInput) cardNumberInput.removeAttribute('required');
+                    if (expirationInput) expirationInput.removeAttribute('required');
+                    if (cvvInput) cvvInput.removeAttribute('required');
+                    if (paypalEmailInput) paypalEmailInput.setAttribute('required', 'required');
+                }
+            });
+        });
+
+        if (cardNumberInput) cardNumberInput.setAttribute('required', 'required');
+        if (expirationInput) expirationInput.setAttribute('required', 'required');
+        if (cvvInput) cvvInput.setAttribute('required', 'required');
 
         document.addEventListener("click", function (e) {
             const btn = document.getElementById("userMenuBtn");
@@ -366,10 +389,9 @@
                     container.classList.remove("open");
                 }
             }
-           
-        // Validação do Número do Cartão
-        const cardNumberInput = document.querySelector('input[name="cardNumber"]');
+        });
 
+        // Formatação do Número do Cartão
         if (cardNumberInput) {
             cardNumberInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\s/g, ''); 
@@ -391,15 +413,22 @@
             });
         }
 
-        // Validação da Data de Expiração
-        const expirationInput = document.querySelector('input[name="expirationDate"]');
-
+        // Formatação da Data de Expiração
         if (expirationInput) {
             expirationInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, ''); 
         
                 if (value.length > 4) {
                     value = value.substring(0, 4);
+                }
+        
+                if (value.length >= 2) {
+                    const month = parseInt(value.substring(0, 2));
+                    if (month > 12) {
+                        value = '12' + value.substring(2);
+                    } else if (month === 0 && value.length === 2) {
+                        value = value.substring(0, 1);
+                    }
                 }
         
                 if (value.length >= 2) {
@@ -415,11 +444,30 @@
                     e.preventDefault();
                 }
             });
+
+            // Validação ao perder o foco
+            expirationInput.addEventListener('blur', function(e) {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value.length === 4) {
+                    const month = parseInt(value.substring(0, 2));
+                    const year = parseInt('20' + value.substring(2, 4));
+                    const currentYear = new Date().getFullYear();
+                    
+                    if (month < 1 || month > 12) {
+                        e.target.style.borderColor = '#dc3545';
+                        e.target.setCustomValidity('Mês inválido. Deve ser entre 01 e 12.');
+                    } else if (year < currentYear) {
+                        e.target.style.borderColor = '#dc3545';
+                        e.target.setCustomValidity(`Ano inválido. Deve ser ${currentYear} ou posterior.`);
+                    } else {
+                        e.target.style.borderColor = '';
+                        e.target.setCustomValidity('');
+                    }
+                }
+            });
         }
 
-        // Validação do CVV 
-        const cvvInput = document.querySelector('input[name="cvv"]');
-
+        // Formatação do CVV
         if (cvvInput) {
             cvvInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, ''); 
@@ -431,7 +479,138 @@
                 e.target.value = value;
             });
         }
-     });
+
+        // Validação do formulário
+        const checkoutForm = document.querySelector('form');
+        if (checkoutForm) {
+            checkoutForm.addEventListener('submit', function(e) {
+                const paymentMethod = document.getElementById('paymentMethod').value;
+                
+                let isValid = true;
+                let errorMessage = '';
+                
+                // Validar campos do endereço
+                const fullName = document.getElementById('fullName');
+                const address = document.getElementById('address');
+                const city = document.getElementById('city');
+                const country = document.getElementById('country');
+                
+                if (!fullName || !fullName.value.trim()) {
+                    isValid = false;
+                    errorMessage = 'Por favor, preencha o nome completo.';
+                    if (fullName) fullName.style.borderColor = '#dc3545';
+                } else {
+                    if (fullName) fullName.style.borderColor = '';
+                }
+                
+                if (!address || !address.value.trim()) {
+                    isValid = false;
+                    if (errorMessage) errorMessage += '\n';
+                    errorMessage += 'Por favor, preencha o endereço.';
+                    if (address) address.style.borderColor = '#dc3545';
+                } else {
+                    if (address) address.style.borderColor = '';
+                }
+                
+                if (!city || !city.value.trim()) {
+                    isValid = false;
+                    if (errorMessage) errorMessage += '\n';
+                    errorMessage += 'Por favor, preencha a cidade.';
+                    if (city) city.style.borderColor = '#dc3545';
+                } else {
+                    if (city) city.style.borderColor = '';
+                }
+                
+                if (!country || !country.value) {
+                    isValid = false;
+                    if (errorMessage) errorMessage += '\n';
+                    errorMessage += 'Por favor, selecione o país.';
+                    if (country) country.style.borderColor = '#dc3545';
+                } else {
+                    if (country) country.style.borderColor = '';
+                }
+                
+                // validar os campos do cartão
+                if (paymentMethod === 'creditcard') {
+                    const cardNumber = cardNumberInput ? cardNumberInput.value.replace(/\s/g, '') : '';
+                    const expirationDate = expirationInput ? expirationInput.value.replace(/\D/g, '') : '';
+                    const cvv = cvvInput ? cvvInput.value : '';
+                    
+                    if (!cardNumber || cardNumber.length !== 16) {
+                        isValid = false;
+                        if (errorMessage) errorMessage += '\n';
+                        errorMessage += 'Por favor, preencha o número do cartão de crédito (16 dígitos).';
+                        if (cardNumberInput) cardNumberInput.style.borderColor = '#dc3545';
+                    } else {
+                        if (cardNumberInput) cardNumberInput.style.borderColor = '';
+                    }
+                    
+                    if (!expirationDate || expirationDate.length !== 4) {
+                        isValid = false;
+                        if (errorMessage) errorMessage += '\n';
+                        errorMessage += 'Por favor, preencha a data de validade (MM/YY).';
+                        if (expirationInput) expirationInput.style.borderColor = '#dc3545';
+                    } else {
+                        // Validar mês e ano
+                        const month = parseInt(expirationDate.substring(0, 2));
+                        const year = parseInt('20' + expirationDate.substring(2, 4));
+                        const currentYear = new Date().getFullYear();
+                        
+                        if (month < 1 || month > 12) {
+                            isValid = false;
+                            if (errorMessage) errorMessage += '\n';
+                            errorMessage += 'Mês inválido. Deve ser entre 01 e 12.';
+                            if (expirationInput) expirationInput.style.borderColor = '#dc3545';
+                        } else if (year < currentYear) {
+                            isValid = false;
+                            if (errorMessage) errorMessage += '\n';
+                            errorMessage += `Ano inválido. Deve ser ${currentYear} ou posterior.`;
+                            if (expirationInput) expirationInput.style.borderColor = '#dc3545';
+                        } else {
+                            if (expirationInput) expirationInput.style.borderColor = '';
+                        }
+                    }
+                    
+                    if (!cvv || cvv.length !== 3) {
+                        isValid = false;
+                        if (errorMessage) errorMessage += '\n';
+                        errorMessage += 'Por favor, preencha o CVV (3 dígitos).';
+                        if (cvvInput) cvvInput.style.borderColor = '#dc3545';
+                    } else {
+                        if (cvvInput) cvvInput.style.borderColor = '';
+                    }
+                } else if (paymentMethod === 'paypal') {
+                    // Validar email PayPal
+                    const paypalEmail = paypalEmailInput ? paypalEmailInput.value.trim() : '';
+                    
+                    if (!paypalEmail) {
+                        isValid = false;
+                        if (errorMessage) errorMessage += '\n';
+                        errorMessage += 'Por favor, preencha o email do PayPal.';
+                        if (paypalEmailInput) paypalEmailInput.style.borderColor = '#dc3545';
+                    } else {
+                        // Validar formato de email
+                        const atSymbol = String.fromCharCode(64);
+                        const atIndex = paypalEmail.indexOf(atSymbol);
+                        const dotIndex = paypalEmail.lastIndexOf('.');
+                        if (atIndex < 1 || dotIndex < atIndex + 2 || dotIndex === paypalEmail.length - 1) {
+                            isValid = false;
+                            if (errorMessage) errorMessage += '\n';
+                            errorMessage += 'Por favor, insira um email válido.';
+                            if (paypalEmailInput) paypalEmailInput.style.borderColor = '#dc3545';
+                        } else {
+                            if (paypalEmailInput) paypalEmailInput.style.borderColor = '';
+                        }
+                    }
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    alert(errorMessage);
+                    return false;
+                }
+            });
+        }
      </script>
 }
 

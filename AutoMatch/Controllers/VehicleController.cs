@@ -156,6 +156,10 @@ namespace AutoMatch.Controllers
 
             ViewBag.OrderedImages = orderedImages;
 
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var isOwner = userId.HasValue && anuncio.Id_Vendedor == userId.Value;
+            ViewBag.IsOwner = isOwner;
+
             var vehicle = new Vehicle
             {
                 Id = anuncio.Id_Anuncio,

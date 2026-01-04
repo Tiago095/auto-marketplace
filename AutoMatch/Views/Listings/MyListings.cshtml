@@ -61,6 +61,18 @@
     </div>
 }
 
+@if (TempData["Success"] != null)
+{
+    <div class="success-popup" id="successPopup" style="display: flex;">
+        <div class="success-popup-content">
+            <i class="fa-solid fa-check-circle"></i>
+            <h3>Sucesso!</h3>
+            <p>@TempData["Success"]</p>
+            <button onclick="closeSuccessPopup()">OK</button>
+        </div>
+    </div>
+}
+
 <!-- My Listings painel principal -->
 <div class="mylistings-wrapper">
     <div class="mylistings-panel">

@@ -95,11 +95,20 @@
             <!-- Butões de ação -->
             <div class="action-buttons">
                 <a class="btn-contact" href="@Url.Action("Messages", "Dashboard", new { vendedorId = Model.SellerId })">Contact Seller</a>
-                <button class="btn-test-drive" id="openBookingModal">Book Test Drive</button>
-                <a class="btn-buy-now" href="@Url.Action("Buy", "Vehicle", new { id = Model.Id })">
-                    @Model.Price.ToString("N0")€ Buy Now
-                </a>
-
+                @if (ViewBag.IsOwner == true)
+                {
+                    <button class="btn-test-drive" disabled style="opacity: 0.5; cursor: not-allowed;" title="You cannot book a test drive for your own listing">Book Test Drive</button>
+                    <a class="btn-buy-now" href="#" onclick="return false;" style="opacity: 0.5; cursor: not-allowed; pointer-events: none;" title="You cannot buy your own listing">
+                        @Model.Price.ToString("N0")€ Buy Now
+                    </a>
+                }
+                else
+                {
+                    <button class="btn-test-drive" id="openBookingModal">Book Test Drive</button>
+                    <a class="btn-buy-now" href="@Url.Action("Buy", "Vehicle", new { id = Model.Id })">
+                        @Model.Price.ToString("N0")€ Buy Now
+                    </a>
+                }
             </div>
         </div>
 
@@ -297,7 +306,6 @@
                 }
             }
 
-            // Atualizar opções de horário baseado na data selecionada e horários bloqueados
             function updateTimeOptions() {
                 if (!dateInput.value) return;
 
@@ -349,7 +357,6 @@
                 overlay.classList.add('visible');
                 body.classList.add('modal-open');
                 loadBookedSlots();
-                // Definir data mínima como hoje
                 const today = new Date().toISOString().split('T')[0];
                 dateInput.min = today;
             }

@@ -101,7 +101,7 @@
                         </div>
                         <div>
                             <label>Year</label>
-                            <input asp-for="Ano" type="number" class="input-text" required />
+                            <input asp-for="Ano" id="ano" type="number" class="input-text" min="1990" max="@DateTime.Now.Year" required />
                         </div>
                     </div>
 
@@ -112,7 +112,7 @@
                         </div>
                         <div>
                             <label>Plate</label>
-                            <input asp-for="Matricula" class="input-text" maxlength="8" required />
+                            <input asp-for="Matricula" id="matricula" class="input-text" maxlength="8" placeholder="XX-XX-XX" required />
                         </div>
                     </div>
 
@@ -213,7 +213,7 @@
                     </div>
 
                     <div class="action-row">
-                        <button type="submit" class="save-btn">Save</button>
+                        <button type="submit" class="save-btn" id="saveBtn">Save</button>
                         <a href="/Listings/MyListings" class="cancel-btn">Cancel</a>
                     </div>
                 </div>
@@ -408,6 +408,70 @@
 
     updateButtons();
 
+    // Validação da Matrícula
+    const matriculaInput = document.getElementById('matricula');
+    if (matriculaInput) {
+        matriculaInput.addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
+            if (value.length > 6) {
+                value = value.substring(0, 6);
+            }
+            
+            let formatted = value;
+            if (formatted.length >= 2) {
+                formatted = formatted.substring(0, 2) + '-' + formatted.substring(2);
+            }
+            if (formatted.length >= 5) {
+                formatted = formatted.substring(0, 5) + '-' + formatted.substring(5);
+            }
+            
+            e.target.value = formatted;
+        });
+        
+        matriculaInput.addEventListener('blur', function(e) {
+            const value = e.target.value.replace(/-/g, '');
+            
+            const allNumbers = /^[0-9]{6}$/.test(value);
+            const allLetters = /^[A-Z]{6}$/.test(value);
+            
+            if (value.length !== 6 || allNumbers || allLetters) {
+                e.target.style.borderColor = '#dc3545';
+                e.target.setCustomValidity('Invalid format. Must be 6 characters (letters and numbers), cannot be all numbers or all letters.');
+            } else {
+                e.target.style.borderColor = '';
+                e.target.setCustomValidity('');
+            }
+        });
+    }
+
+    // Validação do ano
+    const anoInput = document.getElementById('ano');
+    if (anoInput) {
+        anoInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            if (value.length > 4) {
+                value = value.substring(0, 4);
+            }
+            
+            e.target.value = value;
+        });
+        
+        anoInput.addEventListener('blur', function(e) {
+            const year = parseInt(e.target.value);
+            const currentYear = new Date().getFullYear();
+            
+            if (year < 1990 || year > currentYear) {
+                e.target.style.borderColor = '#dc3545';
+                e.target.setCustomValidity(`O ano deve estar entre 1990 e ${currentYear}.`);
+            } else {
+                e.target.style.borderColor = '';
+                e.target.setCustomValidity('');
+            }
+        });
+    }
+
     document.addEventListener("click", function (e) {
         const btn = document.getElementById("userMenuBtn");
         const dropdown = document.getElementById("userDropdown");
@@ -428,43 +492,15 @@
             }
         }
     });
-    // Validação de imagens no submit
+
+    // Validação de imagens
     document.querySelector('form').addEventListener('submit', function(e) {
         const imagensCarregadas = images.filter(img => img !== null).length;
 
         if (imagensCarregadas !== 5) {
-            e.preventDefault(); // Impede o submit
-
-            // Remove aviso anterior se existir
-            const avisoAnterior = document.querySelector('.image-warning');
-            if (avisoAnterior) {
-                avisoAnterior.remove();
-            }
-
-            // Cria o aviso
-            const aviso = document.createElement('div');
-            aviso.className = 'image-warning';
-            aviso.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
-    <span>You must upload exactly 5 images! (${imagensCarregadas}/5 uploaded)</span>
-            `;
-
-            const photoButtons = document.querySelector('.photo-buttons');
-            photoButtons.parentNode.insertBefore(aviso, photoButtons);
-
-            // Scroll suave até o aviso
-            aviso.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Remove o aviso após 5 segundos
-            setTimeout(() => {
-                aviso.style.opacity = '0';
-                setTimeout(() => aviso.remove(), 300);
-            }, 5000);
-
+            e.preventDefault();
+            const faltam = 5 - imagensCarregadas;
+            alert(`You need exactly 5 images to create the listing.\n\nCurrently you have ${imagensCarregadas} image(s).\nPlease add ${faltam} more image(s).`);
             return false;
         }
     });

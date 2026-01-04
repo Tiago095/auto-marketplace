@@ -25,5 +25,6 @@ namespace AutoMatch.ViewModels
         // Imagens
         public List<string> ImagensExistentes { get; set; } = new();
         public List<IFormFile> NovasImagens { get; set; } = new();
+        public List<string> ImagensParaDeletar { get; set; } = new();
     }
 }

@@ -116,7 +116,7 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
-            // Validação do Ano (entre 1990 e ano atual)
+            // Validação do Ano
             int anoAtual = DateTime.Now.Year;
             if (model.Ano < 1990 || model.Ano > anoAtual)
             {
@@ -125,19 +125,22 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
-            // Validação da Matrícula (formato europeu: XX-XX-XX)
+            // Validação da Matrícula
+            var matriculaSemHifen = model.Matricula.ToUpper().Replace("-", "");
             var matriculaRegex = new System.Text.RegularExpressions.Regex(@"^[A-Z0-9]{2}-[A-Z0-9]{2}-[A-Z0-9]{2}$");
-            if (!matriculaRegex.IsMatch(model.Matricula.ToUpper()))
+            var allNumbers = new System.Text.RegularExpressions.Regex(@"^[0-9]{6}$").IsMatch(matriculaSemHifen);
+            var allLetters = new System.Text.RegularExpressions.Regex(@"^[A-Z]{6}$").IsMatch(matriculaSemHifen);
+            
+            if (!matriculaRegex.IsMatch(model.Matricula.ToUpper()) || matriculaSemHifen.Length != 6 || allNumbers || allLetters)
             {
-                ModelState.AddModelError("Matricula", "The license plate must follow the European format: XX-XX-XX (e.g., AB-12-CD).");
+                ModelState.AddModelError("Matricula", "The license plate must follow the format: XX-XX-XX (6 characters: letters and numbers). Cannot be all numbers or all letters.");
                 ReloadViewBag();
                 return View(model);
             }
 
-            // Normalizar matrícula para maiúsculas
             model.Matricula = model.Matricula.ToUpper();
 
-            // Validação: exatamente 5 imagens
+            // Validar 5 imagens
             if (model.Imagens == null || model.Imagens.Count != 5)
             {
                 ModelState.AddModelError("Imagens", "You must upload exactly 5 images.");
@@ -145,7 +148,7 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
-            // Validar que são realmente ficheiros de imagem
+            // Validar ficheiros de imagem
             foreach (var img in model.Imagens)
             {
                 if (img.Length == 0)
@@ -156,7 +159,6 @@ namespace AutoMatch.Controllers
                 }
             }
 
-            // Buscar informações do modelo para criar o título automaticamente
             var modeloInfo = _db.Modelos.FirstOrDefault(m => m.Id_Modelo == model.IdModelo);
             if (modeloInfo == null)
             {
@@ -165,7 +167,6 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
-            // Criar título automaticamente: Marca + Modelo
             string tituloAuto = $"{modeloInfo.Marca} {modeloInfo.NomeModelo}";
 
             // Criar o anúncio
@@ -337,7 +338,7 @@ namespace AutoMatch.Controllers
         // POST: /Listings/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(EditListingViewModel model, IFormFile[] NovasImagens)
+        public async Task<IActionResult> Edit(EditListingViewModel model)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
@@ -361,6 +362,7 @@ namespace AutoMatch.Controllers
                 return View(model);
             }
 
+
             // Atualizar campos editáveis
             anuncio.Preco = model.Preco;
             anuncio.Kilometros = model.Kilometros;
@@ -369,68 +371,151 @@ namespace AutoMatch.Controllers
 
             try
             {
+                string imgPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "Anuncios",
+                    $"Anuncio{anuncio.Id_Anuncio}",
+                    "Imagens");
 
-                if (NovasImagens != null && NovasImagens.Length > 0)
+                if (!Directory.Exists(imgPath))
+                    Directory.CreateDirectory(imgPath);
+
+                var imagensExistentesDict = new Dictionary<int, Imagens>();
+                foreach (var img in anuncio.Imagens)
                 {
-                    string imgPath = Path.Combine(
-                        Directory.GetCurrentDirectory(),
-                        "wwwroot",
-                        "Anuncios",
-                        $"Anuncio{anuncio.Id_Anuncio}",
-                        "Imagens");
-
-                    if (!Directory.Exists(imgPath))
-                        Directory.CreateDirectory(imgPath);
-
-                    var imagensExistentesDict = new Dictionary<int, Imagens>();
-                    foreach (var img in anuncio.Imagens)
+                    var fileName = Path.GetFileName(img.CaminhoImagem);
+                    var partes = fileName.Split('_');
+                    if (partes.Length > 0 && int.TryParse(partes[0], out int pos))
                     {
-                        var fileName = Path.GetFileName(img.CaminhoImagem);
-                        var partes = fileName.Split('_');
-                        if (partes.Length > 0 && int.TryParse(partes[0], out int pos))
-                        {
-                            imagensExistentesDict[pos] = img;
-                        }
+                        imagensExistentesDict[pos] = img;
                     }
+                }
 
-                    for (int i = 0; i < NovasImagens.Length && i < 5; i++)
+                // Processar imagens deletadas
+                if (model.ImagensParaDeletar != null)
+                {
+                    for (int i = 0; i < model.ImagensParaDeletar.Count && i < 5; i++)
                     {
-                        var novaImagem = NovasImagens[i];
-
-                        if (novaImagem != null && novaImagem.Length > 0)
+                        if (model.ImagensParaDeletar[i] == "true")
                         {
                             int posicao = i + 1;
-
                             if (imagensExistentesDict.ContainsKey(posicao))
                             {
-                                var imagemAntiga = imagensExistentesDict[posicao];
+                                var imagemParaDeletar = imagensExistentesDict[posicao];
                                 string oldPath = Path.Combine(
                                     Directory.GetCurrentDirectory(),
                                     "wwwroot",
-                                    imagemAntiga.CaminhoImagem.TrimStart('/'));
+                                    imagemParaDeletar.CaminhoImagem.TrimStart('/'));
 
                                 if (System.IO.File.Exists(oldPath))
                                     System.IO.File.Delete(oldPath);
 
-                                _db.Imagens.Remove(imagemAntiga);
+                                _db.Imagens.Remove(imagemParaDeletar);
+                                imagensExistentesDict.Remove(posicao);
                             }
-
-                            // Salvar nova imagem
-                            string fileName = $"{posicao}_{Guid.NewGuid()}{Path.GetExtension(novaImagem.FileName)}";
-                            string fullPath = Path.Combine(imgPath, fileName);
-
-                            using (var stream = new FileStream(fullPath, FileMode.Create))
-                            {
-                                await novaImagem.CopyToAsync(stream);
-                            }
-
-                            _db.Imagens.Add(new Imagens
-                            {
-                                Id_Anuncio = anuncio.Id_Anuncio,
-                                CaminhoImagem = $"/Anuncios/Anuncio{anuncio.Id_Anuncio}/Imagens/{fileName}"
-                            });
                         }
                     }
+                }
+
+                // Processar novas imagens
+                for (int i = 0; i < 5; i++)
+                {
+                    int posicao = i + 1;
+                    IFormFile novaImagem = null;
+                    
+                    // Tentar obter o ficheiro pelo nome indexado
+                    string indexedName = $"NovasImagens[{i}]";
+                    var filesWithIndexedName = Request.Form.Files.GetFiles(indexedName);
+                    if (filesWithIndexedName != null && filesWithIndexedName.Count > 0)
+                    {
+                        var file = filesWithIndexedName.FirstOrDefault();
+                        if (file != null && file.Length > 0)
+                        {
+                            novaImagem = file;
+                        }
+                    }
+                    
+                    if (novaImagem == null)
+                    {
+                        var allFiles = Request.Form.Files.GetFiles("NovasImagens");
+                        var nonIndexedFiles = allFiles.Where(f => f.Name == "NovasImagens" || !f.Name.StartsWith("NovasImagens[")).ToList();
+                        if (nonIndexedFiles != null && i < nonIndexedFiles.Count)
+                        {
+                            var file = nonIndexedFiles[i];
+                            if (file != null && file.Length > 0)
+                            {
+                                novaImagem = file;
+                            }
+                        }
+                    }
+
+                    // Verificar se há flag de delete para esta posição
+                    bool deveDeletar = false;
+                    if (model.ImagensParaDeletar != null && i < model.ImagensParaDeletar.Count)
+                    {
+                        deveDeletar = model.ImagensParaDeletar[i] == "true";
+                    }
+
+                    if (novaImagem != null && novaImagem.Length > 0)
+                    {
+                        if (imagensExistentesDict.ContainsKey(posicao))
+                        {
+                            var imagemAntiga = imagensExistentesDict[posicao];
+                            string oldPath = Path.Combine(
+                                Directory.GetCurrentDirectory(),
+                                "wwwroot",
+                                imagemAntiga.CaminhoImagem.TrimStart('/'));
+
+                            if (System.IO.File.Exists(oldPath))
+                                System.IO.File.Delete(oldPath);
+
+                            _db.Imagens.Remove(imagemAntiga);
+                            imagensExistentesDict.Remove(posicao);
+                        }
+
+                        // Salvar nova imagem
+                        string fileName = $"{posicao}_{Guid.NewGuid()}{Path.GetExtension(novaImagem.FileName)}";
+                        string fullPath = Path.Combine(imgPath, fileName);
+
+                        using (var stream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            await novaImagem.CopyToAsync(stream);
+                        }
+
+                        _db.Imagens.Add(new Imagens
+                        {
+                            Id_Anuncio = anuncio.Id_Anuncio,
+                            CaminhoImagem = $"/Anuncios/Anuncio{anuncio.Id_Anuncio}/Imagens/{fileName}"
+                        });
+                    }
+                    else if (deveDeletar)
+                    {
+                        if (imagensExistentesDict.ContainsKey(posicao))
+                        {
+                            var imagemParaDeletar = imagensExistentesDict[posicao];
+                            string oldPath = Path.Combine(
+                                Directory.GetCurrentDirectory(),
+                                "wwwroot",
+                                imagemParaDeletar.CaminhoImagem.TrimStart('/'));
+
+                            if (System.IO.File.Exists(oldPath))
+                                System.IO.File.Delete(oldPath);
+
+                            _db.Imagens.Remove(imagemParaDeletar);
+                            imagensExistentesDict.Remove(posicao);
+                        }
+                    }
+                }
+
+                _db.Entry(anuncio).Collection(a => a.Imagens).Load();
+                var imagensFinais = anuncio.Imagens.Count;
+                
+                if (imagensFinais < 5)
+                {
+                    ModelState.AddModelError("", $"You need exactly 5 images to save the listing. Currently you have {imagensFinais} image(s). Please add {5 - imagensFinais} more image(s).");
+                    RecarregarDadosView(model, anuncio);
+                    return View(model);
                 }
 
                 _db.SaveChanges();
