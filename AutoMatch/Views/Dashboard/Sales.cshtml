@@ -116,6 +116,21 @@
                 <h1>Sales Overview</h1>
                 <p class="subtitle">Manage you sales, performance and revenue</p>
 
+                @if (ViewBag.IsVendedor == false)
+                {
+                    <div style="background: #e5e5e5; border: 1px solid #d0d0d0; border-radius: 10px; padding: 24px; text-align: center;">
+                        <h2 style="margin: 0 0 12px 0; color: #555; font-size: 20px;">Restricted Access</h2>
+                        <p style="margin: 0 0 20px 0; color: #666; font-size: 14px;">
+                            This feature is only available for sellers. Become a seller to manage your sales and revenue.
+                        </p>
+                        <a href="/Forms/SellerForms" class="become-seller-booking-btn" style="display: inline-block; padding: 12px 32px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; transition: background 0.2s;">
+                            Become a Seller
+                        </a>
+                    </div>
+                }
+
+                @if (ViewBag.IsVendedor == true)
+                {
             <form asp-action="Sales" asp-controller="DashBoard" method="get" class="sales-header-actions">
                 <div class="sales-filter">
                     <select class="sales-range-select" name="range" onchange="this.form.submit()">
@@ -180,6 +195,7 @@
                     </tbody>
                 </table>
             </div>
+                }
             </div>
         </main>
     </div>

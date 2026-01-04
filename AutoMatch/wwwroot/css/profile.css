@@ -370,8 +370,8 @@ body {
 
 .modal-buttons {
     display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
+    gap: 12px;
+    margin-top: 20px;
 }
 
 .save-btn {
@@ -489,4 +489,33 @@ body {
     border-radius: 6px;
     cursor: pointer;
     width: 100%;
+}
+
+.seller-modal-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.seller-register-btn {
+    background: #666;
+    color: white;
+}
+
+.seller-register-btn:hover {
+    background: #555;
+}
+
+.seller-later-btn {
+    background: #e5e5e5;
+    color: #555;
+}
+
+.seller-later-btn:hover {
+    background: #d0d0d0;
 }

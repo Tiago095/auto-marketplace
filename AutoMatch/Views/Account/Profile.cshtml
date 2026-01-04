@@ -364,8 +364,8 @@ function previewProfilePhoto(input) {
                 You are not a seller yet. To create and manage your own listings, you need to create a seller account.
             </p>
             <div class="modal-buttons">
-                <button type="button" id="goToSellerForm" class="save-btn">Go to seller registration form</button>
-                <button type="button" id="closeSellerOverlay" class="cancel-btn">Maybe later</button>
+                <button type="button" id="goToSellerForm" class="seller-modal-btn seller-register-btn">Go to Seller Registration</button>
+                <button type="button" id="closeSellerOverlay" class="seller-modal-btn seller-later-btn">Maybe Later</button>
             </div>
         </div>
     </div>
@@ -414,8 +414,7 @@ function previewProfilePhoto(input) {
 
         if (goToSellerForm) {
             goToSellerForm.addEventListener('click', function () {
-                // TODO: replace '#' with the route to your seller registration form when implemented
-                window.location.href = '#';
+                window.location.href = '/Forms/SellerForms';
             });
         }
     })();

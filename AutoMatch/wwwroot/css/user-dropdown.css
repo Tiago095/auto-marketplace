@@ -3,11 +3,13 @@
 .user-menu-container {
     position: relative;
     display: inline-block;
+    min-width: 140px;
 }
 
 .user-badge {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     background: #FFFFFF;
     border-radius: 20px;
@@ -16,7 +18,8 @@
     transition: all 0.2s ease-in-out;
     border: 1px solid transparent;
     white-space: nowrap;
-    min-width: fit-content;
+    min-width: 140px;
+    width: fit-content;
 }
 
     .user-badge:hover {
@@ -57,8 +60,9 @@
     display: none;
     position: absolute;
     top: 100%;
-    left: 0;
-    width: 100%; 
+    right: 0;
+    width: 100%;
+    min-width: 140px;
     background: white;
     border-radius: 20px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.15);

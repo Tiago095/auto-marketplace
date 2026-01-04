@@ -1,4 +1,5 @@
-﻿using AutoMatch.Data;
+﻿
+using AutoMatch.Data;
 using AutoMatch.Models;
 using AutoMatch.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -22,12 +23,13 @@ namespace AutoMatch.Controllers
 
         private async Task<int> GetUnreadMessagesCount(int userId)
         {
-            // Contar mensagens não lidas
+            bool isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            
             return await _context.Notificacoes
                 .CountAsync(n => n.Tipo == "Mensagem" && 
                                 !n.Estado && 
-                                ((n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
-                                 (n.Id_Vendedor == userId && n.Id_Comprador != userId)));
+                                ((isVendedor && n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                                 (!isVendedor && n.Id_Vendedor == userId && n.Id_Comprador != userId)));
         }
 
         public async Task<IActionResult> Index()
@@ -75,15 +77,19 @@ namespace AutoMatch.Controllers
             int newNotifications;
             if (isVendedor)
             {
-                // Para vendedor: notificações recebidas (Id_Vendedor == userId)
                 newNotifications = await _context.Notificacoes
-                    .CountAsync(n => n.Id_Vendedor == userId && !n.Estado);
+                    .CountAsync(n => n.Tipo == "Mensagem" 
+                        ? (n.Id_Vendedor == userId && n.Id_Comprador != userId && !n.Estado)
+                        : n.Tipo == "Booking"
+                        ? (n.Id_Vendedor == userId && !n.Estado)
+                        : (n.Id_Vendedor == userId && !n.Estado));
             }
             else
             {
-                // Para comprador: notificações recebidas (Id_Comprador == userId)
                 newNotifications = await _context.Notificacoes
-                .CountAsync(n => n.Id_Comprador == userId && !n.Estado);
+                    .CountAsync(n => n.Tipo == "Mensagem"
+                        ? (n.Id_Comprador == userId && n.Id_Vendedor != userId && !n.Estado)
+                        : (n.Id_Comprador == userId && !n.Estado));
             }
 
             var comprador = await _context.Compradores.FirstOrDefaultAsync(c => c.Id_User == userId);
@@ -206,10 +212,13 @@ namespace AutoMatch.Controllers
                 };
             }).ToList();
 
-            // Notifications - ajustar para vendedor ou comprador
+           
             var notificationsQuery = _context.Notificacoes
-                .Where(n => (isVendedor && n.Id_Vendedor == userId) || 
-                           (!isVendedor && n.Id_Comprador == userId))
+                .Where(n => n.Tipo == "Mensagem" 
+                    ? ((isVendedor && n.Id_Comprador == userId && n.Id_Vendedor != userId) || 
+                       (!isVendedor && n.Id_Vendedor == userId && n.Id_Comprador != userId))
+                    : (isVendedor && n.Id_Vendedor == userId) || 
+                      (!isVendedor && n.Id_Comprador == userId))
                 .OrderByDescending(n => n.Data_Envio)
                 .Take(5);
 
@@ -517,7 +526,6 @@ namespace AutoMatch.Controllers
 
             // Verificar se o utilizador é vendedor ou comprador
             var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
-            var isComprador = await _context.Compradores.AnyAsync(c => c.Id_User == userId);
 
             var vm = new MessagesViewModel
             {
@@ -651,9 +659,13 @@ namespace AutoMatch.Controllers
 
                 foreach (var n in mensagensConversa)
                 {
+                    
+                    bool isOutgoing = (isVendedor && n.Id_Vendedor == userId) || 
+                                     (!isVendedor && n.Id_Comprador == userId);
+                    
                     vm.Mensagens.Add(new MessageBubbleViewModel
                     {
-                        IsOutgoing = n.Id_Comprador == userId,
+                        IsOutgoing = isOutgoing,
                         Texto = n.Mensagem,
                         Data = n.Data_Envio
                     });
@@ -705,30 +717,44 @@ namespace AutoMatch.Controllers
 
             try
             {
+                int senderId = userId.Value;
+                int receiverId = recipientId.Value;
 
-                int idComprador = userId.Value;
-                int idVendedor = recipientId.Value;
-
-                // Garantir que o remetente existe como comprador
-                var compradorExiste = await _context.Compradores.AnyAsync(c => c.Id_User == idComprador);
-                if (!compradorExiste)
+                // Verificar se sender e receiver existem como Comprador ou Vendedor
+                bool senderIsVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == senderId);
+                bool receiverIsVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == receiverId);
+                
+                // Garantir que ambos existem como Comprador (pode ser ambos vendedores também)
+                var senderCompradorExiste = await _context.Compradores.AnyAsync(c => c.Id_User == senderId);
+                if (!senderCompradorExiste)
                 {
                     var novoComprador = new Comprador
                     {
-                        Id_User = idComprador,
+                        Id_User = senderId,
                         Contactos = "N/A",
                         Rua = "Desconhecida",
                         Codigo_Postal = "0000-000"
                     };
                     _context.Compradores.Add(novoComprador);
-                    await _context.SaveChangesAsync();
                 }
 
-                // Garantir que o destinatário existe como vendedor
-                var vendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == idVendedor);
-                if (!vendedorExiste)
+                var receiverCompradorExiste = await _context.Compradores.AnyAsync(c => c.Id_User == receiverId);
+                if (!receiverCompradorExiste)
                 {
-                    // Garantir que o código postal padrão existe
+                    var novoComprador = new Comprador
+                    {
+                        Id_User = receiverId,
+                        Contactos = "N/A",
+                        Rua = "Desconhecida",
+                        Codigo_Postal = "0000-000"
+                    };
+                    _context.Compradores.Add(novoComprador);
+                }
+
+                // Garantir que ambos existem como Vendedor (pode ser ambos compradores também)
+                var senderVendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == senderId);
+                if (!senderVendedorExiste)
+                {
                     var codigoPostalExiste = await _context.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
                     if (!codigoPostalExiste)
                     {
@@ -738,20 +764,59 @@ namespace AutoMatch.Controllers
                             Localidade = "Desconhecida"
                         };
                         _context.CodigoPostais.Add(novoCodigoPostal);
-                        await _context.SaveChangesAsync();
                     }
 
-                    // Criar registro temporário de vendedor para permitir mensagens entre qualquer utilizador
                     var novoVendedor = new Vendedor
                     {
-                        Id_User = idVendedor,
+                        Id_User = senderId,
                         Tipo = false,
                         Contactos = "N/A",
                         Rua = "Desconhecida",
                         Codigo_Postal = "0000-000"
                     };
                     _context.Vendedores.Add(novoVendedor);
-                    await _context.SaveChangesAsync();
+                }
+
+                var receiverVendedorExiste = await _context.Vendedores.AnyAsync(v => v.Id_User == receiverId);
+                if (!receiverVendedorExiste)
+                {
+                    var codigoPostalExiste = await _context.CodigoPostais.AnyAsync(cp => cp.Codigo_Postal == "0000-000");
+                    if (!codigoPostalExiste)
+                    {
+                        var novoCodigoPostal = new CodigoPostal
+                        {
+                            Codigo_Postal = "0000-000",
+                            Localidade = "Desconhecida"
+                        };
+                        _context.CodigoPostais.Add(novoCodigoPostal);
+                    }
+
+                    var novoVendedor = new Vendedor
+                    {
+                        Id_User = receiverId,
+                        Tipo = false,
+                        Contactos = "N/A",
+                        Rua = "Desconhecida",
+                        Codigo_Postal = "0000-000"
+                    };
+                    _context.Vendedores.Add(novoVendedor);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Determinar idComprador e idVendedor baseado em quem envia
+                // Se sender é vendedor, ele vai em Id_Vendedor, senão em Id_Comprador
+                int idComprador, idVendedor;
+                
+                if (senderIsVendedor)
+                {
+                    idVendedor = senderId;
+                    idComprador = receiverId;
+                }
+                else
+                {
+                    idComprador = senderId;
+                    idVendedor = receiverId;
                 }
 
                 var notificacao = new Notificacoes
@@ -761,11 +826,13 @@ namespace AutoMatch.Controllers
                     Tipo = "Mensagem",
                     Mensagem = mensagem,
                     Data_Envio = DateTime.Now,
-                    Estado = false
+                    Estado = false // Não lida pelo recebedor
                 };
 
                 _context.Notificacoes.Add(notificacao);
                 await _context.SaveChangesAsync();
+
+                bool isOutgoing = true;
 
                 return Json(new
                 {
@@ -774,7 +841,7 @@ namespace AutoMatch.Controllers
                     {
                         texto = mensagem,
                         data = DateTime.Now.ToString("HH:mm"),
-                        isOutgoing = true
+                        isOutgoing = isOutgoing
                     }
                 });
             }
@@ -807,19 +874,34 @@ namespace AutoMatch.Controllers
                 return Json(new { success = false, message = "Invalid conversation" });
             }
 
+            // Verificar se o usuário atual é vendedor ou comprador
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+
             var mensagens = await _context.Notificacoes
                 .Where(n => n.Tipo == "Mensagem" &&
                            ((n.Id_Comprador == userId && n.Id_Vendedor == outroId.Value) ||
                             (n.Id_Vendedor == userId && n.Id_Comprador == outroId.Value)))
                 .OrderBy(n => n.Data_Envio)
                 .Select(n => new {
-                    texto = n.Mensagem,
-                    data = n.Data_Envio.ToString("HH:mm"),
-                    isOutgoing = (n.Id_Comprador == userId) || (n.Id_Vendedor == userId && n.Id_Comprador != userId)
+                    n.Mensagem,
+                    n.Data_Envio,
+                    n.Id_Comprador,
+                    n.Id_Vendedor
                 })
                 .ToListAsync();
+            
+            var mensagensFormatted = mensagens.Select(n => {
+                bool isOutgoing = (isVendedor && n.Id_Vendedor == userId) || 
+                                 (!isVendedor && n.Id_Comprador == userId);
+                
+                return new {
+                    texto = n.Mensagem,
+                    data = n.Data_Envio.ToString("HH:mm"),
+                    isOutgoing = isOutgoing
+                };
+            }).ToList();
 
-            return Json(new { success = true, data = mensagens });
+            return Json(new { success = true, data = mensagensFormatted });
         }
 
         public async Task<IActionResult> Notifications()
@@ -839,9 +921,11 @@ namespace AutoMatch.Controllers
                 UserName = userName
             };
 
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            
             var list = await _context.Notificacoes
                 .Where(n => n.Tipo == "Mensagem" 
-                    ? (n.Id_Vendedor == userId)
+                    ? (isVendedor ? (n.Id_Vendedor == userId && n.Id_Comprador != userId) : (n.Id_Comprador == userId && n.Id_Vendedor != userId))
                     : n.Tipo == "Booking"
                     ? (n.Id_Vendedor == userId)
                     : ((n.Id_Comprador == userId) || (n.Id_Vendedor == userId)))
@@ -1154,6 +1238,9 @@ namespace AutoMatch.Controllers
             }
 
             ViewBag.UnreadMessagesCount = await GetUnreadMessagesCount(userId.Value);
+
+            var isVendedor = await _context.Vendedores.AnyAsync(v => v.Id_User == userId);
+            ViewBag.IsVendedor = isVendedor;
 
             var vm = new SalesViewModel
             {

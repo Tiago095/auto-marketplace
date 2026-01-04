@@ -275,19 +275,46 @@ main.content {
 .seller-info-text {
     color: #ccc;
     margin-bottom: 24px;
+    font-size: 16px;
+}
+
+.seller-buttons-wrapper {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
 }
 
 .become-seller-btn {
-    background: #fff;
-    padding: 12px 22px;
-    border-radius: 8px;
-    color: #000;
+    background: #2563eb;
+    padding: 12px 24px;
+    border-radius: 10px;
+    color: #fff;
     text-decoration: none;
     transition: 0.3s;
+    font-weight: 500;
+    border: none;
 }
 
     .become-seller-btn:hover {
-        background: #dcdcdc;
+        background: #1d4ed8;
+    }
+
+.maybe-later-btn {
+    background: transparent;
+    padding: 12px 24px;
+    border-radius: 10px;
+    color: #ccc;
+    text-decoration: none;
+    transition: 0.3s;
+    font-weight: 500;
+    border: 1px solid #555;
+}
+
+    .maybe-later-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-color: #777;
     }
 
 .create-page-wrapper {

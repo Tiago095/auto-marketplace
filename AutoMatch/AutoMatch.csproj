@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="wwwroot\Anuncios\" />
     <Folder Include="wwwroot\images\UserProfiles\" />
   </ItemGroup>
 

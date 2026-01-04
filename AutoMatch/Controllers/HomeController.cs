@@ -5,6 +5,7 @@ using AutoMatch.Models;
 using AutoMatch.Models.ViewModels;
 using AutoMatch.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 
 public class HomeController : Controller
@@ -75,6 +76,31 @@ public class HomeController : Controller
             }).ToList();
 
             ViewBag.FeaturedCars = featuredCars;
+
+            // Buscar brands e modelos disponíveis da base de dados
+            var baseQuery = _db.Anuncios
+                .Include(a => a.Modelo)
+                .Where(a => a.Estado)
+                .Where(a => !_db.Compras.Any(c => c.Id_Anuncio == a.Id_Anuncio && c.Estado));
+
+            var availableBrands = baseQuery
+                .Select(a => a.Modelo.Marca)
+                .Distinct()
+                .OrderBy(m => m)
+                .ToList();
+
+            var brandModels = baseQuery
+                .GroupBy(a => a.Modelo.Marca)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(a => a.Modelo.NomeModelo)
+                          .Distinct()
+                          .OrderBy(n => n)
+                          .ToList()
+                );
+
+            ViewBag.AvailableBrands = availableBrands;
+            ViewBag.BrandModels = brandModels;
 
             return View();
         }

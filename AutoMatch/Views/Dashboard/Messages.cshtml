@@ -262,8 +262,9 @@
                         chatBody.innerHTML = '';
                     }
 
+                    const messageClass = data.data.isOutgoing ? "outgoing" : "incoming";
                     const messageHtml = `
-                        <div class="chat-message-wrapper outgoing">
+                        <div class="chat-message-wrapper ${messageClass}">
                             <div class="chat-bubble">${data.data.texto}</div>
                             <div class="chat-time">${data.data.data}</div>
                         </div>

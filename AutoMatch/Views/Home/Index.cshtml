@@ -1,3 +1,4 @@
+@using System.Text.Json
 @{
     ViewData["Title"] = "AutoMatch";
 
@@ -62,9 +63,13 @@
     <div class="search-bar">
         <select id="brandSelect">
             <option value="">Brand</option>
-            <option value="Tesla">Tesla</option>
-            <option value="BMW">BMW</option>
-            <option value="Audi">Audi</option>
+            @if (ViewBag.AvailableBrands != null)
+            {
+                foreach (var brand in ViewBag.AvailableBrands)
+                {
+                    <option value="@brand">@brand</option>
+                }
+            }
         </select>
 
         <select id="modelSelect" disabled>
@@ -87,11 +92,8 @@
             const brandSelect = document.getElementById("brandSelect");
             const modelSelect = document.getElementById("modelSelect");
 
-            const models = {
-                "Tesla": ["Model S", "Model 3", "Model X", "Model Y"],
-                "BMW": ["Series 3", "Series 5", "X5", "X7"],
-                "Audi": ["A3", "A4", "Q5", "Q7"]
-            };
+            // Carregar modelos da base de dados via ViewBag
+            const models = @Html.Raw(JsonSerializer.Serialize(ViewBag.BrandModels ?? new Dictionary<string, List<string>>()));
 
             brandSelect.addEventListener("change", function () {
                 const selectedBrand = this.value;
