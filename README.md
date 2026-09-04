@@ -86,24 +86,5 @@ A aplicação inclui um inicializador automático da base de dados (`DbInitializ
 | Vendedor 1 | `seller1@gmail.com` | `password123` |
 | Vendedor 2 | `seller2@gmail.com` | `password123` |
 
----
-
-## Como Executar
-
-1. Clonar o repositório
-   ```bash
-   git clone https://github.com/<teu-utilizador>/AutoMatch.git
-   ```
-2. Configurar a connection string do SQL Server em `appsettings.json`
-3. Aplicar as migrations do Entity Framework Core
-   ```bash
-   dotnet ef database update
-   ```
-4. Executar a aplicação
-   ```bash
-   dotnet run
-   ```
-
-**Pré-requisitos:** .NET SDK e SQL Server (ou LocalDB)
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1a1a,100:6e6e6e&height=100&section=footer&animation=fadeIn&reversal=true" width="100%"/>
