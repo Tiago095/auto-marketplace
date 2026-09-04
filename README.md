@@ -1,20 +1,20 @@
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1a1a,100:6e6e6e&height=200&section=header&text=AutoMatch&fontSize=52&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Marketplace%20de%20Ve%C3%ADculos%20Usados&descAlignY=55&descSize=16" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1a1a,100:6e6e6e&height=200&section=header&text=AutoMatch&fontSize=52&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Used%20Vehicle%20Marketplace&descAlignY=55&descSize=16" width="100%"/>
 
 <div align="center">
 
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet&logoColor=white)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-Database-CC2927?logo=microsoftsqlserver&logoColor=white)
-![EF Core](https://img.shields.io/badge/Entity%20Framework-Core-blue)
-![Status](https://img.shields.io/badge/Status-Concluído-brightgreen)
+![EF Core](https://img.shields.io/badge/Entity%20Framework-Core-68217A?logo=nuget&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 
 </div>
 
-> **Unidade Curricular:** Laboratório de Aplicações Web e Bases de Dados (LEI)
-> **Instituição:** Universidade de Trás-os-Montes e Alto Douro (UTAD)
+> **Course:** Web Applications and Databases Lab (LEI)
+> **Institution:** University of Trás-os-Montes e Alto Douro (UTAD)
 
-## Autores
+## Authors
 
-| Nome | GitHub |
+| Name | GitHub |
 |---|---|
 | Tiago Ribeiro | [@Tiago](https://github.com/Tiago095) |
 | Francisco Rodrigues | [@Francisco](https://github.com/FranciscoSR-LEI) |
@@ -22,69 +22,68 @@
 
 ---
 
-## Sobre o Projeto
+## About the Project
 
-O **AutoMatch** é uma aplicação web desenvolvida no âmbito da unidade curricular de Laboratório de Aplicações Web e Bases de Dados. Consiste num portal de **Marketplace de veículos usados**, permitindo a interação entre diferentes tipos de utilizadores (Compradores, Vendedores e Administradores) para a compra, venda, reserva e visita de automóveis.
+**AutoMatch** is a web application developed for the Web Applications and Databases Lab course. It consists of a **used vehicle marketplace** portal, enabling interaction between different types of users (Buyers, Sellers, and Administrators) for buying, selling, reserving, and visiting cars.
 
-O projeto foi desenvolvido ao longo de três fases principais:
+The project was developed across three main phases:
 
-1. **Fase 1: Análise e Especificação** — Requisitos Funcionais/Não Funcionais, Modelo Conceptual E-R e Modelo Funcional/Casos de Uso.
-2. **Fase 2: Modelação Lógica e Física** — Modelo Relacional, Script SQL Server, Diagrama de Base de Dados e Mockups em Figma.
-3. **Fase 3: Implementação Prática** — Arquitetura MVC em ASP.NET Core, Integração com EF Core, Lógica Funcional, Backoffice e `DbInitializer`.
-
----
-
-## Funcionalidades Principais por Perfil
-
-### Utilizadores Não Autenticados
-- Registo de conta e início de sessão (Login)
-- Consulta de informações sobre a plataforma ("About Us" e Ajuda)
-- Pesquisa avançada de veículos com múltiplos filtros (marca, modelo, preço, ano, quilometragem, combustível, transmissão, etc.)
-- Visualização detalhada de anúncios de automóveis
-
-### Compradores
-- Gestão de perfil pessoal (atualização de dados e eliminação de conta)
-- Subscrição de notificações e preferências de marcas favoritas
-- Reserva de veículos e marcação de visitas/test-drives
-- Simulação de checkout de compra (cálculo de custos, taxas, seguros e planos de pagamento)
-- Comunicação direta com vendedores através do sistema de mensagens
-- Acesso a documentos digitais do automóvel após a compra e acompanhamento do estado das encomendas
-
-### Vendedores
-- Candidatura a Vendedor (sujeita a aprovação administrativa)
-- Criação, edição, pausa e remoção de anúncios de veículos, incluindo gestão de fotografias e documentos encriptados
-- Definição e atualização do estado dos anúncios (ativo, reservado, vendido, pausado)
-- Acesso a listagens de veículos reservados/vendidos e visualização de estatísticas de vendas
-
-### Administradores (Backoffice)
-- Autenticação reforçada e gestão global da plataforma
-- Visualização e atualização de perfis de utilizador, bloqueio/ativação de contas
-- Moderação de conteúdos e gestão de denúncias de anúncios
-- Análise e aprovação/rejeição de candidaturas a vendedor
-- Acesso a estatísticas globais (crescimento de utilizadores, visão geral de anúncios e relatórios de atividades)
+1. **Phase 1: Analysis and Specification** — Functional/Non-Functional Requirements, Conceptual E-R Model, and Functional Model/Use Cases.
+2. **Phase 2: Logical and Physical Modeling** — Relational Model, SQL Server Script, Database Diagram, and Figma Mockups.
+3. **Phase 3: Practical Implementation** — MVC Architecture in ASP.NET Core, EF Core Integration, Business Logic, Backoffice, and `DbInitializer`.
 
 ---
 
-## Arquitetura e Tecnologias
+## Main Features by Role
 
-| Tecnologia | Descrição |
+### Unauthenticated Users
+- Account registration and login
+- Access to platform information ("About Us" and Help)
+- Advanced vehicle search with multiple filters (make, model, price, year, mileage, fuel type, transmission, etc.)
+- Detailed vehicle listing view
+
+### Buyers
+- Personal profile management (updating data and account deletion)
+- Notification subscriptions and favorite brand preferences
+- Vehicle reservation and visit/test-drive scheduling
+- Purchase checkout simulation (cost calculation, fees, insurance, and payment plans)
+- Direct communication with sellers through the messaging system
+- Access to digital vehicle documents after purchase and order status tracking
+
+### Sellers
+- Seller application (subject to administrative approval)
+- Creation, editing, pausing, and removal of vehicle listings, including photo and encrypted document management
+- Setting and updating listing status (active, reserved, sold, paused)
+- Access to reserved/sold vehicle listings and sales statistics
+
+### Administrators (Backoffice)
+- Reinforced authentication and global platform management
+- Viewing and updating user profiles, account blocking/activation
+- Content moderation and listing report management
+- Review and approval/rejection of seller applications
+- Access to global statistics (user growth, listings overview, and activity reports)
+
+---
+
+## Architecture and Technologies
+
+| Technology | Description |
 |---|---|
-| **ASP.NET Core** | Framework web, arquitetura Model-View-Controller (MVC) |
-| **Microsoft SQL Server** | Sistema de gestão de base de dados |
-| **Entity Framework Core** | Mapeamento Objeto-Relacional (ORM), com suporte a Migrations |
+| **ASP.NET Core** | Web framework, Model-View-Controller (MVC) architecture |
+| **Microsoft SQL Server** | Database management system |
+| **Entity Framework Core** | Object-Relational Mapping (ORM), with Migrations support |
 
 ---
 
-## Credenciais de Teste
+## Test Credentials
 
-A aplicação inclui um inicializador automático da base de dados (`DbInitializer`) que povoa o sistema com dados de teste e utilizadores pré-configurados:
+The application includes an automatic database initializer (`DbInitializer`) that seeds the system with test data and pre-configured users:
 
-| Perfil | Email | Password |
+| Role | Email | Password |
 |---|---|---|
-| Administrador | `admin@gmail.com` | `password123` |
-| Utilizador Comum | `user@gmail.com` | `password123` |
-| Vendedor 1 | `seller1@gmail.com` | `password123` |
-| Vendedor 2 | `seller2@gmail.com` | `password123` |
-
+| Administrator | `admin@gmail.com` | `password123` |
+| Regular User | `user@gmail.com` | `password123` |
+| Seller 1 | `seller1@gmail.com` | `password123` |
+| Seller 2 | `seller2@gmail.com` | `password123` |
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a1a1a,100:6e6e6e&height=100&section=footer&animation=fadeIn&reversal=true" width="100%"/>
